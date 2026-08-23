@@ -94,7 +94,7 @@ public class SecurityConfiguration {
 		
 		//접근 허용 대상 지정
 		config.setAllowedOrigins(List.of(
-			"http://loalhost:5173"
+			"http://localhost:5173"
 			,"http://192.168.20.14:5173"
 		));
 		//허용 HTTP 메소드 설정
