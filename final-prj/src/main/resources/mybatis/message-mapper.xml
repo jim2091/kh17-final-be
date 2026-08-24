@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.message">
+
+	<!-- 메세지 등록 -->
+	<select id="sequence" resultType="int">
+		select chat_message_seq.nextval from dual
+	</select>
+	<insert id="add">
+		insert into chat_message (
+			chat_message_no,
+            chat_channel_no,
+            chat_message_sender,
+            chat_message_content,
+            chat_message_type,
+            chat_message_ctime,
+            chat_message_utime,
+            chat_message_deleted
+		)
+		values (
+			#{no},
+            #{channelNo},
+            #{projectMemberNo},
+            #{content},
+            #{type},
+            systimestamp,
+            systimestamp,
+            'N'
+		)
+	</insert>
+	
+	<!-- 메시지 조회를 위한 구조를 안내 -->
+	<resultMap id="MessageVO" type="com.kh.finalprj.vo.channel.MessageVO">
+	    <id property="no" column="chat_message_no"/>
+	    <result property="channelNo" column="chat_channel_no"/>
+	    <result property="projectMemberNo" column="chat_message_sender"/>
+	    <result property="senderName" column="sender_name"/>
+	    <result property="content" column="chat_message_content"/>
+	    <result property="type" column="chat_message_type"/>
+	    <result property="ctime" column="chat_message_ctime"/>
+	    <result property="utime" column="chat_message_utime"/>
+	    <result property="deleted" column="chat_message_deleted"/>
+	</resultMap>
+	
+	<!-- 구문 조각 -->
+	<sql id="temp-header">
+		with temp_list as (
+			select rownum rn, TMP.* from (
+	</sql>
+	<sql id="temp-footer">
+			)TMP
+		)
+	</sql>
+	
+	<!-- 메세지 조회 -->
+	<select id="selectMessages" resultMap="MessageVO">
+    <include refid="temp-header"/>
+
+	    select
+	        M.chat_message_no,
+	        M.chat_channel_no,
+	        M.chat_message_sender,
+	        E.emp_name AS sender_name,
+	        M.chat_message_content,
+	        M.chat_message_type,
+	        M.chat_message_ctime,
+	        M.chat_message_utime,
+	        M.chat_message_deleted
+	        
+	    from chat_message M
+	        left outer join project_member PM
+	            on M.chat_message_sender = PM.project_member_no
+	        left outer join emp E
+	            on PM.emp_no = E.emp_no
+	            
+	    where M.chat_channel_no = #{channelNo}
+	
+	    order by M.chat_message_no desc
+
+    <include refid="temp-footer"/>
+
+	    select * from (
+	        select * from temp_list
+	        <if test="lastMessageNo != null">
+	            <![CDATA[
+	                where chat_message_no < #{lastMessageNo}
+	            ]]>
+	        </if>
+	    )
+	    <if test="size != null">
+	        <![CDATA[
+	            where rownum <= #{size}
+	        ]]>
+	    </if>
+	    
+	    order by chat_message_no asc
+	</select>
+	
+	<select id="countMessages" resultType="int">
+	    select count(*)
+	    from chat_message M
+	    where M.chat_channel_no = #{channelNo}
+	
+	    <if test="lastMessageNo != null">
+	        <![CDATA[
+	            and M.chat_message_no < #{lastMessageNo}
+	        ]]>
+	    </if>
+	</select>
+	
+</mapper>
