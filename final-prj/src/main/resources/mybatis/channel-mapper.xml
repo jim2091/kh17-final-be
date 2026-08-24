@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.channel">
+
+	<!-- 채널 생성 -->
+	<select id="sequence" resultType="int">
+		select chat_channel_seq.nextval from dual
+	</select>
+	<insert id="create">
+		insert into chat_channel(
+			chat_channel_no, 
+			project_no,
+			chat_channel_creator,
+			char_channel_name
+		)
+		values (
+			#{chatChannelNo},
+			#{projectNo},
+			#{chatChannelCreator},
+			#{chateChannelName}
+		)
+	</insert>
+	
+	<!-- 채널 목록 -->
+	<select id="list" resultType="ChannelListVO">
+		select 
+			C.chat_channel_no,
+			C.project_no,
+			C.chat_channel_creator,
+			C.chat_channel_name,
+			C.chat_channel_ctime,
+			C.chat_channel_utime,
+			E.emp_name AS chat_channel_creator_name
+		from chat_channel C
+		left join project_member PM
+			on C.chat_channel_creator = PM.project_member_no
+		left join emp E
+			on PM.emp_no = E.emp_no
+		where C.project_no = #{projectNo}
+		order by C.chat_channel_no asc
+	</select>
+	
+	<!-- 채널 상세 -->
+	<select id="find" resultType="ChannelDto">
+		select 
+			C.chat_channel_no,
+			C.project_no,
+			C.chat_channel_creator,
+			C.chat_channel_name,
+			C.chat_channel_ctime,
+			C.chat_channel_utime,
+			E.emp_name AS chat_channel_creator_name
+		from chat_channel C
+		left join project_member PM
+			on C.chat_channel_creator = PM.project_member_no
+		left join emp E
+			on PM.emp_no = E.emp_no
+		where C.project_no = #{projectNo}
+			and C.chat_channel_no = #{chatChannelNo}
+	</select>
+
+	<!-- 채널 삭제 -->
+	<delete id="delete">
+		delete chat_channel 
+		where project_no = #{
+		chat_channel_no = #{chatChannelNo}
+	</delete>
+	
+	<!-- 채널 수정 -->
+	<update id="update">
+		update chat_channel
+		set chat_channel_name = #{chatChannelName},
+			chat_channel_utime = systimestamp
+		where chat_channel_no = #{chatChannelNo}
+	</update>
+</mapper>
