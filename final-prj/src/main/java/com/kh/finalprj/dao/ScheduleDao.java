@@ -3,6 +3,7 @@ package com.kh.finalprj.dao;
 import java.util.List;
 
 import com.kh.finalprj.dto.ScheduleDto;
+import com.kh.finalprj.vo.schedule.ScheduleEventVO;
 
 public interface ScheduleDao {
 	int sequence();
@@ -10,5 +11,5 @@ public interface ScheduleDao {
 	boolean update(ScheduleDto scheduleDto);
 	boolean delete(int scheduleNo);
 	ScheduleDto selectOne(int scheduleNo);
-	List<ScheduleDto> selectList(int projectNo);
+	List<ScheduleEventVO> selectList(int projectNo);
 }

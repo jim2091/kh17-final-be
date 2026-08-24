@@ -49,9 +49,16 @@
 	</select>
 	
 	<!-- 목록 조회 -->
-	<select id="list" resultType="ScheduleDto">
-		select * from schedule
-		where project_no = #{projectNo}
-		order by schedule_start asc
+	<select id="list" resultType="ScheduleEventVO">
+	    select
+	        schedule_no,
+	        schedule_writer_no,
+	        schedule_title,
+	        schedule_start,
+	        schedule_end,
+	        schedule_place
+	    from schedule
+	    where project_no = #{projectNo}
+	    order by schedule_start asc
 	</select>
 </mapper>
