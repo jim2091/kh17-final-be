@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 //@RestControllerAdvice(annotations = {RestController.class})//이렇게 해서 잘 안됐어서 아래거 썼었음
-@RestControllerAdvice(basePackages = {"com.kh.spring11.controller"})
+@RestControllerAdvice(basePackages = {"com.kh.finalprj.controller"})
 public class ErrorRestController {
 	
 	@ExceptionHandler(TargetNotfoundException.class)
