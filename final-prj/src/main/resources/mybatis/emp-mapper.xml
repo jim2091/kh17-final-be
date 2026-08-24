@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.emp">
+
+<!-- 관리자의 사용자 등록 -->
+<select id="sequence" resultType="int">
+	select emp_seq.nextval from dual
+</select>
+<insert id="add">
+	insert into emp(
+		emp_no, emp_email, emp_password, emp_dept_no, emp_position_no
+	)
+	values(
+		#{empNo}, #{empEmail}, #{empPassword}, #{empDeptNo}, #{empPositionNo}
+	)
+</insert>
+
+<!-- 사용자 정보 조회 -->
+<select id="find" resultType="empDto">
+	select * from emp where emp_no = #{empNo}
+</select>
+
+<!-- 이메일 중복검사 -->
+<select id="countEmpEmail" resultType="int">
+	select count(*) from emp where emp_email = #{empEmail}
+</select>
+
+<!-- 사용자의 기본정보 입력 -->
+
+</mapper>

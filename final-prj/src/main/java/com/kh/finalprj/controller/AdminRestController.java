@@ -1,0 +1,92 @@
+package com.kh.finalprj.controller;
+
+import java.io.IOException;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.kh.finalprj.dao.EmpDao;
+import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.service.EmailService;
+import com.kh.finalprj.service.RandomService;
+import com.kh.finalprj.vo.admin.JoinRequestVO;
+import com.kh.finalprj.vo.admin.JoinResponseVO;
+import com.kh.finalprj.vo.admin.MemberAddRequestVO;
+import com.kh.finalprj.vo.admin.MemberAddResponseVO;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
+
+@Tag(name = "관리자API")
+
+@RestController
+@RequestMapping("/api/admin")
+public class AdminRestController {
+	
+	@Autowired
+	private EmailService emailService;
+	
+	@Autowired
+	private EmpDao empDao;
+	
+	@Autowired
+	private RandomService randomService;
+	
+	
+	//사용자 추가 
+	@PostMapping("/add")
+	public MemberAddResponseVO add(@RequestBody MemberAddRequestVO request) {
+		EmpDto empDto = new EmpDto();
+		BeanUtils.copyProperties(request, empDto);
+		empDao.insert(empDto);
+		
+		EmpDto resultDto = empDao.selectOne(empDto.getEmpNo());
+		MemberAddResponseVO response = new MemberAddResponseVO();
+		BeanUtils.copyProperties(resultDto, response);
+		
+		return response;
+	}
+	
+	// 이메일 중복검사-사용 가능하면 true, 불가능하면 false를 반환
+	@GetMapping("/check-email/{empEmail}")
+	public boolean checkEmpEmail(@PathVariable String empEmail) {
+		return empDao.checkAvailableEmail(empEmail);
+	}
+	
+	
+	//회원가입초대 이메일 발송 
+	@PostMapping("/invite")
+	public JoinResponseVO invite(JoinRequestVO request) throws IOException, MessagingException{
+		
+		String tempPassword = randomService.generateString(12);
+		
+		emailService.invite(request.getEmpEmail(), tempPassword);
+		
+		return JoinResponseVO.builder()
+					.result(true)
+				.build();
+		
+	}
+	
+	//회원 최초 기본정보 입력 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+}
