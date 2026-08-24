@@ -24,6 +24,12 @@
 	select * from emp where emp_no = #{empNo}
 </select>
 
+<!-- 이메일을 통한 사용자 정보 조회 -->
+<select id="find2" resultType="empDto">
+	select * from emp where emp_email = #{empEmail}
+</select>
+
+
 <!-- 이메일 중복검사 -->
 <select id="countEmpEmail" resultType="int">
 	select count(*) from emp where emp_email = #{empEmail}
