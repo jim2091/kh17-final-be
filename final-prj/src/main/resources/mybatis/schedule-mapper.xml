@@ -19,7 +19,7 @@
 			schedule_end, schedule_place
 		)
 		values (
-			#{scheduleNo}, #{projectNo}, #{scheduleWiterNo},
+			#{scheduleNo}, #{projectNo}, #{scheduleWriterNo},
 			#{scheduleTitle}, #{scheduleContent}, #{scheduleStart},
 			#{scheduleEnd}, #{schedulePlace}
 		)
@@ -28,11 +28,11 @@
 	<!-- 수정 -->
 	<update id="update">
 		update schedule
-		set schedule_title = #{scheduleTitle}
-			schedule_content = #{scheduleContent}
-			schedule_start = #{scheduleStart}
-			schedule_end = #{scheduleEnd}
-			schedule_place = #{schedulePlace}
+		set schedule_title = #{scheduleTitle},
+			schedule_content = #{scheduleContent},
+			schedule_start = #{scheduleStart},
+			schedule_end = #{scheduleEnd},
+			schedule_place = #{schedulePlace},
 			schedule_utime = systimestamp
 		where schedule_no = #{scheduleNo}
 	</update>
