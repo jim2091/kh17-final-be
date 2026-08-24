@@ -12,14 +12,18 @@
 	</select>
 	<insert id="add">
 		insert into project_member(
-			project_member_no, project_no, emp_no,
-			project_member_role,project_member_job,
-			project_member_ctime
+			project_member_no, 
+			project_no, 
+			emp_no,
+			project_member_role,
+			project_member_job
 		)
 		values (
-			#{projectMemberNo},#{projectNo},#{empNo},
-			#{projectMemberRole},#{projectMemberJob},
-			#{projectMemberCtime}
+			#{projectMemberNo},
+			#{projectNo},
+			#{empNo},
+			#{projectMemberRole},
+			#{projectMemberJob}
 		)
 	</insert>
 </mapper>

@@ -12,12 +12,20 @@
 	</select>
 	<insert id="add">
 		insert into project(
-			project_no, project_name, project_purpose,
-			project_visibility, project_start,project_deadline
+			project_no, 
+			project_name, 
+			project_purpose,
+			project_visibility, 
+			project_start,
+			project_deadline
 		)
 		values (
-			#{projectNo},#{projectName},#{projectPurpose},
-			#{projectVisibility},#{projectStart},#{projectDeadline},
+			#{projectNo},
+			#{projectName},
+			#{projectPurpose},
+			#{projectVisibility},
+			#{projectStart},
+			#{projectDeadline}
 		)
 	</insert>
 </mapper>

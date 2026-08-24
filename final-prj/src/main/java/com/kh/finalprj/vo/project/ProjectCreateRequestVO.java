@@ -1,4 +1,4 @@
-package com.kh.finalprj.vo;
+package com.kh.finalprj.vo.project;
 
 import java.sql.Timestamp;
 
