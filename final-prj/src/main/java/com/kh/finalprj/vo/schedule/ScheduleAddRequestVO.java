@@ -2,6 +2,8 @@ package com.kh.finalprj.vo.schedule;
 
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +11,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Schema(name = "일정 등록 요청 정보")
-@Data
+@Data @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScheduleAddRequestVO {
 	
 	@NotNull

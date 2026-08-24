@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.ScheduleDto;
+import com.kh.finalprj.vo.schedule.ScheduleDetailResponseVO;
 import com.kh.finalprj.vo.schedule.ScheduleEventVO;
 
 @Repository
@@ -35,7 +36,7 @@ public class ScheduleDaoMybatis implements ScheduleDao{
 	}
 	
 	@Override
-	public ScheduleDto selectOne(int scheduleNo) {
+	public ScheduleDetailResponseVO  selectOne(int scheduleNo) {
 		return sqlSession.selectOne("mapper.schedule.find", scheduleNo);
 	}
 	

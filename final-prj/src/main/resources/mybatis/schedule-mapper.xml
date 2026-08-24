@@ -43,7 +43,7 @@
 	</delete>
 	
 	<!-- 상세 조회 -->
-	<select id="find" resultType="ScheduleDto">
+	<select id="find" resultType="ScheduleDetailResponseVO ">
 		select * from schedule
 		where schedule_no = #{scheduleNo}
 	</select>
