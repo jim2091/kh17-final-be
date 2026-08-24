@@ -65,5 +65,5 @@ public class ScheduleRestController {
 //	public ScheduleListResponseVO list(@PathVariable int projectNo) {
 //		//토큰 완성되면 검사하고 안맞으면 내보내는 코드정도 추가할 듯
 //		return ScheduleListResponseVO
-//	}
+//	} 
 }
