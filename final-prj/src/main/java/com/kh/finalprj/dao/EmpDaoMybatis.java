@@ -2,6 +2,7 @@ package com.kh.finalprj.dao;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.EmpDto;
@@ -11,6 +12,9 @@ public class EmpDaoMybatis implements EmpDao {
 	
 	@Autowired
 	private SqlSession sqlSession;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public int sequence() {
@@ -19,6 +23,10 @@ public class EmpDaoMybatis implements EmpDao {
 
 	@Override
 	public void insert(EmpDto empDto) {
+		String origin = empDto.getEmpPassword();
+		String encrypt = passwordEncoder.encode(origin);
+		empDto.setEmpPassword(encrypt);
+		
 		sqlSession.insert("mapper.emp.add", empDto);
 
 	}
@@ -32,6 +40,11 @@ public class EmpDaoMybatis implements EmpDao {
 	public boolean checkAvailableEmail(String empEmail) {
 		int count = sqlSession.selectOne("mapper.emp.countEmpEmail", empEmail);
 		return count == 0;
+	}
+
+	@Override
+	public EmpDto selectOne(String empEmail) {
+		return sqlSession.selectOne("mapper.emp.find2", empEmail);
 	}
 
 }
