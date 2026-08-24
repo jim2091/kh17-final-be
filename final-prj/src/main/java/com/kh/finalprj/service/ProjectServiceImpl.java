@@ -8,7 +8,7 @@ import com.kh.finalprj.dao.ProjectDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
-import com.kh.finalprj.vo.ProjectCreateRequestVO;
+import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 
 //프로젝트 관련 작업을 처리하기 위한 서비스
 @Service
@@ -35,6 +35,9 @@ public class ProjectServiceImpl implements ProjectService{
 				.projectStart(requestVO.getProjectStart())
 				.projectDeadline(requestVO.getProjectDeadline())
 			.build();
+		
+		//DB에 추가
+		projectDao.add(projectDto);
 	
 		//owner로 등록
 		int projectMemberNo = projectMemberDao.sequence();
