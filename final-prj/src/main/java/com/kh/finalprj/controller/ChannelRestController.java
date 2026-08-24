@@ -22,6 +22,7 @@ import com.kh.finalprj.service.ChannelService;
 import com.kh.finalprj.vo.channel.ChannelCreateRequestVO;
 import com.kh.finalprj.vo.channel.ChannelDeleteRequestVO;
 import com.kh.finalprj.vo.channel.ChannelUpdateRequestVO;
+import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,20 +37,20 @@ public class ChannelRestController {
 	@Autowired
 	private ChannelService channelService;
 	
-//	@ApiResponse(responseCode = "200", description = "채널 생성 성공")
-//	@PostMapping(value = "/",  produces = MediaType.APPLICATION_JSON_VALUE)
-//	public void createChannel(
-//		@PathVariable int projectNo,
-//		@Valid @RequestBody ChannelCreateRequestVO request,
-//		@CurrentUser TokenParseResponseVO parseVO
-//	) {
-//		ChannelDto channelDto = channelDto.builder()
-//				.projectNo(projectNo)
-//				.chatChannelName(request.getChatChannelName())
-//			.build();
-//			
-//		channelService.create(channelDto);
-//	}
+	@ApiResponse(responseCode = "200", description = "채널 생성 성공")
+	@PostMapping(value = "/",  produces = MediaType.APPLICATION_JSON_VALUE)
+	public void createChannel(
+		@PathVariable int projectNo,
+		@Valid @RequestBody ChannelCreateRequestVO request,
+		@CurrentUser TokenParseResponseVO parseVO
+	) {
+		ChannelDto channelDto = ChannelDto.builder()
+				.projectNo(projectNo)
+				.chatChannelName(request.getChatChannelName())
+			.build();
+			
+		channelService.create(channelDto);
+	}
 
 	@ApiResponse(responseCode = "200", description = "채널 목록 조회 성공")
 	@GetMapping(value = "/",  produces = MediaType.APPLICATION_JSON_VALUE)
