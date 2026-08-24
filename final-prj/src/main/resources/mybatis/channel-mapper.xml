@@ -26,6 +26,7 @@
 	</insert>
 	
 	<!-- 채널 목록 -->
+	<!-- 
 	<select id="list" resultType="ChannelListVO">
 		select 
 			C.chat_channel_no,
@@ -43,6 +44,9 @@
 		where C.project_no = #{projectNo}
 		order by C.chat_channel_no asc
 	</select>
+	
+	 -->
+
 	
 	<!-- 채널 상세 -->
 	<select id="find" resultType="ChannelDto">
