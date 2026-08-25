@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//화면에 전달할 메세지 데이터
+//DB에 저장할 데이터
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class MessageVO {
 	private int no;

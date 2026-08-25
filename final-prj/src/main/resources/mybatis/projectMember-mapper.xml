@@ -26,4 +26,25 @@
 			#{projectMemberJob}
 		)
 	</insert>
+	
+	<!-- 프로젝트 멤버 번호 조회 -->
+	<select id="findProjectMemberNo" resultType="int">
+		select project_member_no
+		from project_member
+		where project_no = #{projectNo}
+		and emp_no = #{empNo}
+	</select>
+	
+	<!-- 프로젝트 멤버 상세 조회 -->
+	<select id="findMember" resultType="ProjectMemberDto">
+		select
+			project_member_no,
+			project_no,
+			emp_no,
+			project_member_role,
+			project_member_job
+		from project_member
+		where project_no = #{projectNo}
+			and emp_no = #{empNo}
+	</select>
 </mapper>

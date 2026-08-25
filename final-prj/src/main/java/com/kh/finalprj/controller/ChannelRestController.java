@@ -19,8 +19,11 @@ import com.kh.finalprj.dao.ChannelDao;
 import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.ChannelService;
+import com.kh.finalprj.service.MessageService;
 import com.kh.finalprj.vo.channel.ChannelCreateRequestVO;
 import com.kh.finalprj.vo.channel.ChannelDeleteRequestVO;
+import com.kh.finalprj.vo.channel.ChannelMessageRequestVO;
+import com.kh.finalprj.vo.channel.ChannelMessageResponseVO;
 import com.kh.finalprj.vo.channel.ChannelUpdateRequestVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 
@@ -36,35 +39,39 @@ public class ChannelRestController {
 	private ChannelDao channelDao;
 	@Autowired
 	private ChannelService channelService;
+	@Autowired
+	private MessageService messageService;
 	
 	@ApiResponse(responseCode = "200", description = "채널 생성 성공")
-	@PostMapping(value = "/",  produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 	public void createChannel(
-		@PathVariable int projectNo,
+		@RequestParam int projectNo,
 		@Valid @RequestBody ChannelCreateRequestVO request,
 		@CurrentUser TokenParseResponseVO parseVO
 	) {
+		
 		ChannelDto channelDto = ChannelDto.builder()
 				.projectNo(projectNo)
 				.chatChannelName(request.getChatChannelName())
 			.build();
 			
-		channelService.create(channelDto);
+		channelService.create(channelDto, parseVO.getEmpNo());
 	}
 
 	@ApiResponse(responseCode = "200", description = "채널 목록 조회 성공")
-	@GetMapping(value = "/",  produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<ChannelDto> list(@PathVariable int projectNo) {
+	@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<ChannelDto> list(@RequestParam int projectNo) {
 		return channelService.list(projectNo);
 	}
 	
 	@ApiResponse(responseCode = "200", description = "채널 상세 조회 성공")
-	@GetMapping(value = "/{channelNo}",  produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{channelNo}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ChannelDto detail(
 		@RequestParam int projectNo,
 		@PathVariable int channelNo
 	) {
-		ChannelDto channelDto = channelDao.selectOne(projectNo, channelNo);
+		ChannelDto channelDto = 
+				channelDao.selectOne(projectNo, channelNo);
 		
 		if(channelDto == null) {
 			throw new TargetNotfoundException();
@@ -74,19 +81,22 @@ public class ChannelRestController {
 	}
 	
 	@ApiResponse(responseCode = "200", description = "채널 삭제 성공")
-	@DeleteMapping(value = "/{channelNo}",  produces = MediaType.APPLICATION_JSON_VALUE)
+	@DeleteMapping(value = "/{channelNo}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public void deleteChannel(
 		@PathVariable int channelNo,
-		@RequestBody ChannelDeleteRequestVO request
+		@RequestBody ChannelDeleteRequestVO request,
+		@CurrentUser TokenParseResponseVO parseVO
 	) {
-		channelService.delete(request.getProjectNo(), channelNo);
+		channelService.delete(
+				request.getProjectNo(), channelNo, parseVO.getEmpNo());
 	}
 	
 	@ApiResponse(responseCode = "200", description = "채널 수정 성공")
-	@PutMapping(value = "/{channelNo}",  produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = "/{channelNo}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public void updateChannel(
 		@PathVariable int channelNo,
-		@Valid @RequestBody ChannelUpdateRequestVO request
+		@Valid @RequestBody ChannelUpdateRequestVO request,
+		@CurrentUser TokenParseResponseVO parseVO
 	) {
 		ChannelDto channelDto = ChannelDto.builder()
 				.projectNo(request.getProjectNo())
@@ -94,6 +104,17 @@ public class ChannelRestController {
 				.chatChannelName(request.getChatChannelName())
 			.build();
 		
-		channelService.update(channelDto);
+		channelService.update(channelDto, parseVO.getEmpNo());
+	}
+	
+	@ApiResponse(responseCode = "200", description = "메세지 조회 성공")
+	@PostMapping(value = "/{channelNo}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ChannelMessageResponseVO messages(
+			@PathVariable int channelNo,
+			@CurrentUser TokenParseResponseVO parseVO,
+			@Valid @RequestBody ChannelMessageRequestVO request
+		) {
+		return messageService.selectList(
+				channelNo, parseVO.getEmpNo(), request);
 	}
 }

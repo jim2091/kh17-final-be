@@ -15,19 +15,18 @@
 			chat_channel_no, 
 			project_no,
 			chat_channel_creator,
-			char_channel_name
+			chat_channel_name
 		)
 		values (
 			#{chatChannelNo},
 			#{projectNo},
 			#{chatChannelCreator},
-			#{chateChannelName}
+			#{chatChannelName}
 		)
 	</insert>
 	
 	<!-- 채널 목록 -->
-	<!-- 
-	<select id="list" resultType="ChannelListVO">
+	<select id="list" resultType="ChannelDto">
 		select 
 			C.chat_channel_no,
 			C.project_no,
@@ -44,9 +43,6 @@
 		where C.project_no = #{projectNo}
 		order by C.chat_channel_no asc
 	</select>
-	
-	 -->
-
 	
 	<!-- 채널 상세 -->
 	<select id="find" resultType="ChannelDto">
@@ -70,8 +66,8 @@
 	<!-- 채널 삭제 -->
 	<delete id="delete">
 		delete chat_channel 
-		where project_no = #{
-		chat_channel_no = #{chatChannelNo}
+		where project_no = #{projectNo}
+			and chat_channel_no = #{chatChannelNo}
 	</delete>
 	
 	<!-- 채널 수정 -->
@@ -81,4 +77,11 @@
 			chat_channel_utime = systimestamp
 		where chat_channel_no = #{chatChannelNo}
 	</update>
+	
+	<!-- 프로젝트 번호 찾기 -->
+	<select id="findProjectNo" resultType="int">
+		select project_no
+		from chat_channel
+		where chat_channel_no = #{channelNo}
+	</select>
 </mapper>
