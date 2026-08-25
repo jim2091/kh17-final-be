@@ -7,7 +7,7 @@ import com.kh.finalprj.dto.ChannelDto;
 public interface ChannelDao {
 	//채널 생성
 	int sequence();
-	void insert(ChannelDto channelDto);
+	void create(ChannelDto channelDto);
 	
 	//채널 목록
 	List<ChannelDto> list(int projectNo);
@@ -20,4 +20,7 @@ public interface ChannelDao {
 	
 	//채널 수정
 	void update(ChannelDto channelDto);
+	
+	//프로젝트 번호를 찾는 메소드
+	int findProjectNo(int channelNo);
 }

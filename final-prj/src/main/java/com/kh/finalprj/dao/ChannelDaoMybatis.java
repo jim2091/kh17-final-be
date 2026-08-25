@@ -1,8 +1,6 @@
 package com.kh.finalprj.dao;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,7 @@ public class ChannelDaoMybatis implements ChannelDao{
 	}
 
 	@Override
-	public void insert(ChannelDto channelDto) {
+	public void create(ChannelDto channelDto) {
 		sqlSession.insert("mapper.channel.create", channelDto);
 	}
 
@@ -53,4 +51,8 @@ public class ChannelDaoMybatis implements ChannelDao{
 		sqlSession.update("mapper.channel.update", channelDto);
 	}
 
+	@Override
+	public int findProjectNo(int channelNo) {
+		return sqlSession.selectOne("mapper.channel.findProjectNo", channelNo);
+	}
 }

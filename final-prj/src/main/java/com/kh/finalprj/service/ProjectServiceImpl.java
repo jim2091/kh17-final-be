@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.finalprj.dao.ChannelDao;
 import com.kh.finalprj.dao.ProjectDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
+import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
@@ -18,6 +20,8 @@ public class ProjectServiceImpl implements ProjectService{
 	private ProjectDao projectDao;
 	@Autowired
 	private ProjectMemberDao projectMemberDao;
+	@Autowired
+	private ChannelDao channelDao;
 
 	//프로젝트 생성
 	@Transactional
@@ -50,6 +54,18 @@ public class ProjectServiceImpl implements ProjectService{
 			.build();
 		
 		projectMemberDao.add(projectMemberDto);
+		
+		//#general 채널 자동 생성
+		int channelNo = channelDao.sequence();
+		
+		ChannelDto channelDto = ChannelDto.builder()
+					.chatChannelNo(channelNo)
+					.projectNo(projectNo)
+					.chatChannelCreator(projectMemberNo)
+					.chatChannelName("#general")
+				.build();
+		
+		channelDao.create(channelDto);
 		
 		return projectNo;
 	}

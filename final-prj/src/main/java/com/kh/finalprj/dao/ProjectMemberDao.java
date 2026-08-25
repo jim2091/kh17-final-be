@@ -6,4 +6,7 @@ public interface ProjectMemberDao {
 
 	int sequence();
 	void add(ProjectMemberDto projectMemberDto);
+	
+	Integer findProjectMemberNo(int projectNo, int empNo);
+	ProjectMemberDto findMember(int projectNo, int empNo);
 }
