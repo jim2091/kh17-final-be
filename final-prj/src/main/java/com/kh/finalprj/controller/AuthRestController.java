@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -20,11 +22,13 @@ import com.kh.finalprj.dao.EmpDao;
 import com.kh.finalprj.dao.EmpRefreshDao;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.EmpRefreshDto;
+import com.kh.finalprj.error.WhoAreYouException;
 import com.kh.finalprj.service.AuthService;
 import com.kh.finalprj.service.JwtService;
 import com.kh.finalprj.vo.auth.AuthLoginRequestVO;
 import com.kh.finalprj.vo.auth.AuthLoginResponseVO;
 import com.kh.finalprj.vo.jwt.TokenCreateRequestVO;
+import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -128,6 +132,159 @@ public class AuthRestController {
 	}
 	
 	
+	@DeleteMapping("/logout")
+	public ResponseEntity<Void> logout(
+			@RequestHeader(
+					value="User-Agent",
+					required = false,
+					defaultValue = "UNKNOWN"
+			)String userAgent,
+			HttpServletRequest req,
+			
+			@CookieValue(value = "accessToken", required=false) String accessToken,
+			@CookieValue(value = "refreshToken", required=false) String refreshToken
+			){
+		
+		ResponseCookie accessCookie = ResponseCookie
+					.from("accessToken", "")
+					.maxAge(Duration.ZERO)
+					.path("/")
+					.httpOnly(true)
+					.secure(false)
+					.sameSite("Lax")
+					.build();
+		
+		ResponseCookie refreshCookie = ResponseCookie
+				.from("refreshToken", "")
+				.maxAge(Duration.ZERO)
+				.path("/service/auth/")
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.build();
+		
+		try {
+			if(accessToken != null) {
+				TokenParseResponseVO parseVO = 
+						jwtService.parseAccessToken(accessToken);
+				empRefreshDao.delete(
+						EmpRefreshDto.builder()
+							.empNo(parseVO.getEmpNo())
+							.userAgent(userAgent)
+							.userAddress(req.getRemoteAddr())
+						.build()
+				);
+			}
+			else if(refreshToken != null) {
+				int empNo = Integer.parseInt(
+						jwtService.parseRefreshToken(refreshToken)
+						);
+				empRefreshDao.delete(
+						EmpRefreshDto.builder()
+							.empNo(empNo)
+							.userAgent(userAgent)
+							.userAddress(req.getRemoteAddr())
+						.build()
+				);
+			}
+		}
+		catch(Exception e) {
+			
+			return ResponseEntity.noContent()
+					.header(
+						HttpHeaders.SET_COOKIE,
+						accessCookie.toString(),
+						refreshCookie.toString()
+					)
+					.build();
+		}
+		
+		return ResponseEntity.noContent()
+					.header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+				.build();
+	}
+	
+	@PostMapping("/refresh")
+	public ResponseEntity<AuthLoginResponseVO> refresh(
+			@RequestHeader(
+					value="User-Agent",
+					required=false,
+					defaultValue = "UNKNOWN"
+			)String userAgent,
+			HttpServletRequest req,
+			@CookieValue(name = "refreshToken", required = false) String refreshToken
+			
+			){
+		
+		if(refreshToken == null) throw new WhoAreYouException();
+		
+		int empNo = Integer.parseInt(
+				jwtService.parseRefreshToken(refreshToken)
+				);
+		
+		EmpRefreshDto empRefreshDto = 
+				empRefreshDao.find(
+					EmpRefreshDto.builder()
+						.empNo(empNo)
+						.userAgent(userAgent)
+						.userAddress(req.getRemoteAddr())
+					.build()
+				);
+		
+		if(empRefreshDto == null) throw new WhoAreYouException();
+		
+		if(empRefreshDto.getTokenValue().equals(refreshToken) == false) throw new WhoAreYouException();
+		
+		EmpDto empDto = empDao.selectOne(empNo);
+		
+		TokenCreateRequestVO createVO = new TokenCreateRequestVO();
+		BeanUtils.copyProperties(empDto, createVO);
+		
+		String accessToken = jwtService.createAccessToken(createVO);
+		String newRefreshToken = jwtService.createRefreshToken(empNo);
+		
+		ResponseCookie accessCookie = ResponseCookie
+				.from("accessToken", accessToken)
+				.maxAge(Duration.ofSeconds(jwtProperties.getAccessTokenValidity()))
+				.path("/")
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.build();
+		
+		ResponseCookie refreshCookie = ResponseCookie
+				.from("refreshToken", newRefreshToken)
+				.maxAge(Duration.ofSeconds(jwtProperties.getRefreshTokenValidity()))
+				.path("/service/auth/")
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.build();
+		
+		empRefreshDao.insertOrUpdate(
+				EmpRefreshDto.builder()
+					.empNo(empNo)
+					.userAgent(userAgent)
+					.userAddress(req.getRemoteAddr())
+					.tokenValue(newRefreshToken)
+				.build()
+		);
+		
+		AuthLoginResponseVO response = new AuthLoginResponseVO();
+		
+		BeanUtils.copyProperties(empDto, response);
+		
+		return ResponseEntity.ok()
+				.header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+				.body(response);
+			
+		
+		
+		
+		
+		
+		
+	}
 	
 	
 	
