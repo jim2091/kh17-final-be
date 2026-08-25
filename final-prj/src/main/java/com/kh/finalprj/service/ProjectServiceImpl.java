@@ -1,5 +1,7 @@
 package com.kh.finalprj.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +12,9 @@ import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
+import com.kh.finalprj.vo.jwt.TokenCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
+import com.kh.finalprj.vo.project.ProjectListResponseVO;
 
 //프로젝트 관련 작업을 처리하기 위한 서비스
 @Service
@@ -69,6 +73,13 @@ public class ProjectServiceImpl implements ProjectService{
 		
 		return projectNo;
 	}
+
+	//내 프로젝트 조회
+	@Override
+	public List<ProjectListResponseVO> selectMyProjectList(int empNo) {
+		return projectDao.selectMyProjectList(empNo);
+	}
+
 	
 	
 	

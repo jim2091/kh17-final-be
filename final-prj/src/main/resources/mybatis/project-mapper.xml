@@ -6,7 +6,7 @@
   
 <mapper namespace="mapper.project">
 
-	<!-- 등록 -->
+	<!-- 프로젝트 등록 -->
 	<select id="sequence" resultType="int">
 		select project_seq.nextval from dual
 	</select>
@@ -28,4 +28,37 @@
 			#{projectDeadline}
 		)
 	</insert>
+	
+	<!-- 
+		내 프로젝트 조회(inner join)
+		내가 프로젝트멤버에서 등록되어있는 것 + 프로젝트에서 active항목인 것
+	-->
+
+	<select id="myProjectList" resultType="ProjectListResponseVO">
+		select
+			p.project_no as projectNo,
+			p.project_name as projectName,
+			p.project_purpose as projectPurpose,
+			p.project_visibility as projectVisibility,
+			p.project_start as projectStart,
+			p.project_deadline as projectDeadline,
+			p.project_member_role as projectMemberRole
+		from project p
+		inner join project_member pm
+			on p.project_no = pm.project_no
+		where pm.emp_no = #{empNo}
+			and p.project_status = 'active'
+		order by p.project_ctime desc
+	</select>
+	
+	<!-- 프로젝트 수정 -->
+	<update id="updateAll">
+		update 	project
+		set		project_name = #{projectName},
+				project_purpose = #{projectPurpose},
+				project_visibility, = #{projectVisibility},
+				project_start = #{projectStart},
+				project_deadline = #{projectDeadline}
+		where	project_no = #{projectNo}
+	</update>
 </mapper>
