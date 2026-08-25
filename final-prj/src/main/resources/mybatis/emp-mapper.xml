@@ -12,10 +12,10 @@
 </select>
 <insert id="add">
 	insert into emp(
-		emp_no, emp_email, emp_password, emp_dept_no, emp_position_no
+		emp_no, emp_email, emp_name, emp_password, emp_dept_no, emp_position_no
 	)
 	values(
-		#{empNo}, #{empEmail}, #{empPassword}, #{empDeptNo}, #{empPositionNo}
+		#{empNo}, #{empEmail}, #{empName}, #{empPassword}, #{empDeptNo}, #{empPositionNo}
 	)
 </insert>
 

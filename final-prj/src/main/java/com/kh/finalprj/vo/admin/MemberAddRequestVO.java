@@ -12,6 +12,7 @@ public class MemberAddRequestVO {
 	
 	private int empNo;
 	private String empEmail;
+	private String empName;
 	private String empPassword;
 	private int empDeptNo;
 	private int empPositionNo;
