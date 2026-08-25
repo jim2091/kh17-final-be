@@ -37,7 +37,7 @@ public class EmailService {
 	//회원가입 링크 + 임시비밀번호 발송 메소드 
 	public void invite(String empEmail, String tempPassword) throws IOException, MessagingException {
 		
-		String url = "http://localhost:5173/me";
+		String url = "http://localhost:5173/login";
 				
 
 		ClassPathResource resource = new ClassPathResource("templates/invite.html");

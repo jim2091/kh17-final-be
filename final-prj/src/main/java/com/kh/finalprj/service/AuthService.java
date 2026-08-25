@@ -43,6 +43,8 @@ public class AuthService {
 		}
 		return AuthLoginResponseVO.builder()
 					.empNo(empDto.getEmpNo())
+					.empEmail(empDto.getEmpEmail())
+					.empName(empDto.getEmpName())
 					.empLevel(empDto.getEmpLevel())
 				.build();
 	}

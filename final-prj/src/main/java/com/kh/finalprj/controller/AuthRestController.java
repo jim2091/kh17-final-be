@@ -167,6 +167,7 @@ public class AuthRestController {
 			if(accessToken != null) {
 				TokenParseResponseVO parseVO = 
 						jwtService.parseAccessToken(accessToken);
+				System.out.println("parseVO : " + parseVO);
 				empRefreshDao.delete(
 						EmpRefreshDto.builder()
 							.empNo(parseVO.getEmpNo())
