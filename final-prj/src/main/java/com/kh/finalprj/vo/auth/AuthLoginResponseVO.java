@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 public class AuthLoginResponseVO {
 	
 	private int empNo;
+	private String empEmail;
+	private String empName;
 	private String empLevel;
 
 }

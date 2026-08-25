@@ -95,7 +95,7 @@ public class SecurityConfiguration {
 		//접근 허용 대상 지정
 		config.setAllowedOrigins(List.of(
 			"http://localhost:5173"
-			,"http://192.168.20.14:5173"
+			,"http://192.168.20.1:5173"
 		));
 		//허용 HTTP 메소드 설정
 		config.setAllowedMethods(List.of(
@@ -125,7 +125,11 @@ public class SecurityConfiguration {
 		return request -> {
 	
 			//accessToken이 만료되어도 상관없는 주소면 통과
-			Set<String> allowPaths = Set.of();
+			Set<String> allowPaths = Set.of(
+					"/service/auth/login",
+					"/service/auth/logout",
+					"/service/auth/refresh"
+					);
 			
 			if(allowPaths.contains(request.getServletPath())) {
 				return null;

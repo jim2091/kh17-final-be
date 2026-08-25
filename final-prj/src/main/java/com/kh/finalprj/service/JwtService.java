@@ -50,6 +50,8 @@ public class JwtService {
 		
 		int empNo = Integer.parseInt(jwt.getSubject());
 		
+//		System.out.println("empNo : "+ empNo);
+		
 		return TokenParseResponseVO.builder()
 					.empNo(empNo)
 					.empLevel(jwt.getClaimAsString("empLevel"))
