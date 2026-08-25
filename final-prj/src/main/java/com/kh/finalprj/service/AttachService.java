@@ -1,0 +1,22 @@
+package com.kh.finalprj.service;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import com.kh.finalprj.dto.AttachDto;
+import com.kh.finalprj.vo.attach.AttachInfoVO;
+
+public interface AttachService {
+	int save(MultipartFile attach) throws IllegalStateException, IOException;
+	int save(int projectNo, MultipartFile attach, String uploader, String source)throws IllegalStateException, IOException;
+	
+	void delete(Integer attachNo);
+	
+	AttachInfoVO load(int attachNo) throws IOException;
+
+	List<AttachDto> list(int projectNo);
+	List<AttachDto> list(int projectNo, String keyword);
+
+}

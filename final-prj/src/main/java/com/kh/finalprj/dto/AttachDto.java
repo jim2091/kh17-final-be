@@ -2,9 +2,12 @@ package com.kh.finalprj.dto;
 
 import java.sql.Timestamp;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class AttachDto {
 	private int attachNo;
 	private int projectNo;
