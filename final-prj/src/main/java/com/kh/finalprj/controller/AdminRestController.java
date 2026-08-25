@@ -15,8 +15,6 @@ import com.kh.finalprj.dao.EmpDao;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.service.EmailService;
 import com.kh.finalprj.service.RandomService;
-import com.kh.finalprj.vo.admin.JoinRequestVO;
-import com.kh.finalprj.vo.admin.JoinResponseVO;
 import com.kh.finalprj.vo.admin.MemberAddRequestVO;
 import com.kh.finalprj.vo.admin.MemberAddResponseVO;
 
@@ -39,12 +37,25 @@ public class AdminRestController {
 	private RandomService randomService;
 	
 	
-	//사용자 추가 
+	//사용자 추가 -> 회원가입 이메일 발송(+임시비밀번호)
 	@PostMapping("/add")
-	public MemberAddResponseVO add(@RequestBody MemberAddRequestVO request) {
+	public MemberAddResponseVO add(@RequestBody MemberAddRequestVO request) throws IOException, MessagingException {
+//		System.out.println("request : "+ request);
+		int empNo = empDao.sequence();
+//		System.out.println(empNo);
+		String tempPassword = randomService.generateString(12);
 		EmpDto empDto = new EmpDto();
-		BeanUtils.copyProperties(request, empDto);
+//		System.out.println("empDto : " +  empDto);
+		empDto.setEmpNo(empNo);
+		empDto.setEmpEmail(request.getEmpEmail());
+		empDto.setEmpName(request.getEmpName());
+		empDto.setEmpPassword(tempPassword);
+		empDto.setEmpDeptNo(request.getEmpDeptNo());
+		empDto.setEmpPositionNo(request.getEmpPositionNo());
+		
+//		BeanUtils.copyProperties(request, empDto);
 		empDao.insert(empDto);
+		emailService.invite(request.getEmpEmail(), tempPassword);
 		
 		EmpDto resultDto = empDao.selectOne(empDto.getEmpNo());
 		MemberAddResponseVO response = new MemberAddResponseVO();
@@ -60,19 +71,7 @@ public class AdminRestController {
 	}
 	
 	
-	//회원가입초대 이메일 발송 
-	@PostMapping("/invite")
-	public JoinResponseVO invite(JoinRequestVO request) throws IOException, MessagingException{
-		
-		String tempPassword = randomService.generateString(12);
-		
-		emailService.invite(request.getEmpEmail(), tempPassword);
-		
-		return JoinResponseVO.builder()
-					.result(true)
-				.build();
-		
-	}
+
 	
 	//회원 최초 기본정보 입력 
 	
