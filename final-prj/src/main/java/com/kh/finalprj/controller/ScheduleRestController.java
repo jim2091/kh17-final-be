@@ -92,6 +92,7 @@ public class ScheduleRestController {
 		return response;
 	}
 	
+	
 	@ApiResponse(responseCode = "200", description = "일정 수정 성공")
 	@PutMapping("/{scheduleNo}")
 	public ScheduleEditResponseVO edit(@PathVariable int scheduleNo,
