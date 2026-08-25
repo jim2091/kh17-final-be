@@ -39,7 +39,7 @@
 		<foreach item="attachNo" collection="list" separator=",">
 			#{attachNo}
 		</foreach>
-		)
+		)	
 		order by attach_no asc
 	</select>
 	
