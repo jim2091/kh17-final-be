@@ -51,7 +51,7 @@ public class ScheduleRestController {
 		
 		//아직 토큰 구현중
 		//테스트로 임시값 사용
-		int scheduleWriterNo = 1;
+		int scheduleWriterNo = 16;
 		
 		int scheduleNo = scheduleDao.sequence();
 		
