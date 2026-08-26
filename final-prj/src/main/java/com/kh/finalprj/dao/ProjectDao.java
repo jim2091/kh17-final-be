@@ -14,4 +14,6 @@ public interface ProjectDao {
 	List<ProjectListResponseVO> selectMyProjectList(int empNo);
 	//프로젝트 상세
 	ProjectDetailResponseVO selectOne(int projectNo, int empNo);
+	//프로젝트 수정
+	boolean update(ProjectDto projectDto);
 }

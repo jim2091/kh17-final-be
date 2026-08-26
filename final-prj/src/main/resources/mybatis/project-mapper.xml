@@ -71,14 +71,16 @@
 		where p.project_no = #{projectNo}
 			and pm.emp_no = #{empNo} 
 	</select>
+	
 	<!-- 프로젝트 수정 -->
-	<update id="updateAll">
+	<update id="update">
 		update 	project
 		set		project_name = #{projectName},
 				project_purpose = #{projectPurpose},
 				project_visibility = #{projectVisibility},
 				project_start = #{projectStart},
-				project_deadline = #{projectDeadline}
+				project_deadline = #{projectDeadline},
+				project_utime = systimestamp
 		where	project_no = #{projectNo}
 	</update>
 </mapper>
