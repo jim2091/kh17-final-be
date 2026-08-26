@@ -78,7 +78,7 @@ public class MemberRestController {
 			@CurrentUser TokenParseResponseVO parseVO,
 			@Valid @RequestBody ChangeMemberRequestVO request
 			) {
-		
+		System.out.println("request : "+ request);
 		//기존 정보 조회
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
 		if(empDto == null) throw new TargetNotfoundException();
@@ -97,7 +97,20 @@ public class MemberRestController {
 					
 		}
 		
+		//새 비밀번호와 새 비밀번호 확인이 일치하는지 검증 
+		boolean passwordConfirm = request.getNewEmpPassword1().equals(request.getNewEmpPassword2());
+		if(passwordConfirm == false) {
+			return ChangeMemberResponseVO.builder()
+						.status(false)
+						.message("입력하신 새 비밀번호가 서로 달라요")
+					.build();
+		}
+		
+		
+	
+		
 		//정보 갈아끼우기
+		empDto.setEmpPassword(request.getNewEmpPassword1());
 		BeanUtils.copyProperties(request, empDto);
 		
 		//수정처리
