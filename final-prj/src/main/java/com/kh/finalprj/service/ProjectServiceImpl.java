@@ -12,8 +12,10 @@ import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
+import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.jwt.TokenCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
+import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
 
 //프로젝트 관련 작업을 처리하기 위한 서비스
@@ -78,6 +80,16 @@ public class ProjectServiceImpl implements ProjectService{
 	@Override
 	public List<ProjectListResponseVO> selectMyProjectList(int empNo) {
 		return projectDao.selectMyProjectList(empNo);
+	}
+
+	//프로젝트 상세 조회
+	@Override
+	public ProjectDetailResponseVO detail(int projectNo, int empNo) {
+		ProjectDetailResponseVO project = projectDao.selectOne(projectNo, empNo);
+		
+		if(project == null) throw new TargetNotfoundException();
+		
+		return project;
 	}
 
 	
