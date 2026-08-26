@@ -60,6 +60,7 @@ public class SecurityConfiguration {
 					).permitAll()
 					.requestMatchers(
 							"/api/member/me"
+							,"/api/member/"
 					).authenticated()
 					//일단 다되게(나중에 꼭 바꿔야함)
 					.anyRequest().permitAll()

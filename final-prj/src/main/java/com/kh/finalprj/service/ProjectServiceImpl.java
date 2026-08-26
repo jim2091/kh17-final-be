@@ -13,10 +13,12 @@ import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.error.TargetNotfoundException;
+import com.kh.finalprj.error.WhoAreYouException;
 import com.kh.finalprj.vo.jwt.TokenCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
+import com.kh.finalprj.vo.project.ProjectUpdateRequestVO;
 
 //프로젝트 관련 작업을 처리하기 위한 서비스
 @Service
@@ -33,10 +35,10 @@ public class ProjectServiceImpl implements ProjectService{
 	@Transactional
 	@Override
 	public int create(ProjectCreateRequestVO requestVO, int empNo) {
-		//프로젝트 번호 발급
+		//1.프로젝트 번호 발급
 		int projectNo = projectDao.sequence();
 		
-		//프로젝트 생성
+		//2.프로젝트 생성
 		ProjectDto projectDto = ProjectDto.builder()
 				.projectNo(projectNo)
 				.projectName(requestVO.getProjectName())
@@ -46,12 +48,13 @@ public class ProjectServiceImpl implements ProjectService{
 				.projectDeadline(requestVO.getProjectDeadline())
 			.build();
 		
-		//DB에 추가
+		//3.DB에 추가
 		projectDao.add(projectDto);
 	
-		//owner로 등록
+		//4.owner로 등록
 		int projectMemberNo = projectMemberDao.sequence();
 		
+		//5.Dto 생성
 		ProjectMemberDto projectMemberDto = ProjectMemberDto.builder()
 				.projectMemberNo(projectMemberNo)
 				.projectNo(projectNo)
@@ -59,6 +62,7 @@ public class ProjectServiceImpl implements ProjectService{
 				.projectMemberRole("owner")
 			.build();
 		
+		//6.등록
 		projectMemberDao.add(projectMemberDto);
 		
 		//#general 채널 자동 생성
@@ -86,10 +90,49 @@ public class ProjectServiceImpl implements ProjectService{
 	@Override
 	public ProjectDetailResponseVO detail(int projectNo, int empNo) {
 		ProjectDetailResponseVO project = projectDao.selectOne(projectNo, empNo);
-		
+		//프로젝트가 없는경우
 		if(project == null) throw new TargetNotfoundException();
 		
 		return project;
+	}
+
+	//프로젝트 수정
+	@Transactional
+	@Override
+	public void update(int projectNo, ProjectUpdateRequestVO requestVO, int empNo) {
+		//프로젝트 권한 확인
+		String role = projectMemberDao.selectRole(projectNo, empNo);
+		
+		//프로젝트 참여자가 아닌경우
+		if(role == null) {
+			throw new WhoAreYouException();
+		}
+		//owner가 아닌경우
+		if(!role.equals("owner")) {
+			throw new WhoAreYouException();
+		}
+		
+		//날짜 검사
+		if(requestVO.getProjectStart() != null &&
+			requestVO.getProjectDeadline() != null &&
+			requestVO.getProjectStart().after(requestVO.getProjectDeadline())
+		){
+			throw new TargetNotfoundException("프로젝트 마감일은 시작일 이후여야 합니다.");
+			
+		}
+		
+		//projectDto 생성
+		ProjectDto projectDto = ProjectDto.builder()
+				.projectNo(projectNo)
+				.projectName(requestVO.getProjectName())
+				.projectPurpose(requestVO.getProjectPurpose())
+				.projectVisibility(requestVO.getProjectVisibility())
+				.projectStart(requestVO.getProjectStart())
+				.projectDeadline(requestVO.getProjectDeadline())
+				.build();
+		
+		//수정
+		projectDao.update(projectDto);
 	}
 
 	

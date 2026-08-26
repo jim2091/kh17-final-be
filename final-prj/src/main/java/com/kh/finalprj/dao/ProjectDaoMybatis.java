@@ -39,4 +39,9 @@ public class ProjectDaoMybatis implements ProjectDao{
 		return sqlSession.selectOne("mapper.project.selectOne",params);
 	}
 
+	@Override
+	public boolean update(ProjectDto projectDto) {
+		return sqlSession.update("mapper.project.update",projectDto)>0;
+	}
+
 }
