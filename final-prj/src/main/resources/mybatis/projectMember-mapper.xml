@@ -47,4 +47,11 @@
 		where project_no = #{projectNo}
 			and emp_no = #{empNo}
 	</select>
+	
+	<select id="selectRole" resultType="String">
+		select project_member_role 
+			from project_member
+		where project_no = #{projectNo}
+			and emp_no = #{empNo}
+	</select>
 </mapper>
