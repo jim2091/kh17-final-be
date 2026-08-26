@@ -48,4 +48,22 @@
 	where emp_no = #{empNo}
 </update>
 
+<!-- 회원 목록 -->
+<select id="list" resultType="EmpListVO">
+	SELECT
+	    e.emp_no,
+	    e.emp_name,
+	    d.dept_name,
+	    p.position_name,
+	    e.emp_state
+	FROM emp e
+	JOIN dept d
+	    ON e.emp_dept_no = d.dept_no
+	JOIN position p
+	    ON e.emp_position_no = p.position_no
+	ORDER BY e.emp_no
+</select>
+
+
+
 </mapper>

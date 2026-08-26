@@ -1,6 +1,7 @@
 package com.kh.finalprj.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import com.kh.finalprj.service.EmailService;
 import com.kh.finalprj.service.RandomService;
 import com.kh.finalprj.vo.admin.MemberAddRequestVO;
 import com.kh.finalprj.vo.admin.MemberAddResponseVO;
+import com.kh.finalprj.vo.emp.EmpListVO;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
@@ -70,6 +72,12 @@ public class AdminRestController {
 		return empDao.checkAvailableEmail(empEmail);
 	}
 	
+	//회원목록 조회(번호순)
+	@GetMapping("/")
+	public List<EmpListVO> list(){
+		return empDao.selectList();
+		
+	}
 	
 
 	

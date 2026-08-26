@@ -1,6 +1,9 @@
 package com.kh.finalprj.dao;
 
+import java.util.List;
+
 import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.vo.emp.EmpListVO;
 
 
 public interface EmpDao {
@@ -14,5 +17,7 @@ public interface EmpDao {
 	EmpDto selectOne(String empEmail);
 	
 	boolean updateAll(EmpDto empDto);
+	
+	List<EmpListVO> selectList();
 
 }
