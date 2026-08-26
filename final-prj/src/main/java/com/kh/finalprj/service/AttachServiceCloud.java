@@ -40,12 +40,14 @@ public class AttachServiceCloud implements AttachService{
 	@Autowired
 	private StorageProperties storageProperties;
 	
+	//1. 일반 파일 저장
 	@Transactional
 	@Override
 	public int save(MultipartFile attach) throws IllegalStateException, IOException {
 		return save(0, attach, null, null);
 	}
 	
+	//2.  프로젝트 파일함용 파일 저장
 	@Transactional
 	@Override
 	public int save(int projectNo, MultipartFile attach, String uploader, String source)
@@ -54,6 +56,7 @@ public class AttachServiceCloud implements AttachService{
 		
 		int attachNo = attachDao.sequence();
 		
+		//DB 저장
 		attachDao.insert(AttachDto.builder()
 					.attachNo(attachNo)
 					.projectNo(projectNo)
@@ -64,6 +67,7 @@ public class AttachServiceCloud implements AttachService{
 					.attachSource(source)
 				.build());
 		
+		//AWS S3 저장 처리
 		String objectKey = storageProperties.getAwsRoot() + "/" + attachNo;
 		
 		PutObjectRequest request = PutObjectRequest.builder()
@@ -79,13 +83,16 @@ public class AttachServiceCloud implements AttachService{
 		return attachNo;
 	}
 	
+	//3. 파일 삭제 (DB + AWS S3)
 	@Transactional
 	@Override
 	public void delete(Integer attachNo) {
 		if(attachNo == null)return;
 		
+		//DB 정보 삭제
 		attachDao.delete(attachNo);
 		
+		//AWS S3 파일 삭제 요청
 		String objectKey = storageProperties.getAwsRoot() + "/" + attachNo;
 		DeleteObjectRequest request = DeleteObjectRequest.builder()
 					.bucket(storageProperties.getAwsBucket())
@@ -98,6 +105,7 @@ public class AttachServiceCloud implements AttachService{
 		log.debug("HTTP status = {}", response.sdkHttpResponse().statusCode());
 	}
 	
+	//4. 파일 로드 (다운로드용)
 	@Override
 	public AttachInfoVO load(int attachNo) throws IOException {
 		AttachDto attachDto = attachDao.selectOne(attachNo);
@@ -128,13 +136,13 @@ public class AttachServiceCloud implements AttachService{
 				.build();
 	}
 
-	// [5] 프로젝트별 파일 목록 조회
+	//5. 프로젝트별 파일 목록 조회
 	@Override
 	public List<AttachDto> list(int projectNo) {
 		return attachDao.selectListByProject(projectNo);
 	}
 
-	// [6] 프로젝트별 파일 검색 조회
+	//6. 프로젝트별 파일 검색 조회
 	@Override
 	public List<AttachDto> list(int projectNo, String keyword) {
 		return attachDao.selectListByProjectAndKeyword(projectNo, keyword);
