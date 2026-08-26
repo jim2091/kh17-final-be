@@ -38,12 +38,13 @@
 <!-- 사용자의 정보 수정 -->
 <update id="updateAll">
 	update emp
-	set emp_password = #{newEmpPassword},
+	set emp_password = #{empPassword},
 		emp_birth = #{empBirth},
 		emp_contact = #{empContact},
 		emp_post = #{empPost},
 		emp_address1 = #{empAddress1},
-		emp_address2 = #{empAddress2}
+		emp_address2 = #{empAddress2}, 
+		emp_utime = systimestamp
 	where emp_no = #{empNo}
 </update>
 
