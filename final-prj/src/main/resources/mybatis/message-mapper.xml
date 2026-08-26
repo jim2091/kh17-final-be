@@ -64,6 +64,7 @@
 	        M.chat_message_no,
 	        M.chat_channel_no,
 	        M.chat_message_sender,
+	        PM.emp_no AS emp_no,
 	        E.emp_name AS sender_name,
 	        M.chat_message_content,
 	        M.chat_message_type,

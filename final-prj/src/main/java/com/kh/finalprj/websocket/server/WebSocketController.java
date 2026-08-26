@@ -45,14 +45,21 @@ public class WebSocketController {
 			Message<WebSocketRequestVO> message
 		) {
 		
+		//System.out.println("===== WebSocket 채팅 수신 =====");
+	    //System.out.println("channelNo = " + channelNo);
+		
 		//[1] JWT에서 empNo 확인
 		TokenParseResponseVO parseVO = 
 				jwtService.parseAccessToken(jwt.getTokenValue());
 		
 		int empNo = parseVO.getEmpNo();
 		
+		//System.out.println("empNo = " + empNo);
+		
 		//[2] 사용자가 보낸 데이터
 		WebSocketRequestVO request = message.getPayload();
+		
+		//System.out.println("content = " + request.getContent());
 		
 		//[3] channelNo로 projectNo 확인
 	    int projectNo = channelDao.findProjectNo(channelNo);
@@ -80,6 +87,7 @@ public class WebSocketController {
 	    			.no(save.getNo())
 	    			.channelNo(channelNo)
 	    			.projectMemberNo(projectMemberNo)
+	    			.empNo(empNo)
 	    			.senderName(empDto.getEmpName())
 	    			.content(save.getContent())
 	    			.type(save.getType())

@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-@Tag(name = "채널 관리 API")
+@Tag(name = "채널 API")
 @RestController
 @RequestMapping("/api/channel")
 public class ChannelRestController {
@@ -43,15 +43,14 @@ public class ChannelRestController {
 	private MessageService messageService;
 	
 	@ApiResponse(responseCode = "200", description = "채널 생성 성공")
-	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping("/")
 	public void createChannel(
-		@RequestParam int projectNo,
 		@Valid @RequestBody ChannelCreateRequestVO request,
 		@CurrentUser TokenParseResponseVO parseVO
 	) {
 		
 		ChannelDto channelDto = ChannelDto.builder()
-				.projectNo(projectNo)
+				.projectNo(request.getProjectNo())
 				.chatChannelName(request.getChatChannelName())
 			.build();
 			
@@ -59,17 +58,17 @@ public class ChannelRestController {
 	}
 
 	@ApiResponse(responseCode = "200", description = "채널 목록 조회 성공")
-	@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<ChannelDto> list(@RequestParam int projectNo) {
+	@GetMapping("/project/{projectNo}")
+	public List<ChannelDto> list(@PathVariable int projectNo) {
 		return channelService.list(projectNo);
 	}
 	
 	@ApiResponse(responseCode = "200", description = "채널 상세 조회 성공")
-	@GetMapping(value = "/{channelNo}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/project/{projectNo}/{channelNo}")
 	public ChannelDto detail(
-		@RequestParam int projectNo,
-		@PathVariable int channelNo
-	) {
+			@PathVariable int projectNo,
+	        @PathVariable int channelNo
+		) {
 		ChannelDto channelDto = 
 				channelDao.selectOne(projectNo, channelNo);
 		

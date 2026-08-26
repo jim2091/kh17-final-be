@@ -13,6 +13,7 @@ public class WebSocketResponseVO {
 	private int no;
 	private int channelNo;
 	private Integer projectMemberNo;
+	private int empNo;
 	private String senderName;
 	private String content;
 	private String type;
