@@ -47,4 +47,9 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectOne("mapper.emp.find2", empEmail);
 	}
 
+	@Override
+	public boolean updateAll(EmpDto empDto) {
+		return sqlSession.update("mapper.emp.updateAll", empDto)>0;
+	}
+
 }

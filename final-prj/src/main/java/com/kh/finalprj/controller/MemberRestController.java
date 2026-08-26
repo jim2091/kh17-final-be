@@ -3,7 +3,10 @@ package com.kh.finalprj.controller;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,10 +20,13 @@ import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.PositionDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
+import com.kh.finalprj.vo.member.ChangeMemberRequestVO;
+import com.kh.finalprj.vo.member.ChangeMemberResponseVO;
 import com.kh.finalprj.vo.member.EmpMeResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name="회원 정보 관리 서비스")
 @AuthApiResponse
@@ -37,6 +43,9 @@ public class MemberRestController {
 	
 	@Autowired
 	private PositionDao positionDao;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	@ApiResponse(responseCode = "200", description = "조회성공")
 	@GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,7 +72,42 @@ public class MemberRestController {
 	}
 	
 	
-	
+	//사용자 정보 수정(본인)
+	@PutMapping("/")
+	public ChangeMemberResponseVO updateAll(
+			@CurrentUser TokenParseResponseVO parseVO,
+			@Valid @RequestBody ChangeMemberRequestVO request
+			) {
+		
+		//기존 정보 조회
+		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
+		if(empDto == null) throw new TargetNotfoundException();
+		
+		//기존 비밀번호와 일치하는지 검증 
+		boolean passwordValid = passwordEncoder.matches(
+				request.getPrevEmpPassword(),
+				empDto.getEmpPassword()
+				);
+		
+		if(passwordValid == false) {
+			return ChangeMemberResponseVO.builder()
+						.status(false)
+						.message("비밀번호가 일치하지 않습니다")
+					.build();
+					
+		}
+		
+		//정보 갈아끼우기
+		BeanUtils.copyProperties(request, empDto);
+		
+		//수정처리
+		empDao.updateAll(empDto);
+		
+		return ChangeMemberResponseVO.builder()
+					.status(true)
+					.message("회원 정보 변경이 완료되었습니다.")
+				.build();
+	}
 	
 	
 	
