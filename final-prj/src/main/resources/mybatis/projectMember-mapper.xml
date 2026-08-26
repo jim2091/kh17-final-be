@@ -48,6 +48,13 @@
 			and emp_no = #{empNo}
 	</select>
 	
+
+	<!-- 프로젝트 멤버 번호로 상세 조회 -->
+	<select id="findMember2" resultType="ProjectMemberDto">
+		select * from project_member
+		where project_member_no = #{projectMemberNo}
+	</select>
+	
 	<select id="selectRole" resultType="String">
 		select project_member_role 
 			from project_member

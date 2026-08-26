@@ -38,6 +38,7 @@ public class ErrorRestController {
 	}
 	
 	@ExceptionHandler(value = {
+			WrongDataException.class,
 			MethodArgumentNotValidException.class
 	})
 	public ResponseEntity<String> badRequest() {
