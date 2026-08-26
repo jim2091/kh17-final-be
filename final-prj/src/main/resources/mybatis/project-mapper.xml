@@ -42,7 +42,7 @@
 			p.project_visibility as projectVisibility,
 			p.project_start as projectStart,
 			p.project_deadline as projectDeadline,
-			p.project_member_role as projectMemberRole
+			pm.project_member_role as projectMemberRole
 		from project p
 		inner join project_member pm
 			on p.project_no = pm.project_no
@@ -51,12 +51,32 @@
 		order by p.project_ctime desc
 	</select>
 	
+	<!-- 
+		프로젝트 상세(inner join)
+		해당 사원이 참여하고 있는 프로젝트 조회
+	-->
+	<select id="selectOne" resultType="ProjectDetailResponseVO">
+		select
+			p.project_no as projectNo,
+			p.project_name as projectName,
+			p.project_purpose as projectPurpose,
+			p.project_visibility as projectVisibility,
+			p.project_status as projectStatus,
+			p.project_start as projectStart,
+			p.project_deadline as projectDeadline,
+			pm.project_member_role as projectMemberRole
+		from project p
+		inner join project_member pm
+			on p.project_no = pm.project_no
+		where p.project_no = #{projectNo}
+			and pm.emp_no = #{empNo} 
+	</select>
 	<!-- 프로젝트 수정 -->
 	<update id="updateAll">
 		update 	project
 		set		project_name = #{projectName},
 				project_purpose = #{projectPurpose},
-				project_visibility, = #{projectVisibility},
+				project_visibility = #{projectVisibility},
 				project_start = #{projectStart},
 				project_deadline = #{projectDeadline}
 		where	project_no = #{projectNo}

@@ -8,18 +8,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name="프로젝트 목록 응답 객체")
+@Schema(name = "프로젝트 상세조회 응답 객체")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class ProjectListResponseVO {
+public class ProjectDetailResponseVO {
 
 	private int projectNo;
 	private String projectName;
 	private String projectPurpose;
 	private String projectVisibility;
 	private String projectStatus;
-	private Timestamp projectStart;
-	private Timestamp projectDeadline;
+	private Timestamp projectStart,projectDeadline;
 	
-	//사용자의 프로젝트 안에서 권한
+	//현재 로그인 사용자의 프로젝트 역할
 	private String projectMemberRole;
 }
