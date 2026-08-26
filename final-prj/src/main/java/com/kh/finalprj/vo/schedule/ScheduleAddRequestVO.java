@@ -1,7 +1,5 @@
 package com.kh.finalprj.vo.schedule;
 
-import java.sql.Timestamp;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,10 +23,10 @@ public class ScheduleAddRequestVO {
 	@Size(max = 1000)
 	private String scheduleContent;
 	
-	@NotNull
-	private Timestamp scheduleStart;
+	@NotBlank
+	private String scheduleStart;
 	
-	private Timestamp scheduleEnd;
+	private String scheduleEnd;
 	
 	@Size(max = 300)
 	private String schedulePlace;
