@@ -1,9 +1,9 @@
 package com.kh.finalprj.controller;
 
-import java.util.List;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.apache.coyote.BadRequestException;
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +24,6 @@ import com.kh.finalprj.vo.schedule.ScheduleDeleteResponseVO;
 import com.kh.finalprj.vo.schedule.ScheduleDetailResponseVO;
 import com.kh.finalprj.vo.schedule.ScheduleEditRequestVO;
 import com.kh.finalprj.vo.schedule.ScheduleEditResponseVO;
-import com.kh.finalprj.vo.schedule.ScheduleEventVO;
 import com.kh.finalprj.vo.schedule.ScheduleListResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,9 +43,13 @@ public class ScheduleRestController {
 	@ApiResponse(responseCode = "200", description = "일정 등록 성공")
 	@PostMapping("/")
 	public ScheduleAddResponseVO addEvent(@Valid @RequestBody ScheduleAddRequestVO request) throws BadRequestException {
+		//문자열 형태로 들어온 날짜/시간을 Java 시간 객체로 변환
+		LocalDateTime scheduleStart = LocalDateTime.parse(request.getScheduleStart());
+		LocalDateTime scheduleEnd = request.getScheduleEnd() != null && !request.getScheduleEnd().isBlank()
+				? LocalDateTime.parse(request.getScheduleEnd()) : null;
 		
-		if(request.getScheduleEnd() != null
-				&& !request.getScheduleStart().before(request.getScheduleEnd()))
+		//종료일시가 있다면 시작일시보다 이후여야 함
+		if(scheduleEnd != null && !scheduleStart.isBefore(scheduleEnd))
 			throw new BadRequestException();
 		
 		//아직 토큰 구현중
@@ -61,8 +64,8 @@ public class ScheduleRestController {
 						.scheduleWriterNo(scheduleWriterNo)
 						.scheduleTitle(request.getScheduleTitle())
 						.scheduleContent(request.getScheduleContent())
-						.scheduleStart(request.getScheduleStart())
-						.scheduleEnd(request.getScheduleEnd())
+						.scheduleStart(Timestamp.valueOf(scheduleStart))
+						.scheduleEnd(scheduleEnd != null ? Timestamp.valueOf(scheduleEnd) : null)
 						.schedulePlace(request.getSchedulePlace())
 						.build());
 		return ScheduleAddResponseVO.builder()
@@ -100,7 +103,11 @@ public class ScheduleRestController {
 		//토큰 완성되면 검사하고 안맞으면 내보내는 코드정도 추가할 듯
 		//아 이건 본인이어야 하던가? 무튼
 		
-		if (!request.getScheduleStart().before(request.getScheduleEnd()))
+		LocalDateTime scheduleStart = LocalDateTime.parse(request.getScheduleStart());
+		LocalDateTime scheduleEnd = request.getScheduleEnd() != null && !request.getScheduleEnd().isBlank()
+				? LocalDateTime.parse(request.getScheduleEnd()) : null;
+		
+		if(scheduleEnd != null && !scheduleStart.isBefore(scheduleEnd))
 			throw new BadRequestException();
 		
 		boolean result =  scheduleDao.update(
@@ -108,8 +115,8 @@ public class ScheduleRestController {
 							.scheduleNo(scheduleNo)
 							.scheduleTitle(request.getScheduleTitle())
 							.scheduleContent(request.getScheduleContent())
-							.scheduleStart(request.getScheduleStart())
-							.scheduleEnd(request.getScheduleEnd())
+							.scheduleStart(Timestamp.valueOf(scheduleStart))
+							.scheduleEnd(scheduleEnd != null ? Timestamp.valueOf(scheduleEnd) : null)
 							.schedulePlace(request.getSchedulePlace())
 						.build()
 				);
