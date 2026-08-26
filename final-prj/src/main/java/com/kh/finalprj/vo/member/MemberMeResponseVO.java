@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Schema(name="내 정보 조회 데이터")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class EmpMeResponseVO {
+public class MemberMeResponseVO {
 	
 
 	private String empName;

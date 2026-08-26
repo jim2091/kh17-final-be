@@ -22,7 +22,7 @@ import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.member.ChangeMemberRequestVO;
 import com.kh.finalprj.vo.member.ChangeMemberResponseVO;
-import com.kh.finalprj.vo.member.EmpMeResponseVO;
+import com.kh.finalprj.vo.member.MemberMeResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,7 +49,7 @@ public class MemberRestController {
 	
 	@ApiResponse(responseCode = "200", description = "조회성공")
 	@GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-	public EmpMeResponseVO me(
+	public MemberMeResponseVO me(
 			@CurrentUser TokenParseResponseVO parseVO
 			) {
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
@@ -60,7 +60,7 @@ public class MemberRestController {
 		
 		PositionDto positionDto = positionDao.selectOne(empDto.getEmpPositionNo());
 		
-		EmpMeResponseVO response = new EmpMeResponseVO();
+		MemberMeResponseVO response = new MemberMeResponseVO();
 		
 		BeanUtils.copyProperties(empDto, response);
 		

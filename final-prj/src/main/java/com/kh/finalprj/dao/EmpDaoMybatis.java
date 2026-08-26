@@ -1,11 +1,14 @@
 package com.kh.finalprj.dao;
 
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.vo.emp.EmpListVO;
 
 @Repository
 public class EmpDaoMybatis implements EmpDao {
@@ -54,6 +57,11 @@ public class EmpDaoMybatis implements EmpDao {
 		String encrypt = passwordEncoder.encode(origin);
 		empDto.setEmpPassword(encrypt);
 		return sqlSession.update("mapper.emp.updateAll", empDto)>0;
+	}
+
+	@Override
+	public List<EmpListVO> selectList() {
+		return sqlSession.selectList("mapper.emp.list");
 	}
 
 }
