@@ -9,4 +9,7 @@ public interface ProjectMemberDao {
 	
 	Integer findProjectMemberNo(int projectNo, int empNo);
 	ProjectMemberDto findMember(int projectNo, int empNo);
+	
+	//필요해서 추가함 - 정빈
+	ProjectMemberDto findMember(int projectMemberNo);
 }
