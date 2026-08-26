@@ -12,5 +12,7 @@ public interface EmpDao {
 	boolean checkAvailableEmail(String empEmail);
 	
 	EmpDto selectOne(String empEmail);
+	
+	boolean updateAll(EmpDto empDto);
 
 }

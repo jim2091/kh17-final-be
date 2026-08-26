@@ -35,6 +35,16 @@
 	select count(*) from emp where emp_email = #{empEmail}
 </select>
 
-<!-- 사용자의 기본정보 입력 -->
+<!-- 사용자의 정보 수정 -->
+<update id="updateAll">
+	update emp
+	set emp_password = #{newEmpPassword},
+		emp_birth = #{empBirth},
+		emp_contact = #{empContact},
+		emp_post = #{empPost},
+		emp_address1 = #{empAddress1},
+		emp_address2 = #{empAddress2}
+	where emp_no = #{empNo}
+</update>
 
 </mapper>
