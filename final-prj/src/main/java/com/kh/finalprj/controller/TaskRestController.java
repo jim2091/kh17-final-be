@@ -3,9 +3,12 @@ package com.kh.finalprj.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +20,7 @@ import com.kh.finalprj.service.TaskService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.task.TaskAddRequestVO;
 import com.kh.finalprj.vo.task.TaskDetailResponseVO;
+import com.kh.finalprj.vo.task.TaskMoveRequestVO;
 import com.kh.finalprj.vo.task.TaskMoveResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -62,4 +66,24 @@ public class TaskRestController {
 		return taskService.selectKanbanBoard(projectNo);
 	}
 
+	// 업무 삭제
+	@ApiResponse(responseCode = "200", description = "업무 삭제 성공")
+	@DeleteMapping(value = "/{taskNo}", produces = "application/json")
+	public boolean delete(@PathVariable int taskNo) {
+		return taskService.delete(taskNo);
+	}
+
+	// 업무 부분 수정
+	@ApiResponse(responseCode = "200", description = "업무 수정 성공")
+	@PutMapping(value = "/", produces = "application/json")
+	public boolean update(@RequestBody TaskDto taskDto) {
+		return taskService.update(taskDto);
+	}
+
+	// 칸반 보드 이동 수정
+	@ApiResponse(responseCode = "200", description = "칸반 이동 성공")
+	@PatchMapping(value = "/move", produces = "application/json")
+	public boolean moveTask(@RequestBody TaskMoveRequestVO moveVO) {
+		return taskService.moveTask(moveVO);
+	}
 }
