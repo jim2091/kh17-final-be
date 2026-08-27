@@ -58,12 +58,20 @@ public class SecurityConfiguration {
 						,"/swagger-ui/**"
 						,"/v3/api-docs/**"
 					).permitAll()
+					
 					.requestMatchers(
-							"/api/member/me"
-							,"/api/member/"
-					).authenticated()
+							"/service/auth/login"
+							,"/service/auth/logout"
+							,"/service/auth/refresh"
+					).permitAll()
+					//admin기능 
+					.requestMatchers(
+							"/api/admin/add"
+					).hasAuthority("admin")
 					//일단 다되게(나중에 꼭 바꿔야함)
-					.anyRequest().permitAll()
+//					.anyRequest().permitAll()
+					//나머지 매핑들은 최소한 로그인은 해야함. 
+					.anyRequest().authenticated()
 			)
 			//JWT 검증 설정
 			.oauth2ResourceServer(
@@ -98,7 +106,6 @@ public class SecurityConfiguration {
 		//접근 허용 대상 지정
 		config.setAllowedOrigins(List.of(
 			"http://localhost:5173"
-			,"http://192.168.20.1:5173"
 		));
 		//허용 HTTP 메소드 설정
 		config.setAllowedMethods(List.of(
@@ -140,9 +147,17 @@ public class SecurityConfiguration {
 			
 			//accessToken을 찾아서 반환
 			Cookie[] cookies = request.getCookies();
+			
+//			for(Cookie cookie : cookies) {
+//				
+//				System.out.println("name = " + cookie.getName());
+//			    System.out.println("value = " + cookie.getValue());
+//			}
 			if(cookies == null) {
 				return null;
 			}
+			
+			
 			
 			return Arrays.stream(cookies)
 					.filter(cookie -> cookie.getName().equals("accessToken"))
@@ -151,6 +166,9 @@ public class SecurityConfiguration {
 					.findFirst()
 					.orElse(null);		
 		};
+		
+		
+		
 	}
 	
 	@Bean
