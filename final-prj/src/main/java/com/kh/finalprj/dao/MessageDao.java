@@ -29,4 +29,7 @@ public interface MessageDao {
 	
 	//메세지 수정
 	void update(int chatMessageNo, String chatMessageContent);
+	
+	//메세지 읽음 처리
+	int readChannelMessage(int channelNo, int projectMemberNo);
 }
