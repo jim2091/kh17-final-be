@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//서버가 사용자에게 보내는 데이터
+//서버가 사용자에게 보내는 데이터 (WebSocket 서버 → React)
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class WebSocketResponseVO {
 	private int no;

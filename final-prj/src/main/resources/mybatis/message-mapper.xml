@@ -34,7 +34,7 @@
 	</insert>
 	
 	<!-- 메시지 조회를 위한 구조를 안내 -->
-	<resultMap id="MessageVO" type="com.kh.finalprj.vo.channel.MessageVO">
+	<resultMap id="MessageVO" type="com.kh.finalprj.vo.message.MessageVO">
 	    <id property="no" column="chat_message_no"/>
 	    <result property="channelNo" column="chat_channel_no"/>
 	    <result property="projectMemberNo" column="chat_message_sender"/>
@@ -46,6 +46,18 @@
 	    <result property="deleted" column="chat_message_deleted"/>
 	</resultMap>
 	
+	<!-- 메세지 작업을 위한 기본 정보 조회 -->
+	<select id="selectTarget" resultType="com.kh.finalprj.vo.message.MessageTargetVO">
+		select
+			M.chat_message_no AS chatMessageNo,
+			M.chat_channel_no AS channelNo,
+			C.project_no AS projectNo,
+			M.chat_message_sender AS projectMemberNo
+		from chat_message M
+		join chat_channel C on M.chat_channel_no = C.chat_channel_no
+		where M.chat_message_no = #{chatMessageNo}
+	</select>
+	
 	<!-- 구문 조각 -->
 	<sql id="temp-header">
 		with temp_list as (
@@ -56,7 +68,7 @@
 		)
 	</sql>
 	
-	<!-- 메세지 조회 -->
+	<!-- 메세지 목록(여러 개) 조회 -->
 	<select id="selectMessages" resultMap="MessageVO">
     <include refid="temp-header"/>
 
@@ -112,5 +124,21 @@
 	        ]]>
 	    </if>
 	</select>
+	
+	<!-- 메세지 삭제 (soft delete) -->
+	<update id="delete">
+		update chat_message
+		set chat_message_deleted = 'Y'
+		where chat_message_no = #{chatMessageNo}
+	</update>
+	
+	<!-- 메세지 수정 -->
+	<update id="update">
+		update chat_message
+		set chat_message_content = #{chatMessageContent},
+			chat_message_utime = systimestamp
+		where chat_message_no = #{chatMessageNo}
+			and chat_message_deleted = 'N'
+	</update>
 	
 </mapper>

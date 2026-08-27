@@ -11,9 +11,11 @@ import com.kh.finalprj.dao.MessageDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
-import com.kh.finalprj.vo.channel.ChannelMessageRequestVO;
-import com.kh.finalprj.vo.channel.ChannelMessageResponseVO;
-import com.kh.finalprj.vo.channel.MessageVO;
+import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
+import com.kh.finalprj.vo.message.ChannelMessageResponseVO;
+import com.kh.finalprj.vo.message.MessageTargetVO;
+import com.kh.finalprj.vo.message.MessageUpdateRequestVO;
+import com.kh.finalprj.vo.message.MessageVO;
 
 @Service
 public class MessageService {
@@ -27,19 +29,19 @@ public class MessageService {
 	//메세지 등록
 	@Transactional
 	public MessageVO add(MessageVO message) {
-		//메세지 번호 생성
+		//(1) 메세지 번호 생성
 		int no = messageDao.sequence();
 		
-		//생성된 번호 저장
+		//(2) 생성된 번호 저장
 		message.setNo(no);
 		
-		//DB 등록
+		//(3) DB 등록
 		messageDao.add(message);
 		
 		return message;
 	}
 	
-	//메세지 조회
+	//과거 메세지 목록 조회
 	public ChannelMessageResponseVO selectList(
 			int channelNo, 
 			int empNo,
@@ -72,5 +74,67 @@ public class MessageService {
 					.messages(messages)
 					.last(last)
 				.build();
+	}
+	
+	//메세지 삭제
+	public void delete(int chatMessageNo, int empNo) {
+		//(1) 삭제 대상 메세지 조회
+		MessageTargetVO target = messageDao.selectTarget(chatMessageNo);
+		
+		//(2) 메세지가 존재하는지 확인
+		if(target == null) {
+			throw new TargetNotfoundException();
+		}
+		
+		//(3) 현재 사용자의 projectMemberNo 조회
+		Integer projectMemberNo = 
+			projectMemberDao.findProjectMemberNo(
+				target.getProjectNo(), empNo);
+		
+		//(4) 프로젝트 참여자인지 확인
+		if(projectMemberNo == null) {
+			throw new GetOutException();
+		}
+		
+		//(5) 작성자 projectMemberNo와 현재 사용자 비교
+		if(target.getProjectMemberNo() != projectMemberNo) {
+			throw new GetOutException();
+		}
+		
+		//(6) 메세지 삭제 (soft delete)
+		messageDao.delete(chatMessageNo);
+	}
+	
+	//메세지 수정
+	public void update(
+			int chatMessageNo,
+			MessageUpdateRequestVO request, 
+			int empNo
+		) {
+		//(1) 수정 대상 메세지 조회
+		MessageTargetVO target = messageDao.selectTarget(chatMessageNo);
+		
+		//(2) 메세지가 존재하는지 확인
+		if(target == null) {
+			throw new TargetNotfoundException();
+		}
+		
+		//(3) 현재 사용자의 projectMemberNo 조회
+		Integer projectMemberNo = 
+			projectMemberDao.findProjectMemberNo(
+				target.getProjectNo(), empNo);
+		
+		//(4) 프로젝트 참여자인지 확인
+		if(projectMemberNo == null) {
+			throw new GetOutException();
+		}
+		
+		//(5) 작성자 projectMemberNo와 현재 사용자 비교
+		if(target.getProjectMemberNo() != projectMemberNo) {
+			throw new GetOutException();
+		}
+		
+		//(6) 메세지 수정
+		messageDao.update(chatMessageNo, request.getContent());
 	}
 }

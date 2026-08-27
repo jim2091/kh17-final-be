@@ -17,8 +17,8 @@ import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.service.JwtService;
 import com.kh.finalprj.service.MessageService;
-import com.kh.finalprj.vo.channel.MessageVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
+import com.kh.finalprj.vo.message.MessageVO;
 import com.kh.finalprj.websocket.vo.WebSocketRequestVO;
 import com.kh.finalprj.websocket.vo.WebSocketResponseVO;
 
