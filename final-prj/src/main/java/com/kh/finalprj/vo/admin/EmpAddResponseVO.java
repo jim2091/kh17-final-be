@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Schema(name="사용자 추가 응답 정보")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class MemberAddResponseVO {
+public class EmpAddResponseVO {
 	
 
 	private int empNo;

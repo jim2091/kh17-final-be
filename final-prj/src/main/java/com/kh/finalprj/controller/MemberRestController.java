@@ -19,10 +19,10 @@ import com.kh.finalprj.dto.DeptDto;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.PositionDto;
 import com.kh.finalprj.error.TargetNotfoundException;
+import com.kh.finalprj.vo.emp.ChangeEmpRequestVO;
+import com.kh.finalprj.vo.emp.ChangeEmpResponseVO;
+import com.kh.finalprj.vo.emp.EmpMeResponseVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
-import com.kh.finalprj.vo.member.ChangeMemberRequestVO;
-import com.kh.finalprj.vo.member.ChangeMemberResponseVO;
-import com.kh.finalprj.vo.member.MemberMeResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,7 +49,7 @@ public class MemberRestController {
 	
 	@ApiResponse(responseCode = "200", description = "조회성공")
 	@GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-	public MemberMeResponseVO me(
+	public EmpMeResponseVO me(
 			@CurrentUser TokenParseResponseVO parseVO
 			) {
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
@@ -60,7 +60,7 @@ public class MemberRestController {
 		
 		PositionDto positionDto = positionDao.selectOne(empDto.getEmpPositionNo());
 		
-		MemberMeResponseVO response = new MemberMeResponseVO();
+		EmpMeResponseVO response = new EmpMeResponseVO();
 		
 		BeanUtils.copyProperties(empDto, response);
 		
@@ -74,9 +74,9 @@ public class MemberRestController {
 	
 	//사용자 정보 수정(본인)
 	@PutMapping("/")
-	public ChangeMemberResponseVO updateAll(
+	public ChangeEmpResponseVO updateAll(
 			@CurrentUser TokenParseResponseVO parseVO,
-			@Valid @RequestBody ChangeMemberRequestVO request
+			@Valid @RequestBody ChangeEmpRequestVO request
 			) {
 		System.out.println("request : "+ request);
 		//기존 정보 조회
@@ -90,7 +90,7 @@ public class MemberRestController {
 				);
 		
 		if(passwordValid == false) {
-			return ChangeMemberResponseVO.builder()
+			return ChangeEmpResponseVO.builder()
 						.status(false)
 						.message("비밀번호가 일치하지 않습니다")
 					.build();
@@ -100,7 +100,7 @@ public class MemberRestController {
 		//새 비밀번호와 새 비밀번호 확인이 일치하는지 검증 
 		boolean passwordConfirm = request.getNewEmpPassword1().equals(request.getNewEmpPassword2());
 		if(passwordConfirm == false) {
-			return ChangeMemberResponseVO.builder()
+			return ChangeEmpResponseVO.builder()
 						.status(false)
 						.message("입력하신 새 비밀번호가 서로 달라요")
 					.build();
@@ -116,7 +116,7 @@ public class MemberRestController {
 		//수정처리
 		empDao.updateAll(empDto);
 		
-		return ChangeMemberResponseVO.builder()
+		return ChangeEmpResponseVO.builder()
 					.status(true)
 					.message("회원 정보 변경이 완료되었습니다.")
 				.build();

@@ -1,10 +1,13 @@
 package com.kh.finalprj.dao;
 
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.DeptDto;
+import com.kh.finalprj.vo.dept.DeptListVO;
 
 @Repository
 public class DeptDaoMybatis implements DeptDao {
@@ -25,6 +28,11 @@ public class DeptDaoMybatis implements DeptDao {
 	@Override
 	public DeptDto selectOne(int deptNo) {
 		return sqlSession.selectOne("mapper.dept.find", deptNo);
+	}
+
+	@Override
+	public List<DeptListVO> selectList() {
+		return sqlSession.selectList("mapper.dept.list");
 	}
 	
 	

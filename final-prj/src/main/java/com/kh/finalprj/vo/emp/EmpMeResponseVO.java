@@ -1,4 +1,4 @@
-package com.kh.finalprj.vo.member;
+package com.kh.finalprj.vo.emp;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Schema(name="내 정보 조회 데이터")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class MemberMeResponseVO {
+public class EmpMeResponseVO {
 	
 
 	private String empName;

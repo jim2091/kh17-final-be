@@ -1,4 +1,4 @@
-package com.kh.finalprj.vo.member;
+package com.kh.finalprj.vo.emp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -8,7 +8,7 @@ import lombok.Data;
 @Schema(name="본인 정보 변경 정보")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-public class ChangeMemberRequestVO {
+public class ChangeEmpRequestVO {
 	
 	private String prevEmpPassword;
 	

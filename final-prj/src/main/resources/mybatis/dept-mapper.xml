@@ -24,6 +24,11 @@
 	select * from dept where dept_no = #{deptNo}
 </select>
 
+<!-- 부서 목록 조회 -->
+<select id="list" resultType="DeptListVO">
+	select * from dept order by dept_no asc
+</select>
+
 
 
 </mapper>
