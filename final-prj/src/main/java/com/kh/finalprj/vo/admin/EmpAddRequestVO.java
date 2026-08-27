@@ -8,7 +8,7 @@ import lombok.Data;
 @Schema(name="사용자 추가 요청 정보")
 @Data
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class MemberAddRequestVO {
+public class EmpAddRequestVO {
 	
 	private int empNo;
 	private String empEmail;

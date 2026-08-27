@@ -16,8 +16,8 @@ import com.kh.finalprj.dao.EmpDao;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.service.EmailService;
 import com.kh.finalprj.service.RandomService;
-import com.kh.finalprj.vo.admin.MemberAddRequestVO;
-import com.kh.finalprj.vo.admin.MemberAddResponseVO;
+import com.kh.finalprj.vo.admin.EmpAddRequestVO;
+import com.kh.finalprj.vo.admin.EmpAddResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,7 +41,7 @@ public class AdminRestController {
 	
 	//사용자 추가 -> 회원가입 이메일 발송(+임시비밀번호)
 	@PostMapping("/add")
-	public MemberAddResponseVO add(@RequestBody MemberAddRequestVO request) throws IOException, MessagingException {
+	public EmpAddResponseVO add(@RequestBody EmpAddRequestVO request) throws IOException, MessagingException {
 		System.out.println("request : "+ request);
 		int empNo = empDao.sequence();
 //		System.out.println(empNo);
@@ -60,7 +60,7 @@ public class AdminRestController {
 		emailService.invite(request.getEmpEmail(), tempPassword);
 		
 		EmpDto resultDto = empDao.selectOne(empDto.getEmpNo());
-		MemberAddResponseVO response = new MemberAddResponseVO();
+		EmpAddResponseVO response = new EmpAddResponseVO();
 		BeanUtils.copyProperties(resultDto, response);
 		
 		return response;

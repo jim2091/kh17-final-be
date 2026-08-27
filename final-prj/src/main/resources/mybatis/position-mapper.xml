@@ -24,4 +24,9 @@
 	select * from position where position_no = #{positionNo}
 </select>
 
+<!-- 직급 목록 조회 -->
+<select id="list" resultType="PositionListVO">
+	select * from position order by position_no asc
+</select>
+
 </mapper>
