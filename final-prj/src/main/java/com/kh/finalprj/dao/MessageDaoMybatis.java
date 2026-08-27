@@ -67,6 +67,14 @@ public class MessageDaoMybatis implements MessageDao {
 	    sqlSession.update("mapper.message.update", params);
 	}
 
+	@Override
+	public int readChannelMessage(int channelNo, int projectMemberNo) {
+		Map<String, Object> params = new HashMap<>();
+	    params.put("channelNo", channelNo);
+	    params.put("projectMemberNo", projectMemberNo);
+		return sqlSession.insert("mapper.message.readChannelMessage", params);
+	}
+
 	
 
 }

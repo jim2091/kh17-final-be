@@ -44,6 +44,7 @@
 	    <result property="ctime" column="chat_message_ctime"/>
 	    <result property="utime" column="chat_message_utime"/>
 	    <result property="deleted" column="chat_message_deleted"/>
+	    <result property="unreadCount" column="unread_count"/>
 	</resultMap>
 	
 	<!-- 메세지 작업을 위한 기본 정보 조회 -->
@@ -82,11 +83,33 @@
 	        M.chat_message_type,
 	        M.chat_message_ctime,
 	        M.chat_message_utime,
-	        M.chat_message_deleted
+	        M.chat_message_deleted,
+	        
+	        <!-- 안 읽은 사람 수 -->
+	        (
+	        	select count(*)
+	        	from project_member PM2
+	        	where PM2.project_no = CC.project_no
+	        		<!-- 메세지를 보낸 사람은 제외 -->
+	        		and PM2.project_member_no != M.chat_message_sender
+	        		<!-- 이 메세지를 읽지 않은 사람 -->
+	        		and not exists (
+	        			select 1
+	        			from chat_read CR
+	        			where CR.chat_message_no = M.chat_message_no
+	        				and CR.project_member_no = PM2.project_member_no
+	        		)
+	        ) AS unread_count
 	        
 	    from chat_message M
+	    
+	    	<!-- 메세지가 속한 채널 -->
+	    	left outer join chat_channel CC
+	    		on M.chat_channel_no = CC.chat_channel_no
+	    		
 	        left outer join project_member PM
 	            on M.chat_message_sender = PM.project_member_no
+	            
 	        left outer join emp E
 	            on PM.emp_no = E.emp_no
 	            
@@ -140,5 +163,54 @@
 		where chat_message_no = #{chatMessageNo}
 			and chat_message_deleted = 'N'
 	</update>
+	
+	<!-- (A) 메세지 하나씩 읽음 처리 -->
+	<!--  
+	<insert id="insertRead">
+		merge into chat_read CR
+		using (
+			select 
+				#{chatMessageNo} AS chat_message_no,
+				#{projectMemberNo} AS project_member_no
+			from dual
+		) T
+		on (
+			CR.chat_message_no = T.chat_message_no
+			and  CR.project_member_no = T.project_member_no
+		)
+		when not marched then 
+			insert (
+				chat_message_no,
+	            project_member_no,
+	            chat_read_at
+			)
+			values (
+	            T.chat_message_no,
+	            T.project_member_no,
+	            SYSTIMESTAMP
+	        )
+	</insert>
+	-->
+	
+	<!-- (B) 채널의 안 읽은 메시지를 한꺼번에 읽음 처리 -->
+	<insert id="readChannelMessage">
+	
+	    INSERT INTO chat_read (
+	        chat_message_no,
+	        project_member_no
+	    )
+	    SELECT
+	        M.chat_message_no,
+	        #{projectMemberNo}
+	    FROM chat_message M
+	    WHERE M.chat_channel_no = #{channelNo}
+	      AND NOT EXISTS (
+	          SELECT 1
+	          FROM chat_read CR
+	          WHERE CR.chat_message_no = M.chat_message_no
+	            AND CR.project_member_no = #{projectMemberNo}
+	      )
+
+	</insert>
 	
 </mapper>

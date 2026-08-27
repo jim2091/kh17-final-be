@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//메세지 기본 VO
+//화면에 메시지를 보여주기 위한 기본적인 VO
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class MessageVO {
 	private int no;
@@ -20,4 +20,5 @@ public class MessageVO {
     private Timestamp ctime;
     private Timestamp utime;
     private String deleted;
+    private int unreadCount;//해당 메시지를 아직 읽지 않은 사람 수
 }
