@@ -41,17 +41,17 @@ public class DeptRestController {
 	public DeptAddResponseVO add(@RequestBody DeptAddRequestVO request) {
 		
 		int deptNo = deptDao.sequence();
-		System.out.println("deptNo : "+ deptNo);
+//		System.out.println("deptNo : "+ deptNo);
 		
 		DeptDto deptDto = new DeptDto();
 		
 		deptDto.setDeptNo(deptNo);
 		
 		int resultNo = deptDto.getDeptNo();
-		System.out.println("resultNo : " + resultNo);
+//		System.out.println("resultNo : " + resultNo);
 		
 		BeanUtils.copyProperties(request, deptDto);
-		System.out.println("deptDto : " + deptDto);
+//		System.out.println("deptDto : " + deptDto);
 		deptDao.insert(deptDto);
 		
 		DeptDto resultDto = deptDao.selectOne(deptDto.getDeptNo());

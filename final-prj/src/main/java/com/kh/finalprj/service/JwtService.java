@@ -1,6 +1,7 @@
 package com.kh.finalprj.service;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -38,6 +39,9 @@ public class JwtService {
 					.subject(String.valueOf(request.getEmpNo()))
 					.claim("empNo", request.getEmpNo())
 					.claim("empLevel", request.getEmpLevel())
+					.claim("authorities", List.of(
+							request.getEmpLevel()
+							))
 				.build();
 		
 		return jwtEncoder
