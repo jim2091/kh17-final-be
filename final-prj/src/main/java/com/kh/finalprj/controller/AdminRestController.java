@@ -42,7 +42,7 @@ public class AdminRestController {
 	//사용자 추가 -> 회원가입 이메일 발송(+임시비밀번호)
 	@PostMapping("/add")
 	public EmpAddResponseVO add(@RequestBody EmpAddRequestVO request) throws IOException, MessagingException {
-		System.out.println("request : "+ request);
+//		System.out.println("request : "+ request);
 		int empNo = empDao.sequence();
 //		System.out.println(empNo);
 		String tempPassword = randomService.generateString(12);
