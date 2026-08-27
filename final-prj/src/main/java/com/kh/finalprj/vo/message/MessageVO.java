@@ -1,4 +1,4 @@
-package com.kh.finalprj.vo.channel;
+package com.kh.finalprj.vo.message;
 
 import java.sql.Timestamp;
 
@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//DB에 저장할 데이터
+//메세지 기본 VO
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class MessageVO {
 	private int no;

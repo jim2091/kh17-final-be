@@ -8,8 +8,10 @@ import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.kh.finalprj.vo.channel.ChannelMessageRequestVO;
-import com.kh.finalprj.vo.channel.MessageVO;
+import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
+import com.kh.finalprj.vo.message.MessageTargetVO;
+import com.kh.finalprj.vo.message.MessageUpdateRequestVO;
+import com.kh.finalprj.vo.message.MessageVO;
 
 @Repository
 public class MessageDaoMybatis implements MessageDao {
@@ -42,5 +44,29 @@ public class MessageDaoMybatis implements MessageDao {
 		params.put("lastMessageNo", request.getLastMessageNo());
 		return sqlSession.selectOne("mapper.message.countMessages", params);
 	}
+
+	@Override
+	public MessageTargetVO selectTarget(int chatMessageNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("chatMessageNo", chatMessageNo);
+		return sqlSession.selectOne("mapper.message.selectTarget", params);
+	}
+	
+	@Override
+	public void delete(int chatMessageNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("chatMessageNo", chatMessageNo);
+		sqlSession.update("mapper.message.delete", params);
+	}
+
+	@Override
+	public void update(int chatMessageNo, String chatMessageContent) {
+		Map<String, Object> params = new HashMap<>();
+	    params.put("chatMessageNo", chatMessageNo);
+	    params.put("chatMessageContent", chatMessageContent);
+	    sqlSession.update("mapper.message.update", params);
+	}
+
+	
 
 }

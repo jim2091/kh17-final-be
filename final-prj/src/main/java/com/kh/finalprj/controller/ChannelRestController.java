@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CurrentUser;
@@ -22,10 +21,10 @@ import com.kh.finalprj.service.ChannelService;
 import com.kh.finalprj.service.MessageService;
 import com.kh.finalprj.vo.channel.ChannelCreateRequestVO;
 import com.kh.finalprj.vo.channel.ChannelDeleteRequestVO;
-import com.kh.finalprj.vo.channel.ChannelMessageRequestVO;
-import com.kh.finalprj.vo.channel.ChannelMessageResponseVO;
 import com.kh.finalprj.vo.channel.ChannelUpdateRequestVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
+import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
+import com.kh.finalprj.vo.message.ChannelMessageResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

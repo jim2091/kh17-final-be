@@ -1,4 +1,4 @@
-package com.kh.finalprj.vo.channel;
+package com.kh.finalprj.vo.message;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name = "채팅 채널 메시지 응답 데이터")
+@Schema(name = "특정 채널의 과거 메시지 목록 조회 결과")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class ChannelMessageResponseVO {
 	private List<MessageVO> messages;
