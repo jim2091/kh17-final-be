@@ -136,10 +136,23 @@ public class ProjectServiceImpl implements ProjectService{
 		projectDao.update(projectDto);
 	}
 
+	
+
 	//공개 프로젝트 목록
 	@Override
-	public List<ProjectListResponseVO> publicProjectList(int empNo) {
-		return projectDao.selectPublicProjectList(empNo);
+	public List<ProjectListResponseVO> publicProjectList(int empNo, String keyword, int page) {
+		
+//		int pageSize = 9;
+//		
+//		//전체 개수
+//		int totalCount = projectDao.countPublicProject(keyword);
+//		
+//		//전체 페이지
+//		int totalPage = (totalCount + pageSize-1)/pageSize;
+//		
+//		//현재 페이지 시작/끝 위치
+//		int startRow =
+		return null;
 	}
 
 	

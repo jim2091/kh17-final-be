@@ -64,7 +64,8 @@
 			p.project_status as projectStatus,
 			p.project_start as projectStart,
 			p.project_deadline as projectDeadline,
-			pm.project_member_role as projectMemberRole
+			pm.project_member_role as projectMemberRole,
+			pm.project_member_no as projectMemberNo
 		from project p
 		inner join project_member pm
 			on p.project_no = pm.project_no

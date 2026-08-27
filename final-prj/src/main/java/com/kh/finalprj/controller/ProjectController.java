@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CommonsApiResponse;
@@ -74,17 +75,18 @@ public class ProjectController {
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
 		int empNo = parseVO.getEmpNo();
-		
 		projectService.update(projectNo, requestVO, empNo);
 	}
 	
 	//공개 프로젝트 조회 매핑
-	@ApiResponse(responseCode = "200",description = "공개 프로젝트 조회")
-	@GetMapping(value = "/public",produces = "application/json")
-	public List<ProjectListResponseVO> publicProjectList(
-			@CurrentUser TokenParseResponseVO parseVO){
-		int empNo = parseVO.getEmpNo();
-		
-		return projectService.publicProjectList(empNo);
-	}
+//	@ApiResponse(responseCode = "200",description = "공개 프로젝트 조회")
+//	@GetMapping(value = "/public",produces = "application/json")
+//	public List<ProjectListResponseVO> publicProjectList(
+//			@CurrentUser TokenParseResponseVO parseVO,
+//			@RequestParam(defaultValue = "")String keyword,
+//			@RequestParam(defaultValue = "1")int page
+//	){
+//		int empNo = parseVO.getEmpNo();
+//		return projectService.publicProjectList(empNo,keyword,parseVO);
+//	}
 }

@@ -18,5 +18,5 @@ public interface ProjectService{
 	//프로젝트 수정
 	void update(int projectNo, ProjectUpdateRequestVO requestVO, int empNo);
 	//공개 프로젝트 목록
-	List<ProjectListResponseVO> publicProjectList(int empNo);
+	List<ProjectListResponseVO> publicProjectList(int empNo,String keyword,int page);
 }
