@@ -44,4 +44,9 @@ public class ProjectDaoMybatis implements ProjectDao{
 		return sqlSession.update("mapper.project.update",projectDto)>0;
 	}
 
+	@Override
+	public List<ProjectListResponseVO> selectPublicProjectList(int empNo) {
+		return sqlSession.selectList("mapper.project.publicProjectList",empNo);
+	}
+
 }

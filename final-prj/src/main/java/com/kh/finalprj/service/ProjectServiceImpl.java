@@ -65,7 +65,7 @@ public class ProjectServiceImpl implements ProjectService{
 		//6.등록
 		projectMemberDao.add(projectMemberDto);
 		
-		//#general 채널 자동 생성
+		//7.#general 채널 자동 생성
 		int channelNo = channelDao.sequence();
 		
 		ChannelDto channelDto = ChannelDto.builder()
@@ -75,6 +75,7 @@ public class ProjectServiceImpl implements ProjectService{
 					.chatChannelName("#general")
 				.build();
 		
+		//8.채널 DB에 추가
 		channelDao.create(channelDto);
 		
 		return projectNo;
@@ -100,19 +101,19 @@ public class ProjectServiceImpl implements ProjectService{
 	@Transactional
 	@Override
 	public void update(int projectNo, ProjectUpdateRequestVO requestVO, int empNo) {
-		//프로젝트 권한 확인
+		//1.프로젝트 권한 확인
 		String role = projectMemberDao.selectRole(projectNo, empNo);
 		
-		//프로젝트 참여자가 아닌경우
+		//2.프로젝트 참여자가 아닌경우
 		if(role == null) {
 			throw new WhoAreYouException();
 		}
-		//owner가 아닌경우
+		//3.owner가 아닌경우
 		if(!role.equals("owner")) {
 			throw new WhoAreYouException();
 		}
 		
-		//날짜 검사
+		//4.날짜 검사
 		if(requestVO.getProjectStart() != null &&
 			requestVO.getProjectDeadline() != null &&
 			requestVO.getProjectStart().after(requestVO.getProjectDeadline())
@@ -121,7 +122,7 @@ public class ProjectServiceImpl implements ProjectService{
 			
 		}
 		
-		//projectDto 생성
+		//5.projectDto 생성
 		ProjectDto projectDto = ProjectDto.builder()
 				.projectNo(projectNo)
 				.projectName(requestVO.getProjectName())
@@ -131,8 +132,14 @@ public class ProjectServiceImpl implements ProjectService{
 				.projectDeadline(requestVO.getProjectDeadline())
 				.build();
 		
-		//수정
+		//6.수정
 		projectDao.update(projectDto);
+	}
+
+	//공개 프로젝트 목록
+	@Override
+	public List<ProjectListResponseVO> publicProjectList(int empNo) {
+		return projectDao.selectPublicProjectList(empNo);
 	}
 
 	
