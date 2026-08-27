@@ -23,7 +23,7 @@
 	</insert>
 	
 	<!-- 단일 파일 조회 -->
-	<select id="selectOne" resultType="AttachDto">
+	<select id="find" resultType="AttachDto">
 		select * from attach where attach_no = #{attachNo}
 	</select>
 	

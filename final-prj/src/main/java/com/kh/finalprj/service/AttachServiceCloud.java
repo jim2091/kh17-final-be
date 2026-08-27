@@ -50,37 +50,62 @@ public class AttachServiceCloud implements AttachService{
 	//2.  프로젝트 파일함용 파일 저장
 	@Transactional
 	@Override
-	public int save(int projectNo, MultipartFile attach, String uploader, String source)
-			throws IllegalStateException, IOException {
-		if(attach == null || attach.isEmpty()) return 0;
-		
-		int attachNo = attachDao.sequence();
-		
-		//DB 저장
-		attachDao.insert(AttachDto.builder()
-					.attachNo(attachNo)
-					.projectNo(projectNo)
-					.attachName(attach.getOriginalFilename())
-					.attachType(attach.getContentType())
-					.attachSize(attach.getSize())
-					.attachUploader(uploader)
-					.attachSource(source)
-				.build());
-		
-		//AWS S3 저장 처리
-		String objectKey = storageProperties.getAwsRoot() + "/" + attachNo;
-		
-		PutObjectRequest request = PutObjectRequest.builder()
-					.bucket(storageProperties.getAwsBucket())
-					.key(objectKey)
-					.contentType(attach.getContentType()+"; charset=UTF-8")
-				.build();
-		PutObjectResponse response = s3Client.putObject(request, RequestBody.fromBytes(attach.getBytes()));
-		log.debug("<AWS S3 프로젝트 파일 업로드 완료>");
-		log.debug("object key = {}", objectKey);
-		log.debug("ETag = {}", response.eTag());
-		
-		return attachNo;
+	public int save(
+	        int projectNo,
+	        MultipartFile attach,
+	        String uploader,
+	        String source
+	) throws IllegalStateException, IOException {
+
+	    if(attach == null || attach.isEmpty()) {
+	        return 0;
+	    }
+
+	    // 파일 업로더가 없으면 업로드 자체를 막음
+	    if(uploader == null || uploader.trim().isEmpty()) {
+	        throw new IllegalStateException("파일 업로더 정보가 없습니다.");
+	    }
+
+	    // source 기본값
+	    if(source == null || source.trim().isEmpty()) {
+	        source = "파일함";
+	    }
+
+	    int attachNo = attachDao.sequence();
+
+	    // DB 저장
+	    attachDao.insert(
+	        AttachDto.builder()
+	            .attachNo(attachNo)
+	            .projectNo(projectNo)
+	            .attachName(attach.getOriginalFilename())
+	            .attachType(attach.getContentType())
+	            .attachSize(attach.getSize())
+	            .attachUploader(uploader)
+	            .attachSource(source)
+	            .build()
+	    );
+
+	    // AWS S3 저장
+	    String objectKey = storageProperties.getAwsRoot() + "/" + attachNo;
+
+	    PutObjectRequest request = PutObjectRequest.builder()
+	            .bucket(storageProperties.getAwsBucket())
+	            .key(objectKey)
+	            .contentType(attach.getContentType())
+	            .build();
+
+	    PutObjectResponse response =
+	            s3Client.putObject(
+	                request,
+	                RequestBody.fromBytes(attach.getBytes())
+	            );
+
+	    log.debug("<AWS S3 프로젝트 파일 업로드 완료>");
+	    log.debug("object key = {}", objectKey);
+	    log.debug("ETag = {}", response.eTag());
+
+	    return attachNo;
 	}
 	
 	//3. 파일 삭제 (DB + AWS S3)
