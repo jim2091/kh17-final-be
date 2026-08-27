@@ -16,6 +16,7 @@ public class TaskDto {
     private String taskContent;
     private Integer assignedMemberNo; // 미배정(NULL) 허용이므로 Integer 
     private String taskStatus;        // TODO, IN_PROGRESS, DONE
+    private int taskOrder;			 //칸반 보드 구현을 위한 순서 부여
     private Timestamp taskStart;
     private Timestamp taskEnd;
     private String taskCategory;
