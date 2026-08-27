@@ -46,7 +46,7 @@ public class ProjectController {
 	
 	//내 프로젝트 목록 매핑
 	@ApiResponse(responseCode = "200", description = "내프로젝트 목록 조회 성공")
-	@GetMapping(value = "my",produces = "application/json")
+	@GetMapping(value = "/my",produces = "application/json")
 	public List<ProjectListResponseVO> myProjectList(
 				@CurrentUser TokenParseResponseVO parseVO
 	){
@@ -76,5 +76,15 @@ public class ProjectController {
 		int empNo = parseVO.getEmpNo();
 		
 		projectService.update(projectNo, requestVO, empNo);
+	}
+	
+	//공개 프로젝트 조회 매핑
+	@ApiResponse(responseCode = "200",description = "공개 프로젝트 조회")
+	@GetMapping(value = "/public",produces = "application/json")
+	public List<ProjectListResponseVO> publicProjectList(
+			@CurrentUser TokenParseResponseVO parseVO){
+		int empNo = parseVO.getEmpNo();
+		
+		return projectService.publicProjectList(empNo);
 	}
 }
