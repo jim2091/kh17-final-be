@@ -1,6 +1,7 @@
 package com.kh.finalprj.vo.task;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,6 @@ public class TaskAddRequestVO {
 	private String taskWriterName;
 	private Timestamp taskCtime;
 	private Timestamp taskUtime;
+	
+	private List<Integer> collaboratorMemberNos; // 협업자로 등록할 프로젝트 멤버 번호 목록
 }
