@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.task">
+
+	<!-- 업무 시퀀스 번호 단독 채번 -->
+	<select id="sequence" resultType="int">
+		select seq_task_no.nextval from dual
+	</select>
+
+	<!-- 업무 등록 -->
+	<insert id="add" parameterType="TaskDto">
+		insert into task (
+			task_no,
+			project_no,
+			task_title,
+			task_content,
+			assigned_member_no,
+			task_status,
+			task_start,
+			task_end,
+			task_category,
+			task_priority,
+			task_progress,
+			task_writer_no,
+			task_ctime,
+			task_utime
+		)
+		values (
+			#{taskNo},
+			#{projectNo},
+			#{taskTitle},
+			#{taskContent},
+			#{assignedMemberNo},
+			nvl(#{taskStatus}, 'TODO'),
+			#{taskStart},
+			#{taskEnd},
+			#{taskCategory},
+			nvl(#{taskPriority}, '보통'),
+			nvl(#{taskProgress}, 0),
+			#{taskWriterNo},
+			systimestamp,
+			null
+		)
+	</insert>
+
+	<!-- 프로젝트별 전체 업무 목록 조회 (칸반 보드 로딩용) -->
+	<select id="selectByProjectNo" resultType="TaskDto">
+		select
+			t.task_no            as taskNo,
+			t.project_no         as projectNo,
+			t.task_title         as taskTitle,
+			t.task_content       as taskContent,
+			t.assigned_member_no as assignedMemberNo,
+			t.task_status        as taskStatus,
+			t.task_start         as taskStart,
+			t.task_end           as taskEnd,
+			t.task_category      as taskCategory,
+			t.task_priority      as taskPriority,
+			t.task_progress      as taskProgress,
+			t.task_writer_no     as taskWriterNo,
+			t.task_ctime         as taskCtime,
+			t.task_utime         as taskUtime
+		from task t
+		where t.project_no = #{projectNo}
+		order by t.task_ctime desc
+	</select>
+
+	<!-- 단건 업무 상세 조회 (담당자 및 작성자 정보 JOIN) -->
+	<select id="selectOne" resultType="TaskDetailResponseVO">
+		select
+			t.task_no            as taskNo,
+			t.project_no         as projectNo,
+			t.task_title         as taskTitle,
+			t.task_content       as taskContent,
+			t.assigned_member_no as assignedMemberNo,
+			u_assignee.name      as assignedMemberName,
+			u_assignee.dept_name as assignedMemberDept,
+			t.task_status        as taskStatus,
+			t.task_start         as taskStart,
+			t.task_end           as taskEnd,
+			t.task_category      as taskCategory,
+			t.task_priority      as taskPriority,
+			t.task_progress      as taskProgress,
+			t.task_writer_no     as taskWriterNo,
+			u_writer.name        as taskWriterName,
+			t.task_ctime         as taskCtime,
+			t.task_utime         as taskUtime
+		from task t
+		left join project_member pm_assignee
+			on t.assigned_member_no = pm_assignee.project_member_no
+		left join user_info u_assignee
+			on pm_assignee.emp_no = u_assignee.emp_no
+		inner join project_member pm_writer
+			on t.task_writer_no = pm_writer.project_member_no
+		inner join user_info u_writer
+			on pm_writer.emp_no = u_writer.emp_no
+		where t.task_no = #{taskNo}
+	</select>
+
+	<!-- 업무 기본 정보 수정 -->
+	<update id="update" parameterType="TaskDto">
+		update task
+		set
+			task_title         = #{taskTitle},
+			task_content       = #{taskContent},
+			assigned_member_no = #{assignedMemberNo},
+			task_status        = #{taskStatus},
+			task_start         = #{taskStart},
+			task_end           = #{taskEnd},
+			task_category      = #{taskCategory},
+			task_priority      = #{taskPriority},
+			task_progress      = #{taskProgress},
+			task_utime         = systimestamp
+		where task_no = #{taskNo}
+	</update>
+
+	<!-- 칸반 카드 상태 변경 (드래그 앤 드롭 실시간 갱신용) -->
+	<update id="updateStatus">
+		update task
+		set
+			task_status = #{taskStatus},
+			task_utime  = systimestamp
+		where task_no = #{taskNo}
+	</update>
+
+	<!-- 업무 단건 삭제 -->
+	<delete id="delete">
+		delete from task
+		where task_no = #{taskNo}
+	</delete>
+
+</mapper>
