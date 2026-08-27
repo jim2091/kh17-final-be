@@ -24,10 +24,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public int add(TaskAddRequestVO requestVO, List<Integer> collaboratorMemberNos, int empNo) {
-        // [Step 1] 새로운 업무 번호 PK 채번
         int generatedTaskNo = taskDao.sequence();
 
-        // [Step 2] TaskAddRequestVO -> 질문자님의 TaskDto로 1:1 변환
         TaskDto taskDto = TaskDto.builder()
                 .taskNo(generatedTaskNo)
                 .projectNo(requestVO.getProjectNo())
@@ -43,10 +41,8 @@ public class TaskServiceImpl implements TaskService {
                 .taskProgress(requestVO.getTaskProgress() != null ? requestVO.getTaskProgress() : 0)
                 .build();
 
-        // [Step 3] DAO의 add(TaskDto) 호출 (타입 불일치 에러 완벽 해결)
         taskDao.add(taskDto);
 
-        // [Step 4] 협업자 목록이 있으면 for문으로 TaskCollaboDao.add()를 1건씩 순차 호출
         if (collaboratorMemberNos != null && !collaboratorMemberNos.isEmpty()) {
             for (Integer projectMemberNo : collaboratorMemberNos) {
                 if (projectMemberNo != null) {
@@ -55,7 +51,6 @@ public class TaskServiceImpl implements TaskService {
             }
         }
 
-        // [Step 5] 발급된 업무 번호 반환
         return generatedTaskNo;
     }
 
@@ -66,7 +61,6 @@ public class TaskServiceImpl implements TaskService {
         return taskDao.selectOne(taskNo);
     }
 
-    // 프로젝트별 업무 목록 조회 (칸반 보드 로딩용)[cite: 3]
     @Override
     @Transactional(readOnly = true)
     public List<TaskDto> selectByProjectNo(int projectNo) {
@@ -80,7 +74,6 @@ public class TaskServiceImpl implements TaskService {
         return taskDao.update(taskDto);
     }
 
-    // 칸반 카드 위치 및 컬럼 상태 드래그 이동[cite: 2, 4]
     @Override
     @Transactional
     public boolean updatePosition(int taskNo, String taskStatus, int position) {
