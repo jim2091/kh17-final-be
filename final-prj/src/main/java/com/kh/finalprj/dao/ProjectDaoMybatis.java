@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.ProjectDto;
+import com.kh.finalprj.vo.page.PageVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
 @Repository
@@ -45,8 +46,16 @@ public class ProjectDaoMybatis implements ProjectDao{
 	}
 
 	@Override
-	public List<ProjectListResponseVO> selectPublicProjectList(int empNo) {
-		return sqlSession.selectList("mapper.project.publicProjectList",empNo);
+	public int countPublicProject(PageVO pageVO) {
+		return sqlSession.selectOne("mapper.project.countPublicProject",pageVO);
+	}
+
+	@Override
+	public List<ProjectListResponseVO> selectPublicProjectList(PageVO pageVO, int empNo) {
+		Map<String,Object>params = new HashMap<>();
+		params.put("pageVO",pageVO);
+		params.put("empNo", empNo);
+		return sqlSession.selectList("mapper.project.publicProjectList",params);
 	}
 
 }

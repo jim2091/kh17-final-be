@@ -85,27 +85,69 @@
 		where	project_no = #{projectNo}
 	</update>
 	
+	<!-- 공개 프로젝트 개수(검색어 포함) -->
+	<select id="countryPublicProject" resultType="int">
+		select count(*)
+		from project
+		where project_visibility = 'public'
+			and project_status = 'active'
+			
+		<if test="isSearch()">
+			and (
+				project_name like '%' || #{keyword} || '%'
+				or project_purpose like '%' || #{keyword} || '%'
+			)
+		</if>
+	</select>
+	
 	<!-- 
 		공개 프로젝트 목록(left outer join)
 		로그인한 사용자도 식별하기위해
 	-->
 	<select id="publicProjectList" resultType="ProjectListResponseVO">
 		select
-			p.project_no as projectNo,
-			p.project_name as projectName,
-			p.project_purpose as projectPurpose,
-			p.project_visibility as projectVisibility,
-			p.project_status as projectStatus,
-			p.project_start as projectStart,
-			p.project_deadline as projectDeadline,
-			pm.project_member_role as projectMemberRole
+			projectNo,
+			projectName,
+			projectPurpose,
+			projectVisibility,
+			projectStatus,
+			projectStart,
+			projectDeadline,
+			projectMemberRole
+		from(
+			select
+				p.project_no as projectNo,
+				p.project_name as projectName,
+				p.project_purpose as projectPurpose,
+				p.project_visibility as projectVisibility,
+				p.project_status as projectStatus,
+				p.project_start as projectStart,
+				p.project_deadline as projectDeadline,
+				pm.project_member_role as projectMemberRole,
+				
+				row_number() over(
+					order by p.project_ctime desc
+				) as rn
+			
 		from project p
 		left outer join project_member pm
 			on p.project_no = pm.project_no
 			and pm.emp_no = #{empNo}
 		where p.project_visibility = 'public'
 			and p.project_status = 'active'
-		order by p.project_ctime desc
+			
+		<if test="pageVO.isSearch()">
+			and(
+				p.project_name like '%' || #{pageVO.keyword} || '%'
+				or p.project_purpose like '%' || #{pageVO.keyword} || '%'
+			)
+		</if>
+		)
+		
+		where rn between
+			#{pageVO.beginRownum}
+			and #{pageVO.endRownum}
 			
 	</select>
+	
 </mapper>

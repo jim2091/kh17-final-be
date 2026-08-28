@@ -14,11 +14,12 @@ import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.error.WhoAreYouException;
-import com.kh.finalprj.vo.jwt.TokenCreateRequestVO;
+import com.kh.finalprj.vo.page.PageVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
 import com.kh.finalprj.vo.project.ProjectUpdateRequestVO;
+import com.kh.finalprj.vo.project.PublicProjectListResponseVO;
 
 //프로젝트 관련 작업을 처리하기 위한 서비스
 @Service
@@ -140,20 +141,27 @@ public class ProjectServiceImpl implements ProjectService{
 
 	//공개 프로젝트 목록
 	@Override
-	public List<ProjectListResponseVO> publicProjectList(int empNo, String keyword, int page) {
+	public PublicProjectListResponseVO publicProjectList(PageVO pageVO,int empNo) {
+		//1.공개 프로젝트 전체 개수
+		int count = projectDao.countPublicProject(pageVO);
 		
-//		int pageSize = 9;
-//		
-//		//전체 개수
-//		int totalCount = projectDao.countPublicProject(keyword);
-//		
-//		//전체 페이지
-//		int totalPage = (totalCount + pageSize-1)/pageSize;
-//		
-//		//현재 페이지 시작/끝 위치
-//		int startRow =
-		return null;
+		//2.pageVO에 전체 개수 설정
+		pageVO.setCount(count);
+		
+		//3.현재 페이지 프로젝트 목록 조회
+		List<ProjectListResponseVO> projectList = 
+				projectDao.selectPublicProjectList(pageVO, empNo);
+		
+		//4.페이지 위치,목록반환
+		
+		return PublicProjectListResponseVO.builder()
+					.pageVO(pageVO)
+					.projectList(projectList)
+				.build();
 	}
+
+	
+
 
 	
 	
