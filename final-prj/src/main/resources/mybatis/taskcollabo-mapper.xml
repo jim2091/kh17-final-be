@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
   
 <mapper namespace="mapper.taskcollabo">
 
-	<!-- 단건 협업자 등록 (Service 반복문에서 호출) -->
+	<!-- 1. 단건 협업자 등록 (Service 반복문에서 호출) -->
 	<insert id="add">
 		insert into task_collaborator (
 			task_no,
@@ -20,32 +19,32 @@
 		)
 	</insert>
 
-	<!-- 특정 업무의 협업자 목록 상세 조회 (사원 프로필 JOIN) -->
+	<!-- 2. 특정 업무의 협업자 목록 상세 조회 (EMP 테이블 조인으로 ORA-00942 해결) -->
 	<select id="selectByTaskNo" resultType="TaskCollaboDto">
 		select
-			tc.task_no as taskNo,
-			tc.project_member_no as projectMemberNo,
+			tc.task_no                 as taskNo,
+			tc.project_member_no       as projectMemberNo,
 			tc.task_collaborator_ctime as taskCollaboratorCtime,
-			pm.emp_no as empNo,
-			u.name as memberName,
-			u.dept_name as deptName,
-			u.job_position as jobPosition
+			pm.emp_no                  as empNo,
+			e.emp_name                 as memberName,
+			e.emp_dept_no              as deptName,
+			e.emp_position_no          as jobPosition
 		from task_collaborator tc
-		inner join project_member pm
+		inner join project_member pm 
 			on tc.project_member_no = pm.project_member_no
-		inner join user_info u
-			on pm.emp_no = u.emp_no
+		inner join emp e 
+			on pm.emp_no = e.emp_no
 		where tc.task_no = #{taskNo}
 		order by tc.task_collaborator_ctime asc
 	</select>
 
-	<!-- 특정 업무의 협업자 전체 삭제 (수정/교체용) -->
+	<!-- 3. 특정 업무의 협업자 전체 삭제 (수정/교체용) -->
 	<delete id="deleteByTaskNo">
 		delete from task_collaborator
 		where task_no = #{taskNo}
 	</delete>
 
-	<!-- 특정 협업자 1명 단건 삭제 -->
+	<!-- 4. 특정 협업자 1명 단건 삭제 -->
 	<delete id="deleteOne">
 		delete from task_collaborator
 		where task_no = #{taskNo}
