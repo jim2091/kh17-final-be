@@ -17,6 +17,7 @@ import com.kh.finalprj.vo.position.PositionAddRequestVO;
 import com.kh.finalprj.vo.position.PositionAddResponseVO;
 import com.kh.finalprj.vo.position.PositionListVO;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name="직급 정보 관리 서비스")
@@ -29,10 +30,12 @@ public class PositionRestController {
 	@Autowired
 	private PositionDao positionDao;
 	
+	@ApiResponse(responseCode = "200", description = "조회성공")
 	@GetMapping("/")
 	public List<PositionListVO> list(){
 		return positionDao.selectList();
 	}
+	
 	
 	@PostMapping("/add")
 	public PositionAddResponseVO add(@RequestBody PositionAddRequestVO request) {
