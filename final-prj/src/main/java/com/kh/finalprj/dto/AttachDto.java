@@ -17,4 +17,5 @@ public class AttachDto {
 	private String attachUploader;
 	private String attachSource;
 	private Timestamp attachCtime;
+	private String empName;
 }

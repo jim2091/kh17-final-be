@@ -108,27 +108,61 @@ public class AttachServiceCloud implements AttachService{
 	    return attachNo;
 	}
 	
-	//3. 파일 삭제 (DB + AWS S3)
+	// 3. 파일 삭제 (DB + AWS S3)
 	@Transactional
 	@Override
-	public void delete(Integer attachNo) {
-		if(attachNo == null)return;
-		
-		//DB 정보 삭제
-		attachDao.delete(attachNo);
-		
-		//AWS S3 파일 삭제 요청
-		String objectKey = storageProperties.getAwsRoot() + "/" + attachNo;
-		DeleteObjectRequest request = DeleteObjectRequest.builder()
-					.bucket(storageProperties.getAwsBucket())
-					.key(objectKey)
-				.build();
-		
-		DeleteObjectResponse response = s3Client.deleteObject(request);
-		
-		log.debug("<AWS 파일 삭제 완료>");
-		log.debug("HTTP status = {}", response.sdkHttpResponse().statusCode());
+	public void delete(Integer attachNo, String uploader) {
+
+	    if (attachNo == null) {
+	        return;
+	    }
+
+	    // 삭제할 파일 조회
+	    AttachDto attachDto = attachDao.selectOne(attachNo);
+
+	    if (attachDto == null) {
+	        throw new TargetNotfoundException();
+	    }
+
+	    // 현재 로그인 사용자가 없는 경우
+	    if (uploader == null || uploader.trim().isEmpty()) {
+	        throw new IllegalStateException(
+	            "로그인 사용자 정보가 없습니다."
+	        );
+	    }
+
+	    // 본인이 올린 파일인지 확인
+	    if (!uploader.equals(attachDto.getAttachUploader())) {
+	        throw new IllegalStateException(
+	            "본인이 업로드한 파일만 삭제할 수 있습니다."
+	        );
+	    }
+
+	    // DB 정보 삭제
+	    attachDao.delete(attachNo);
+
+	    // AWS S3 파일 삭제
+	    String objectKey =
+	            storageProperties.getAwsRoot()
+	            + "/"
+	            + attachNo;
+
+	    DeleteObjectRequest request =
+	            DeleteObjectRequest.builder()
+	                    .bucket(storageProperties.getAwsBucket())
+	                    .key(objectKey)
+	                    .build();
+
+	    DeleteObjectResponse response =
+	            s3Client.deleteObject(request);
+
+	    log.debug("<AWS 파일 삭제 완료>");
+	    log.debug(
+	        "HTTP status = {}",
+	        response.sdkHttpResponse().statusCode()
+	    );
 	}
+
 	
 	//4. 파일 로드 (다운로드용)
 	@Override

@@ -83,19 +83,51 @@ public class AttachServiceLocal implements AttachService {
     
     @Transactional
     @Override
-    public void delete(Integer attachNo) {
-        if(attachNo == null) return;
-        
+    public void delete(Integer attachNo, String uploader) {
+
+        if (attachNo == null) {
+            return;
+        }
+
+        // 삭제할 파일 조회
+        AttachDto attachDto = attachDao.selectOne(attachNo);
+
+        if (attachDto == null) {
+            throw new TargetNotfoundException();
+        }
+
+        // 로그인 사용자 확인
+        if (uploader == null || uploader.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "로그인 사용자 정보가 없습니다."
+            );
+        }
+
+        // 본인이 올린 파일인지 확인
+        if (!uploader.equals(attachDto.getAttachUploader())) {
+            throw new IllegalStateException(
+                "본인이 업로드한 파일만 삭제할 수 있습니다."
+            );
+        }
+
+        // DB 삭제
         attachDao.delete(attachNo);
-        
+
+        // 실제 파일 삭제
         File dir = storageProperties.getLocalRoot();
-        if(dir.exists()) {
-            File target = new File(dir, String.valueOf(attachNo));
-            if(target.exists()) {
+
+        if (dir.exists()) {
+            File target = new File(
+                dir,
+                String.valueOf(attachNo)
+            );
+
+            if (target.exists()) {
                 target.delete();
             }
         }
     }
+
     
     @Override
     public List<AttachDto> list(int projectNo){
