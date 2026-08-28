@@ -86,18 +86,18 @@
 	</update>
 	
 	<!-- 공개 프로젝트 개수(검색어 포함) -->
-	<select id="countryPublicProject" resultType="int">
+	<select id="countPublicProject" resultType="int">
 		select count(*)
 		from project
 		where project_visibility = 'public'
 			and project_status = 'active'
 			
-		<if test="isSearch()">
-			and (
-				project_name like '%' || #{keyword} || '%'
-				or project_purpose like '%' || #{keyword} || '%'
-			)
-		</if>
+		 <if test="keyword != null and keyword != ''">
+        and (
+            project_name like '%' || #{keyword} || '%'
+            or project_purpose like '%' || #{keyword} || '%'
+        )
+    </if>
 	</select>
 	
 	<!-- 
