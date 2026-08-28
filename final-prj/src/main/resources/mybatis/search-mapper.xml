@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.search">
+
+
+    <!-- ================================================= -->
+    <!-- 프로젝트 검색 -->
+    <!-- ================================================= -->
+
+    <select id="searchProjects" resultType="ProjectDto">
+
+        select
+            project_no,
+            project_name,
+            project_purpose,
+            project_visibility,
+            project_status,
+            project_start,
+            project_deadline,
+            project_ctime,
+            project_utime
+
+        from project
+
+        where project_status = 'active'
+
+        and (
+            project_name like '%' || #{keyword} || '%'
+            or project_purpose like '%' || #{keyword} || '%'
+        )
+
+        order by project_ctime desc
+
+    </select>
+
+
+
+    <!-- ================================================= -->
+    <!-- 사용자 검색 -->
+    <!-- ================================================= -->
+
+    <select id="searchMembers" resultType="EmpDto">
+
+        select
+            emp_no,
+            emp_name,
+            emp_email,
+            emp_dept_no,
+            emp_position_no,
+            emp_level,
+            emp_state,
+            emp_presence,
+            emp_birth,
+            emp_contact,
+            emp_post,
+            emp_address1,
+            emp_address2,
+            emp_ctime,
+            emp_utime
+
+        from emp
+
+        where emp_state = 'active'
+
+        and (
+            emp_name like '%' || #{keyword} || '%'
+            or emp_email like '%' || #{keyword} || '%'
+        )
+
+        order by emp_no
+
+    </select>
+
+
+
+    <!-- ================================================= -->
+    <!-- 파일 검색 -->
+    <!-- ================================================= -->
+
+    <select id="searchFiles" resultType="AttachDto">
+
+        select
+            a.*,
+            e.emp_name as empName
+
+        from attach a
+
+        left join emp e
+            on a.attach_uploader = e.emp_no
+
+        where a.attach_name like '%' || #{keyword} || '%'
+
+        order by a.attach_no desc
+
+    </select>
+
+
+
+    <!-- ================================================= -->
+    <!-- 업무 검색 -->
+    <!-- ================================================= -->
+
+    <select id="searchTasks" resultType="TaskDto">
+
+        select
+            task_no,
+            project_no,
+            task_title,
+            task_content,
+            assigned_member_no,
+            task_status,
+            task_order,
+            task_start,
+            task_end,
+            task_category,
+            task_priority,
+            task_progress,
+            task_writer_no,
+            task_ctime,
+            task_utime
+
+        from task
+
+        where
+            task_title like '%' || #{keyword} || '%'
+
+            or
+
+            task_content like '%' || #{keyword} || '%'
+
+        order by task_ctime desc
+
+    </select>
+
+
+</mapper>
