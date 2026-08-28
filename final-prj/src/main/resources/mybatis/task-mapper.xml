@@ -71,34 +71,38 @@
         order by t.task_status asc, t.task_order asc
     </select>
 
-    <!-- 3. 단건 상세 조회 -->
-    <select id="selectOne" resultType="com.kh.finalprj.vo.task.TaskDetailResponseVO">
-        select
-            t.task_no            as taskNo,
-            t.project_no         as projectNo,
-            t.task_title         as taskTitle,
-            t.task_content       as taskContent,
-            t.assigned_member_no as assignedMemberNo,
-            u_assignee.name      as assignedMemberName,
-            u_assignee.dept_name as assignedMemberDept,
-            t.task_status        as taskStatus,
-            t.task_order         as taskOrder,
-            t.task_start         as taskStart,
-            t.task_end           as taskEnd,
-            t.task_category      as taskCategory,
-            t.task_priority      as taskPriority,
-            t.task_progress      as taskProgress,
-            t.task_writer_no     as taskWriterNo,
-            u_writer.name        as taskWriterName,
-            t.task_ctime         as taskCtime,
-            t.task_utime         as taskUtime
-        from task t
-        left join project_member pm_assignee on t.assigned_member_no = pm_assignee.project_member_no
-        left join user_info u_assignee on pm_assignee.emp_no = u_assignee.emp_no
-        inner join project_member pm_writer on t.task_writer_no = pm_writer.project_member_no
-        inner join user_info u_writer on pm_writer.emp_no = u_writer.emp_no
-        where t.task_no = #{taskNo}
-    </select>
+	<!-- 3. 단건 상세 조회 (EMP 테이블 기준 JOIN) -->
+	<select id="selectOne" resultType="TaskDetailResponseVO">
+    SELECT
+        t.task_no              AS taskNo,
+        t.project_no           AS projectNo,
+        t.task_title           AS taskTitle,
+        t.task_content         AS taskContent,
+        t.assigned_member_no   AS assignedMemberNo,
+        e_assignee.emp_name    AS assignedMemberName,
+        e_assignee.emp_dept_no AS assignedMemberDept,
+        t.task_status          AS taskStatus,
+        t.task_order           AS taskOrder,
+        t.task_start           AS taskStart,
+        t.task_end             AS taskEnd,
+        t.task_category        AS taskCategory,
+        t.task_priority        AS taskPriority,
+        t.task_progress        AS taskProgress,
+        t.task_writer_no       AS taskWriterNo,
+        e_writer.emp_name      AS taskWriterName,
+        t.task_ctime           AS taskCtime,
+        t.task_utime           AS taskUtime
+    	FROM task t
+    	LEFT JOIN project_member pm_assignee 
+        ON t.assigned_member_no = pm_assignee.project_member_no
+    	LEFT JOIN emp e_assignee 
+        ON pm_assignee.emp_no = e_assignee.emp_no
+    	LEFT JOIN project_member pm_writer 
+        ON t.task_writer_no = pm_writer.project_member_no
+    	LEFT JOIN emp e_writer 
+        ON pm_writer.emp_no = e_writer.emp_no
+    	WHERE t.task_no = #{taskNo}
+	</select>
 
     <!-- 4. 칸반 카드 이동 시 기존 카드들 순서 밀기 (+1) -->
     <update id="shiftOrders">
