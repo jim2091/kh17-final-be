@@ -44,19 +44,29 @@
 	</select>
 	
 	<select id="selectListByProject" resultType="AttachDto">
-		select * from attach 
-		where project_no = #{projectNo} 
-		order by attach_no desc
+    select
+        a.*,
+        e.emp_name as empName
+    from attach a
+    left join emp e
+        on a.attach_uploader = e.emp_no
+    where a.project_no = #{projectNo}
+    order by a.attach_no desc
 	</select>
 
 	<!-- [추가] 특정 프로젝트 번호 + 파일명 검색 조건이 있는 파일함 목록 조회 -->
 	<select id="selectListByProjectAndKeyword" resultType="AttachDto">
-		select * from attach 
-		where project_no = #{projectNo}
-		<if test="keyword != null and keyword != ''">
-			and attach_name like '%' || #{keyword} || '%'
-		</if>
-		order by attach_no desc
+    select
+        a.*,
+        e.emp_name as empName
+    from attach a
+    left join emp e
+        on a.attach_uploader = e.emp_no
+    where a.project_no = #{projectNo}
+    <if test="keyword != null and keyword != ''">
+        and a.attach_name like '%' || #{keyword} || '%'
+    </if>
+    order by a.attach_no desc
 	</select>
 	
 	

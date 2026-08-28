@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -66,7 +68,13 @@ public class AttachRestController {
     ) throws IllegalStateException, IOException {
 
         /*
-         * 로그인 사용자가 있으면 인증 객체에서 이름을 가져옵니다.
+         * 현재 로그인한 사용자의 정보를 가져옵니다.
+         *
+         * authentication.getName()
+         * = JWT의 subject에 저장된 값
+         *
+         * 현재 프로젝트에서는 이 값이
+         * attachUploader에 저장되는 값과 동일해야 합니다.
          */
         String uploader = null;
 
@@ -80,7 +88,7 @@ public class AttachRestController {
 
         /*
          * 인증 정보가 없는 상태에서 업로드하면
-         * Service에서 "파일 업로더 정보가 없습니다."가 발생합니다.
+         * 업로드를 막습니다.
          */
         if (uploader == null || uploader.trim().isEmpty()) {
             throw new IllegalStateException("로그인 사용자 정보가 없습니다.");
@@ -207,10 +215,31 @@ public class AttachRestController {
     // =========================================================
     @DeleteMapping("/{attachNo}")
     public void delete(
-            @PathVariable int attachNo
+            @PathVariable int attachNo,
+            Authentication authentication
     ) {
 
-        attachService.delete(attachNo);
+        /*
+         * 현재 로그인한 사용자
+         */
+        String uploader = authentication.getName();
+
+        log.debug("삭제 요청 파일 번호 = {}", attachNo);
+        log.debug("삭제 요청 사용자 = {}", uploader);
+
+        /*
+         * Service에서
+         *
+         * 현재 로그인 사용자
+         *        VS
+         * 파일을 업로드한 사용자
+         *
+         * 를 비교합니다.
+         */
+        attachService.delete(
+                attachNo,
+                uploader
+        );
     }
 
 
@@ -218,21 +247,56 @@ public class AttachRestController {
     // 5. 프로젝트별 파일 목록 조회
     // =========================================================
     @GetMapping("/list/{projectNo}")
-    public List<AttachDto> list(
+    public ResponseEntity<?> list(
             @PathVariable int projectNo,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            Authentication authentication
     ) {
 
+        /*
+         * 현재 로그인한 사용자
+         *
+         * authentication.getName()
+         * = JWT subject
+         */
+        String loginUser = authentication.getName();
+
+        List<AttachDto> files;
+
+        /*
+         * 검색어가 없으면 전체 파일 조회
+         */
         if (keyword == null || keyword.trim().isEmpty()) {
 
-            return attachService.list(projectNo);
+            files = attachService.list(projectNo);
 
         } else {
 
-            return attachService.list(
+            /*
+             * 검색어가 있으면 파일명 검색
+             */
+            files = attachService.list(
                     projectNo,
                     keyword
             );
         }
+
+        log.debug("파일 목록 조회 프로젝트 = {}", projectNo);
+        log.debug("현재 로그인 사용자 = {}", loginUser);
+
+        /*
+         * React에
+         *
+         * files      = 파일 목록
+         * loginUser  = 현재 로그인 사용자
+         *
+         * 를 같이 전달합니다.
+         */
+        return ResponseEntity.ok(
+                Map.of(
+                        "files", files,
+                        "loginUser", loginUser
+                )
+        );
     }
 }
