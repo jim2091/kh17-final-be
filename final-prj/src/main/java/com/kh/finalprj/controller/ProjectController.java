@@ -9,17 +9,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CommonsApiResponse;
 import com.kh.finalprj.annotation.CurrentUser;
 import com.kh.finalprj.service.ProjectService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
+import com.kh.finalprj.vo.page.PageVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
 import com.kh.finalprj.vo.project.ProjectUpdateRequestVO;
+import com.kh.finalprj.vo.project.PublicProjectListResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -79,14 +80,12 @@ public class ProjectController {
 	}
 	
 	//공개 프로젝트 조회 매핑
-//	@ApiResponse(responseCode = "200",description = "공개 프로젝트 조회")
-//	@GetMapping(value = "/public",produces = "application/json")
-//	public List<ProjectListResponseVO> publicProjectList(
-//			@CurrentUser TokenParseResponseVO parseVO,
-//			@RequestParam(defaultValue = "")String keyword,
-//			@RequestParam(defaultValue = "1")int page
-//	){
-//		int empNo = parseVO.getEmpNo();
-//		return projectService.publicProjectList(empNo,keyword,parseVO);
-//	}
+	@ApiResponse(responseCode = "200",description = "공개 프로젝트 조회")
+	@GetMapping(value = "/public",produces = "application/json")
+	public PublicProjectListResponseVO publicProjectList(PageVO pageVO,
+			@CurrentUser TokenParseResponseVO parseVO
+	){
+		int empNo = parseVO.getEmpNo();
+		return projectService.publicProjectList(pageVO,empNo);
+	}
 }
