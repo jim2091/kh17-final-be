@@ -47,7 +47,7 @@ public class TaskRestController {
 
 	// 전체 업무 조회 (테이블 목록 뷰 / 전체 조회용)
 	@ApiResponse(responseCode = "200", description = "전체 리스트 조회 성공")
-	@PostMapping(value = "/list/{projectNo}", produces = "application/json")
+	@GetMapping(value = "/list/{projectNo}", produces = "application/json")
 	public List<TaskDto> listByProject(@PathVariable int projectNo) {
 		return taskService.selectByProjectNo(projectNo);
 	}
