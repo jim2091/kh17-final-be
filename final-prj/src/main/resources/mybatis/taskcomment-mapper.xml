@@ -36,7 +36,45 @@
 			tc.task_no 				as taskNo,
 			tc.project_member_no	as projectMemberNo,
 			tc.task_comment_content	as taskCommentContent,
-			
+			tc.task_comment_ctime	as taskCommentCtime,
+			tc.task_comment_utime	as taskCommentUtime,
+			u.emp_no				as empNo,
+			u.emp_name				as empName,
+			u.emp_dept_no			as empDeptNo,
+			u.emp_position_no		as empPositionNo
+		from task_comment tc
+		inner join project_member pm on tc.project_member_no = pm.project_member_no
+		inner join emp e on pm.emp_no = u.emp_no
+		where tc.task_no = #{taskNo}
+		order by tc.task_comment_ctime asc
 	</select>
 
+	<!-- 단건 조회 -->
+	<select id="selectOne" resultType="TaskCommentDto">
+		select
+			task_comment_no		as taskCommentNo,
+			task_no				as taskNo,
+			project_member_no	as projectMemberNo,
+			task_comment_content as taskCommentContent,
+			task_comment_ctime	as taskCommentCtime,
+			task_comment_utime	as taskCommentUtime,
+		from task_comment
+		where task_comment_no = #{taskCommentNo}
+	</select>
+	
+	<!-- 댓글 내용 수정 -->
+	<update id="update">
+		update task_comment
+		set
+			task_comment_content = #{taskCommentContent},
+			task_comment_utime = systimestamp
+		where task_comment_no = #{taskCommentNo}
+	</update>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="delete">
+		delete from task_comment
+		where task_comment_no = #{taskCommentNo}
+	</delete>
+	
 </mapper>
