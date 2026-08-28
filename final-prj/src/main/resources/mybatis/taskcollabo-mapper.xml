@@ -3,52 +3,78 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
   
-<mapper namespace="mapper.taskcollabo">
+<!-- 1. DAO 인터페이스 전체 패키지 경로로 namespace 지정 -->
+<mapper namespace="com.kh.finalprj.dao.TaskCollaboDao">
 
 	<!-- 1. 단건 협업자 등록 (Service 반복문에서 호출) -->
 	<insert id="add">
-		insert into task_collaborator (
+		INSERT INTO task_collaborator (
 			task_no,
 			project_member_no,
 			task_collaborator_ctime
-		)
-		values (
+		) VALUES (
 			#{taskNo},
 			#{projectMemberNo},
-			systimestamp
+			SYSTIMESTAMP
 		)
 	</insert>
 
-	<!-- 2. 특정 업무의 협업자 목록 상세 조회 (EMP 테이블 조인으로 ORA-00942 해결) -->
-	<select id="selectByTaskNo" resultType="TaskCollaboDto">
-		select
-			tc.task_no                 as taskNo,
-			tc.project_member_no       as projectMemberNo,
-			tc.task_collaborator_ctime as taskCollaboratorCtime,
-			pm.emp_no                  as empNo,
-			e.emp_name                 as memberName,
-			e.emp_dept_no              as deptName,
-			e.emp_position_no          as jobPosition
-		from task_collaborator tc
-		inner join project_member pm 
-			on tc.project_member_no = pm.project_member_no
-		inner join emp e 
-			on pm.emp_no = e.emp_no
-		where tc.task_no = #{taskNo}
-		order by tc.task_collaborator_ctime asc
+	<!-- 2. [추가] 특정 업무의 협업자 목록 조회 (BindingException 해결) -->
+	<select id="selectByTaskNo" parameterType="int" resultType="com.kh.finalprj.dto.TaskCollaboDto">
+		SELECT
+			tc.task_no                 AS taskNo,
+			tc.project_member_no       AS projectMemberNo,
+			tc.task_collaborator_ctime AS taskCollaboratorCtime,
+			pm.emp_no                  AS empNo,
+			e.emp_name                 AS memberName,
+			e.emp_dept_no              AS deptName,
+			e.emp_position_no          AS jobPosition
+		FROM task_collaborator tc
+		INNER JOIN project_member pm ON tc.project_member_no = pm.project_member_no
+		INNER JOIN emp e ON pm.emp_no = e.emp_no
+		WHERE tc.task_no = #{taskNo}
+		ORDER BY tc.task_collaborator_ctime ASC
 	</select>
 
-	<!-- 3. 특정 업무의 협업자 전체 삭제 (수정/교체용) -->
-	<delete id="deleteByTaskNo">
-		delete from task_collaborator
-		where task_no = #{taskNo}
+	<!-- 3. 추가 가능한 협업자 후보 목록 조회 (3단계 필터링) -->
+	<select id="selectAvailableCollaborators" parameterType="map" resultType="com.kh.finalprj.dto.TaskCollaboDto">
+		SELECT
+			pm.project_member_no 		AS projectMemberNo,
+			pm.emp_no					AS empNo,
+			e.emp_name					AS memberName,
+			e.emp_dept_no				AS deptName,
+			e.emp_position_no			AS jobPosition
+		FROM project_member pm
+		INNER JOIN emp e ON pm.emp_no = e.emp_no
+		WHERE pm.project_no = #{projectNo}
+		  <!-- 해당 업무의 주 담당자 제외 -->
+		  AND (
+			pm.project_member_no != NVL((
+				SELECT assigned_member_no
+				FROM task
+				WHERE task_no = #{taskNo}
+			), -1)
+		  )
+		  <!-- 이미 협업자로 지정된 사원 제외 -->
+		  AND pm.project_member_no NOT IN (
+			SELECT NVL(project_member_no, -1)
+			FROM task_collaborator
+			WHERE task_no = #{taskNo}
+		  )
+		ORDER BY e.emp_name ASC
+	</select>
+
+	<!-- 4. 특정 업무의 협업자 전체 삭제 (수정/교체용) -->
+	<delete id="deleteByTaskNo" parameterType="int">
+		DELETE FROM task_collaborator
+		WHERE task_no = #{taskNo}
 	</delete>
 
-	<!-- 4. 특정 협업자 1명 단건 삭제 -->
+	<!-- 5. 특정 협업자 1명 단건 삭제 -->
 	<delete id="deleteOne">
-		delete from task_collaborator
-		where task_no = #{taskNo}
-			and project_member_no = #{projectMemberNo}
+		DELETE FROM task_collaborator
+		WHERE task_no = #{taskNo}
+		  AND project_member_no = #{projectMemberNo}
 	</delete>
 
 </mapper>

@@ -47,4 +47,12 @@ public class TaskCollaboDaoMybatis implements TaskCollaboDao {
 
 		return sqlSession.delete("mapper.taskcollabo.deleteOne", params) > 0;
 	}
+
+	@Override
+	public List<TaskCollaboDto> selectAvailableCollaborators(int projectNo, int taskNo) {
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("projectNo", projectNo);
+	    params.put("taskNo", taskNo);
+	    return sqlSession.selectList("mapper.taskcollabo.selectAvailableCollaborators", params);
+	}
 }
