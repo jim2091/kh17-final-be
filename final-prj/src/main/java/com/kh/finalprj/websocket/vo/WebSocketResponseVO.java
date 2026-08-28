@@ -1,5 +1,6 @@
 package com.kh.finalprj.websocket.vo;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
@@ -17,5 +18,7 @@ public class WebSocketResponseVO {
 	private String senderName;
 	private String content;
 	private String type;
-	private LocalDateTime time;
+	private Timestamp ctime;
+	private Timestamp utime;
+	private int unreadCount;
 }

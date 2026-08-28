@@ -15,21 +15,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CurrentUser;
 import com.kh.finalprj.dao.ChannelDao;
+import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.ChannelService;
+import com.kh.finalprj.service.JwtService;
 import com.kh.finalprj.service.MessageService;
 import com.kh.finalprj.vo.channel.ChannelCreateRequestVO;
 import com.kh.finalprj.vo.channel.ChannelDeleteRequestVO;
 import com.kh.finalprj.vo.channel.ChannelUpdateRequestVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
-import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
-import com.kh.finalprj.vo.message.ChannelMessageResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+//채널 CRUD + 채널의 메시지 목록 조회
 @Tag(name = "채널 API")
 @RestController
 @RequestMapping("/api/channel")
@@ -38,9 +39,9 @@ public class ChannelRestController {
 	private ChannelDao channelDao;
 	@Autowired
 	private ChannelService channelService;
-	@Autowired
-	private MessageService messageService;
 	
+	
+	//채널 생성
 	@ApiResponse(responseCode = "200", description = "채널 생성 성공")
 	@PostMapping("/")
 	public void createChannel(
@@ -56,12 +57,16 @@ public class ChannelRestController {
 		channelService.create(channelDto, parseVO.getEmpNo());
 	}
 
+	
+	//채널 목록
 	@ApiResponse(responseCode = "200", description = "채널 목록 조회 성공")
 	@GetMapping("/project/{projectNo}")
 	public List<ChannelDto> list(@PathVariable int projectNo) {
 		return channelService.list(projectNo);
 	}
 	
+	
+	//채널 상세
 	@ApiResponse(responseCode = "200", description = "채널 상세 조회 성공")
 	@GetMapping("/project/{projectNo}/{channelNo}")
 	public ChannelDto detail(
@@ -78,6 +83,8 @@ public class ChannelRestController {
 		return channelDto;
 	}
 	
+	
+	//채널 삭제
 	@ApiResponse(responseCode = "200", description = "채널 삭제 성공")
 	@DeleteMapping(value = "/{channelNo}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public void deleteChannel(
@@ -89,6 +96,8 @@ public class ChannelRestController {
 				request.getProjectNo(), channelNo, parseVO.getEmpNo());
 	}
 	
+	
+	//채널 수정
 	@ApiResponse(responseCode = "200", description = "채널 수정 성공")
 	@PutMapping(value = "/{channelNo}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public void updateChannel(
@@ -103,16 +112,5 @@ public class ChannelRestController {
 			.build();
 		
 		channelService.update(channelDto, parseVO.getEmpNo());
-	}
-	
-	@ApiResponse(responseCode = "200", description = "메세지 조회 성공")
-	@PostMapping(value = "/{channelNo}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ChannelMessageResponseVO messages(
-			@PathVariable int channelNo,
-			@CurrentUser TokenParseResponseVO parseVO,
-			@Valid @RequestBody ChannelMessageRequestVO request
-		) {
-		return messageService.selectList(
-				channelNo, parseVO.getEmpNo(), request);
 	}
 }
