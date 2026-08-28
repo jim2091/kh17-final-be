@@ -1,6 +1,9 @@
 package com.kh.finalprj.dao;
 
+import java.util.List;
+
 import com.kh.finalprj.dto.ProjectMemberDto;
+import com.kh.finalprj.vo.project.ProjectMemberListResponseVO;
 
 public interface ProjectMemberDao {
 
@@ -17,4 +20,10 @@ public interface ProjectMemberDao {
 	
 	//필요해서 추가함 - 정빈
 	ProjectMemberDto findMember(int projectMemberNo);
+	
+	//프로젝트 참여자 목록
+	List<ProjectMemberListResponseVO> selectProjectMemberList(int projectNo);
+	//멤버 역할 변경
+	void updateRole(int projectMemberNo,String projectMemberRole);
+	
 }

@@ -1,6 +1,7 @@
 package com.kh.finalprj.dao;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.ProjectMemberDto;
+import com.kh.finalprj.vo.project.ProjectMemberListResponseVO;
 
 @Repository
 public class ProjectMemberDaoMybatis implements ProjectMemberDao{
@@ -53,5 +55,18 @@ public class ProjectMemberDaoMybatis implements ProjectMemberDao{
 		params.put("projectNo", projectNo);
 		params.put("empNo", empNo);
 		return sqlSession.selectOne("mapper.projectMember.selectRole",params);
+	}
+
+	@Override
+	public List<ProjectMemberListResponseVO> selectProjectMemberList(int projectNo) {
+		return  sqlSession.selectList("mapper.projectMember.selectProjectMemberList",projectNo);
+	}
+
+	@Override
+	public void updateRole(int projectMemberNo, String projectMemberRole) {
+		Map<String,Object>params = new HashMap<>();
+		params.put("projectMemberNo",projectMemberNo);
+		params.put("projectMemberRole", projectMemberRole);
+		sqlSession.update("mapper.projectMember.updateRole",params);
 	}
 }
