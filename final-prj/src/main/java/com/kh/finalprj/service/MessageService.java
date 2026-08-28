@@ -13,7 +13,10 @@ import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
 import com.kh.finalprj.vo.message.ChannelMessageResponseVO;
+import com.kh.finalprj.vo.message.MessageReadResponseVO;
 import com.kh.finalprj.vo.message.MessageTargetVO;
+import com.kh.finalprj.vo.message.MessageUnreadChannelVO;
+import com.kh.finalprj.vo.message.MessageUnreadVO;
 import com.kh.finalprj.vo.message.MessageUpdateRequestVO;
 import com.kh.finalprj.vo.message.MessageVO;
 
@@ -26,20 +29,21 @@ public class MessageService {
 	@Autowired
 	private ProjectMemberDao projectMemberDao;
 
+	
 	//메세지 등록
 	@Transactional
 	public MessageVO add(MessageVO message) {
 		//(1) 메세지 번호 생성
 		int no = messageDao.sequence();
-		
-		//(2) 생성된 번호 저장
 		message.setNo(no);
 		
-		//(3) DB 등록
+		//(3) 메세지 등록
 		messageDao.add(message);
 		
-		return message;
+		//(4) DB에 저장된 메세지를 다시 조회
+		return messageDao.selectOne(no);
 	}
+	
 	
 	//과거 메세지 목록 조회
 	public ChannelMessageResponseVO selectList(
@@ -76,8 +80,9 @@ public class MessageService {
 				.build();
 	}
 	
+	
 	//메세지 삭제
-	public void delete(int chatMessageNo, int empNo) {
+	public MessageTargetVO delete(int chatMessageNo, int empNo) {
 		//(1) 삭제 대상 메세지 조회
 		MessageTargetVO target = messageDao.selectTarget(chatMessageNo);
 		
@@ -103,10 +108,14 @@ public class MessageService {
 		
 		//(6) 메세지 삭제 (soft delete)
 		messageDao.delete(chatMessageNo);
+		
+		//(7) 삭제된 메세지의 기본 정보 반환
+		return target;
 	}
 	
+	
 	//메세지 수정
-	public void update(
+	public MessageVO update(
 			int chatMessageNo,
 			MessageUpdateRequestVO request, 
 			int empNo
@@ -136,5 +145,55 @@ public class MessageService {
 		
 		//(6) 메세지 수정
 		messageDao.update(chatMessageNo, request.getContent());
+		
+		//(7) 수정된 메세지 다시 조회
+		return messageDao.selectOne(chatMessageNo);
+	}
+	
+	
+	//해당 채널의 안 읽은 메시지를 한꺼번에 읽음 처리
+	@Transactional
+	public MessageReadResponseVO readChannelMessage(int channelNo, int empNo) {
+		//(1) 채널이 속한 프로젝트 번호 조회
+		int projectNo = channelDao.findProjectNo(channelNo);
+		
+		//(2) 현재 사용자의 projectMemberNo 조회
+		Integer projectMemberNo = 
+			projectMemberDao.findProjectMemberNo(
+				projectNo, empNo);
+		
+		//(3) 프로젝트 참여자인지 확인
+		if(projectMemberNo == null) {
+			throw new GetOutException();
+		}
+		
+		//(4) 현재 사용자가 채널의 메시지를 모두 읽음 처리
+		messageDao.readChannelMessage(channelNo, projectMemberNo);
+		
+		//(5) 읽음 처리 후 메세지별 unreadCount 조회
+		List<MessageUnreadVO> messages = messageDao.selectUnreadCount(channelNo);
+		
+		//(6) Websocket으로 보낼 응답 생성
+		return MessageReadResponseVO.builder()
+					.channelNo(channelNo)
+					.projectMemberNo(projectMemberNo)
+					.messages(messages)
+				.build();
+	}
+	
+	
+	//특정 메세지의 안 읽은 사람 수
+	public int countUnread(
+			int chatMessageNo, int channelNo, int projectMemberNo
+		) {
+		return messageDao.countUnread(chatMessageNo, channelNo, projectMemberNo);
+	}
+	
+	//채널별 내가 안 읽은 메세지 수 조회
+	public List<MessageUnreadChannelVO> selectChannelUnreadCount(
+			int projectNo, int projectMemberNo
+		) {
+		return messageDao.selectChannelUnreadCount(
+				projectNo, projectMemberNo);
 	}
 }

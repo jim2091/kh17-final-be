@@ -4,7 +4,8 @@ import java.util.List;
 
 import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
 import com.kh.finalprj.vo.message.MessageTargetVO;
-import com.kh.finalprj.vo.message.MessageUpdateRequestVO;
+import com.kh.finalprj.vo.message.MessageUnreadChannelVO;
+import com.kh.finalprj.vo.message.MessageUnreadVO;
 import com.kh.finalprj.vo.message.MessageVO;
 
 public interface MessageDao {
@@ -32,4 +33,17 @@ public interface MessageDao {
 	
 	//메세지 읽음 처리
 	int readChannelMessage(int channelNo, int projectMemberNo);
+	
+	//특정 메세지 안 읽은 사람 수
+	int countUnread(int chatMessageNo, int channelNo, int projectMemberNo);
+	
+	//메시지별 unreadCount 목록
+	List<MessageUnreadVO> selectUnreadCount(int channelNo);
+	
+	//메세지 조회
+	MessageVO selectOne(int chatMessageNo);
+	
+	//채널별 내가 안 읽은 메세지 수
+	List<MessageUnreadChannelVO> selectChannelUnreadCount(
+			int projectNo, int projectMemberNo);
 }

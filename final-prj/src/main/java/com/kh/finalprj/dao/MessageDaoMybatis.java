@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
 import com.kh.finalprj.vo.message.MessageTargetVO;
+import com.kh.finalprj.vo.message.MessageUnreadChannelVO;
+import com.kh.finalprj.vo.message.MessageUnreadVO;
 import com.kh.finalprj.vo.message.MessageUpdateRequestVO;
 import com.kh.finalprj.vo.message.MessageVO;
 
@@ -75,6 +77,32 @@ public class MessageDaoMybatis implements MessageDao {
 		return sqlSession.insert("mapper.message.readChannelMessage", params);
 	}
 
-	
+	@Override
+	public int countUnread(int chatMessageNo, int channelNo, int projectMemberNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("chatMessageNo", chatMessageNo);
+	    params.put("channelNo", channelNo);
+	    params.put("projectMemberNo", projectMemberNo);
+		return sqlSession.selectOne("mapper.message.countUnread", params);
+	}
 
+	@Override
+	public List<MessageUnreadVO> selectUnreadCount(int channelNo) {
+		Map<String, Object> params = new HashMap<>();
+	    params.put("channelNo", channelNo);
+	    return sqlSession.selectList("mapper.message.selectUnreadCount", params);
+	}
+
+	@Override
+	public MessageVO selectOne(int chatMessageNo) {
+		return sqlSession.selectOne("mapper.message.selectOne", chatMessageNo);
+	}
+
+	@Override
+	public List<MessageUnreadChannelVO> selectChannelUnreadCount(int projectNo, int projectMemberNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("projectNo", projectNo);
+		params.put("projectMemberNo", projectMemberNo);
+		return sqlSession.selectList("mapper.message.selectChannelUnreadCount", params);
+	}
 }
