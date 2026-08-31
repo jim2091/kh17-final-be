@@ -67,13 +67,13 @@
 		권한 순서,등록 순서로 정렬
 	-->
 	<select id="selectProjectMemberList" resultType="ProjectMemberListResponseVO">
-		select 	pm.project_member_no as projectMemberNo,
-				pm.project_no as projectNo,
-				pm.emp_no as empNo,
-				e.emp_name as empName,
-				pm.project_member_role as projectMemberRole,
-				pm.project_member_job as projectMemberJob,
-				pm.project_member_ctime as projectMemberCtime
+		select 	pm.project_member_no,
+				pm.project_no,
+				pm.emp_no,
+				e.emp_name,
+				pm.project_member_role,
+				pm.project_member_job,
+				pm.project_member_ctime
 		from project_member pm
 		inner join emp e
 			on pm.emp_no = e.emp_no
@@ -90,7 +90,8 @@
 	<!-- 역할 변경 -->
 	<update id="updateRole">
 		update project_member
-		set project_member_role = #{projectMemberRole}
-		where project_member_no = #{projectMemberNo}
+		set 	project_member_role = #{projectMemberRole}
+		where 	project_member_no = #{projectMemberNo}
+			and projectNo = #{projectNo}
 	</update>
 </mapper>

@@ -37,7 +37,7 @@ public class ProjectDaoMybatis implements ProjectDao{
 		Map<String, Object> params = new HashMap<>();
 		params.put("projectNo", projectNo);
 		params.put("empNo", empNo);
-		return sqlSession.selectOne("mapper.project.selectOne",params);
+		return sqlSession.selectOne("mapper.project.detail",params);
 	}
 
 	@Override
@@ -56,6 +56,11 @@ public class ProjectDaoMybatis implements ProjectDao{
 		params.put("pageVO",pageVO);
 		params.put("empNo", empNo);
 		return sqlSession.selectList("mapper.project.publicProjectList",params);
+	}
+
+	@Override
+	public ProjectDto selectProject(int projectNo) {
+		return sqlSession.selectOne("mapper.project.selectProject",projectNo);
 	}
 
 }
