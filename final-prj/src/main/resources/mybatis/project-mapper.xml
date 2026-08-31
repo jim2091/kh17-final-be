@@ -36,12 +36,12 @@
 
 	<select id="myProjectList" resultType="ProjectListResponseVO">
 		select
-			p.project_no as projectNo,
-			p.project_name as projectName,
-			p.project_purpose as projectPurpose,
-			p.project_visibility as projectVisibility,
-			p.project_start as projectStart,
-			p.project_deadline as projectDeadline,
+			p.project_no,
+			p.project_name,
+			p.project_purpose,
+			p.project_visibility,
+			p.project_start,
+			p.project_deadline,
 			pm.project_member_role as projectMemberRole
 		from project p
 		inner join project_member pm
@@ -55,17 +55,17 @@
 		프로젝트 상세(inner join)
 		해당 사원이 참여하고 있는 프로젝트 조회
 	-->
-	<select id="selectOne" resultType="ProjectDetailResponseVO">
+	<select id="detail" resultType="ProjectDetailResponseVO">
 		select
-			p.project_no as projectNo,
-			p.project_name as projectName,
-			p.project_purpose as projectPurpose,
-			p.project_visibility as projectVisibility,
-			p.project_status as projectStatus,
-			p.project_start as projectStart,
-			p.project_deadline as projectDeadline,
-			pm.project_member_role as projectMemberRole,
-			pm.project_member_no as projectMemberNo
+			p.project_no,
+			p.project_name,
+			p.project_purpose,
+			p.project_visibility,
+			p.project_status,
+			p.project_start,
+			p.project_deadline,
+			pm.project_member_role,
+			pm.project_member_no
 		from project p
 		inner join project_member pm
 			on p.project_no = pm.project_no
@@ -116,14 +116,14 @@
 			projectMemberRole
 		from(
 			select
-				p.project_no as projectNo,
-				p.project_name as projectName,
-				p.project_purpose as projectPurpose,
-				p.project_visibility as projectVisibility,
-				p.project_status as projectStatus,
-				p.project_start as projectStart,
-				p.project_deadline as projectDeadline,
-				pm.project_member_role as projectMemberRole,
+				p.project_no,
+				p.project_name,
+				p.project_purpose,
+				p.project_visibility,
+				p.project_status,
+				p.project_start,
+				p.project_deadline,
+				pm.project_member_role,
 				
 				row_number() over(
 					order by p.project_ctime desc
@@ -150,4 +150,8 @@
 			
 	</select>
 	
+	<!-- 프로젝트 조회(참여하기에 사용) -->
+	<select id="selectProject" resultType="ProjectDto">
+		select * from project where project_no = #{projectNo}
+	</select>
 </mapper>

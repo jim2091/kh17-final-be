@@ -161,6 +161,7 @@ public class ProjectServiceImpl implements ProjectService{
 				.build();
 	}
 
+	//프로젝트 멤버 목록
 	@Override
 	public List<ProjectMemberListResponseVO> memberList(int projectNo, int empNo) {
 		//프로젝트 참여자인지 확인
@@ -172,8 +173,9 @@ public class ProjectServiceImpl implements ProjectService{
 		return projectMemberDao.selectProjectMemberList(projectNo);
 	}
 
+	//멤버 권한 수정
 	@Override
-	public void updateMemberRole(int projectNo, int projectMemberNo, String projectMemberRole, int empNo,String projectVisibility) {
+	public void updateMemberRole(int projectNo, int projectMemberNo, String projectMemberRole, int empNo) {
 		//1. 권한 확인
 		String loginUserRole = projectMemberDao.selectRole(projectNo, empNo);
 		
@@ -185,11 +187,15 @@ public class ProjectServiceImpl implements ProjectService{
 			!projectMemberRole.equals("member")) {
 			throw new WhoAreYouException("변경할 수 없는 프로젝트 권한입니다.");
 		}
-		//3.비공개 권한
-		if(!projectVisibility.equals("private") &&
-			!projectMemberRole.equals("owner") &&
-			!projectMemberRole.equals("manager"))
-		projectMemberDao.updateRole(projectMemberNo, projectMemberRole);
+		
+		projectMemberDao.updateRole(projectMemberNo, empNo,projectMemberRole);
+		
+	}
+	
+	//프로젝트 참가
+	@Override
+	public void join(int projectNo, int empNo) {
+		//1.프로젝트 존재 여부 확인
 		
 	}
 

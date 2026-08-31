@@ -25,7 +25,7 @@ public interface ProjectService{
 	//프로젝트 멤버 목록
 	List<ProjectMemberListResponseVO> memberList(int projectNo, int empNo);
 	//멤버 권한 수정
-	void updateMemberRole(int projectNo, int projectMemberNo, String projectMemberRole, int empNo,
-			String projectVisibility);
-	
+	void updateMemberRole(int projectNo,int projectMemberNo,String projectMemberRole, int empNo);
+	//프로젝트 참가
+	void join(int projectNo , int empNo);
 }
