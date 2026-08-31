@@ -62,8 +62,35 @@
 			and emp_no = #{empNo}
 	</select>
 	
-	<!-- 프로젝트 멤버목록 조회 -->
+	<!-- 
+		프로젝트 멤버목록 조회 
+		권한 순서,등록 순서로 정렬
+	-->
 	<select id="selectProjectMemeberList" resultType="ProjectMemberListResponseVO">
-		select
+		select 	pm.project_member_no as projectMemberNo,
+				pm.project_no as projectNo,
+				pm.emp_no as empNo,
+				e.emp_name as empName,
+				pm.project_member_role as projectMemberRole,
+				pm.project_member_job as projectMemberJob,
+				pm.project_member_ctime as projectMemberCtime
+		from project_member pm
+		inner join emp e
+			on pm.emp_no = e.emp_no
+		where pm.project__no =#{projectNo}
+		order by 
+			case pm.project_member_role
+				when 'owner' then 1
+				when 'manager' then 2
+				else 3
+			end,
+			pm.project_member_ctime asc
 	</select>
+	
+	<!-- 역할 변경 -->
+	<update id="updateRole">
+		update project_member
+		set project_member_role = #{projectMemberRole}
+		where project_member_no = #{projectMemberNo}
+	</update>
 </mapper>

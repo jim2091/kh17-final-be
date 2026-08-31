@@ -18,6 +18,7 @@ import com.kh.finalprj.vo.page.PageVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
+import com.kh.finalprj.vo.project.ProjectMemberListResponseVO;
 import com.kh.finalprj.vo.project.ProjectUpdateRequestVO;
 import com.kh.finalprj.vo.project.PublicProjectListResponseVO;
 
@@ -158,6 +159,34 @@ public class ProjectServiceImpl implements ProjectService{
 					.pageVO(pageVO)
 					.projectList(projectList)
 				.build();
+	}
+
+	@Override
+	public List<ProjectMemberListResponseVO> memberList(int projectNo, int empNo) {
+		//프로젝트 참여자인지 확인
+		String role = projectMemberDao.selectRole(projectNo, empNo);
+		
+		if(role == null) {
+			throw new WhoAreYouException("프로젝트 권한이 없습니다.");
+		}
+		return projectMemberDao.selectProjectMemberList(projectNo);
+	}
+
+	@Override
+	public void updateMemberRole(int projectNo, int projectMemberNo, String projectMemberRole, int empNo) {
+		//1. 권한 확인
+		String loginUserRole = projectMemberDao.selectRole(projectNo, empNo);
+		
+		if(!loginUserRole.equals("owner")) {
+			throw new WhoAreYouException("프로젝트 멤버 역할 변경 권한이 없습니다.");	
+		}
+		//2.변경 가능한 역할인지 확인
+		if(!projectMemberRole.equals("manager") && 
+			!projectMemberRole.equals("member")) {
+			throw new WhoAreYouException("변경할 수 없는 프로젝트 권한입니다.");
+		}
+		projectMemberDao.updateRole(projectMemberNo, projectMemberRole);
+		
 	}
 
 	

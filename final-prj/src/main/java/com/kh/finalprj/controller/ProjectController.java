@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +20,8 @@ import com.kh.finalprj.vo.page.PageVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
+import com.kh.finalprj.vo.project.ProjectMemberListResponseVO;
+import com.kh.finalprj.vo.project.ProjectMemberRoleUpdateRequestVO;
 import com.kh.finalprj.vo.project.ProjectUpdateRequestVO;
 import com.kh.finalprj.vo.project.PublicProjectListResponseVO;
 
@@ -87,5 +90,34 @@ public class ProjectController {
 	){
 		int empNo = parseVO.getEmpNo();
 		return projectService.publicProjectList(pageVO,empNo);
+	}
+	
+	//프로젝트 멤버 목록 매핑
+	@ApiResponse(responseCode = "200",description = "프로젝트 멤버 목록 매핑")
+	@GetMapping("/{projectNo}/member")
+	public List<ProjectMemberListResponseVO> memberList(
+			@PathVariable int projectNo,@CurrentUser TokenParseResponseVO parseVO
+	){
+		int empNo = parseVO.getEmpNo();
+		return projectService.memberList(projectNo, empNo);
+	}
+	
+	//역할 변경
+	@ApiResponse(responseCode = "200",description = "멤버 역할 변경")
+	@PatchMapping("/{projectNo}/member/{projectMemberNo}/role")
+	public void updateMemberRole(
+		@PathVariable int projectNo,
+		@PathVariable int projectMemberNo,
+		@RequestBody ProjectMemberRoleUpdateRequestVO requestVO,
+		@CurrentUser TokenParseResponseVO parseVO
+	) {
+		int empNo = parseVO.getEmpNo();
+		
+		projectService.updateMemberRole(
+			projectNo, 
+			projectMemberNo, 
+			requestVO.getProjectMemberRole(), 
+			empNo
+		);
 	}
 }
