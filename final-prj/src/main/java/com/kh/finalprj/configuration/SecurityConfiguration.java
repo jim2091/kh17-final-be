@@ -57,6 +57,7 @@ public class SecurityConfiguration {
 						"/active"
 						,"/swagger-ui/**"
 						,"/v3/api-docs/**"
+						,"/ws/**"
 					).permitAll()
 					
 					.requestMatchers(
