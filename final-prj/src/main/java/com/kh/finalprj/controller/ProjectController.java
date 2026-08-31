@@ -108,6 +108,7 @@ public class ProjectController {
 	public void updateMemberRole(
 		@PathVariable int projectNo,
 		@PathVariable int projectMemberNo,
+		@PathVariable String projectVisibility,
 		@RequestBody ProjectMemberRoleUpdateRequestVO requestVO,
 		@CurrentUser TokenParseResponseVO parseVO
 	) {
@@ -117,7 +118,7 @@ public class ProjectController {
 			projectNo, 
 			projectMemberNo, 
 			requestVO.getProjectMemberRole(), 
-			empNo
+			empNo, projectVisibility
 		);
 	}
 }
