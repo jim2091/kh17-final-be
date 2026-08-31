@@ -29,22 +29,22 @@ public class LoginPresenceServer {
 		simpMessagingTemplate.convertAndSend("/public/basic", message);
 	}
 	
-	@EventListener
-	public void handleWebSocketConnectListener(
-	        SessionConnectEvent event) {
-
-	    StompHeaderAccessor accessor =
-	            StompHeaderAccessor.wrap(event.getMessage());
-
-	    Principal principal = accessor.getUser();
-
+//	@EventListener
+//	public void handleWebSocketConnectListener(
+//	        SessionConnectEvent event) {
+//
+//	    StompHeaderAccessor accessor =
+//	            StompHeaderAccessor.wrap(event.getMessage());
+//
+//	    Principal principal = accessor.getUser();
+//
 //	    System.out.println("principal"+principal);
-	    
-	    String empName = principal.getName();
-	    
-	    System.out.println("principal : " + empName);
-	    
-	}
+//	    
+//	    String empName = principal.getName();
+//	    
+//	    System.out.println("principal : " + empName);
+//	    
+//	}
 	
 	@MessageMapping("/heartbeat")
 	public void heartbeat() {

@@ -55,13 +55,46 @@
 	    e.emp_name,
 	    d.dept_name,
 	    p.position_name,
-	    e.emp_state
+	    e.emp_state,
+	    e.emp_email
 	FROM emp e
 	JOIN dept d
 	    ON e.emp_dept_no = d.dept_no
 	JOIN position p
 	    ON e.emp_position_no = p.position_no
 	ORDER BY e.emp_no
+</select>
+
+<!-- 회원 복합검색 결과 목록 -->
+
+<select id="complexSearch" resultType="AdminComplexSearchResponseVO">
+	select 
+		E.emp_no, 
+		E.emp_Name, 
+		E.emp_state, 
+		E.emp_email,
+		D.dept_Name, 
+		P.position_name 
+	from emp E
+	join dept D 
+		on E.emp_dept_no = D.dept_no
+	join position P 
+		on E.emp_position_no = P.position_no
+	<where>
+		<if test="deptNo != null and deptNo != ''">
+			and E.emp_dept_no = #{deptNo}
+		</if>
+		<if test="positionNo != null and positionNo !=''">
+			and E.emp_position_no = #{positionNo}
+		</if>
+		<if test="empState != null and empState != ''">
+			and E.emp_state = #{empState}
+		</if>
+		<if test="empName != null and empName != ''">
+            AND e.emp_name LIKE '%' || #{empName} || '%'
+        </if>
+	</where>
+	
 </select>
 
 

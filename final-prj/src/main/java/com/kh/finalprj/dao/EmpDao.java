@@ -3,6 +3,8 @@ package com.kh.finalprj.dao;
 import java.util.List;
 
 import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.vo.admin.AdminComplexSearchRequestVO;
+import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 
 
@@ -19,5 +21,7 @@ public interface EmpDao {
 	boolean updateAll(EmpDto empDto);
 	
 	List<EmpListVO> selectList();
+	
+	List<AdminComplexSearchResponseVO> complexSearch(AdminComplexSearchRequestVO vo);
 
 }

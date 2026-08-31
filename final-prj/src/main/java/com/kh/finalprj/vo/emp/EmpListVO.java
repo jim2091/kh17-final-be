@@ -15,5 +15,6 @@ public class EmpListVO {
 	    private String deptName;
 	    private String positionName;
 	    private String empState;
+	    private String empEmail;
 
 }
