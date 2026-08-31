@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.vo.admin.AdminComplexSearchRequestVO;
+import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 
 @Repository
@@ -62,6 +64,11 @@ public class EmpDaoMybatis implements EmpDao {
 	@Override
 	public List<EmpListVO> selectList() {
 		return sqlSession.selectList("mapper.emp.list");
+	}
+
+	@Override
+	public List<AdminComplexSearchResponseVO> complexSearch(AdminComplexSearchRequestVO vo) {
+		return sqlSession.selectList("mapper.emp.complexSearch", vo);
 	}
 
 }
