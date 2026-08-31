@@ -20,6 +20,8 @@ public interface EmpDao {
 	
 	boolean updateAll(EmpDto empDto);
 	
+	
+	
 	List<EmpListVO> selectList();
 	
 	List<AdminComplexSearchResponseVO> complexSearch(AdminComplexSearchRequestVO vo);
