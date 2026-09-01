@@ -189,7 +189,15 @@ public class ProjectServiceImpl implements ProjectService{
 			throw new WhoAreYouException("변경할 수 없는 프로젝트 권한입니다.");
 		}
 		
-		projectMemberDao.updateRole(projectMemberNo, empNo,projectMemberRole);
+		int result = projectMemberDao.updateRole(
+				projectNo,
+				projectMemberNo,
+				projectMemberRole
+		);
+		
+		if(result == 0) {
+			throw new TargetNotfoundException("변경할 프로젝트 멤버를 찾을 수 없습니다.");
+		}
 		
 	}
 	
@@ -233,6 +241,55 @@ public class ProjectServiceImpl implements ProjectService{
 		//7.프로젝트 참가
 		projectMemberDao.add(projectMemberDto);
 		
+	}
+
+	//owner 변경
+	@Transactional
+	@Override
+	public void changeOwner(int projectNo, int projectMemberNo, int empNo) {
+		//1.현재 로그인 사용자의 프로젝트 멤버 정보 조회
+		ProjectMemberDto loginMember = projectMemberDao.findMember(projectNo, empNo);
+		
+		//참여자가 아닌 경우
+		if(loginMember == null) {
+			throw new WhoAreYouException("프로젝트 참여자가 아닙니다.");
+		}
+		
+		//2.owner인지 확인
+		if(!loginMember.getProjectMemberRole().equals("owner")) {
+			throw new WhoAreYouException("owner 변경 권한이 없습니다");
+		}
+		
+		//3.새 owner 대상 조회
+		ProjectMemberDto targetMember = projectMemberDao.findMember(projectMemberNo);
+		
+		if(targetMember == null) {
+			throw new TargetNotfoundException("변경할 프로젝트 멤버가 존재하지 않습니다.");
+		}
+		
+		//4.같은 프로젝트 멤버인지 확인
+		if(targetMember.getProjectNo() != projectNo) {
+			throw new WhoAreYouException("해당 프로젝트의 멤버가 아닙니다.");
+		}
+		
+		//5.자기 자신으로 변경 방지
+		if(loginMember.getProjectMemberNo() == targetMember.getProjectMemberNo()) {
+			throw new WrongDataException("이미 프로젝트 owner입니다.");
+		}
+		
+		//6. 기존owner->manager
+		projectMemberDao.updateRole(
+				projectNo, 
+				loginMember.getProjectMemberNo(), 
+				"manager"
+			);
+		
+		//7. 대상멤버 ->owner
+		projectMemberDao.updateRole(
+				projectNo, 
+				targetMember.getProjectMemberNo(), 
+				"owner"
+			);
 	}
 
 	

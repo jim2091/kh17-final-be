@@ -64,11 +64,11 @@ public class ProjectMemberDaoMybatis implements ProjectMemberDao{
 	}
 
 	@Override
-	public void updateRole(int projectNo, int projectMemberNo, String projectMemberRole) {
+	public int updateRole(int projectNo, int projectMemberNo, String projectMemberRole) {
 		Map<String,Object>params = new HashMap<>();
 		params.put("projectNo", projectNo);
 		params.put("projectMemberNo",projectMemberNo);
 		params.put("projectMemberRole", projectMemberRole);
-		sqlSession.update("mapper.projectMember.updateRole",params);
+		return sqlSession.update("mapper.projectMember.updateRole",params);
 	}
 }

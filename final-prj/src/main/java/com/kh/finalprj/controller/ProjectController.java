@@ -131,4 +131,21 @@ public class ProjectController {
 		
 		projectService.join(projectNo, empNo);
 	}
+	
+	//owner 변경 매핑
+	@ApiResponse(responseCode = "200", description = "owner변경 성공")
+	@PatchMapping("/{projectNo}/owner/{projectMemberNo}")
+	public void changeOwner(
+			@PathVariable int projectNo,
+			@PathVariable int projectMemberNo,
+			@CurrentUser TokenParseResponseVO parseVO
+	) {
+		int empNo = parseVO.getEmpNo();
+		
+		projectService.changeOwner(
+				projectNo, 
+				projectMemberNo, 
+				empNo
+		);
+	}
 }
