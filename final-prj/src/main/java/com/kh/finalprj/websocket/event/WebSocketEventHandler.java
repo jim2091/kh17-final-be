@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -32,9 +33,12 @@ public class WebSocketEventHandler {
 	public void enterOnline(
 	        SessionConnectedEvent event) {
 
-	   
+	   StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
 	    Principal principal = event.getUser();
+	    
+	    String sessionId = accessor.getSessionId();
+	    System.out.println("연결한 sessionID : " + sessionId);
 
 //	    System.out.println("principal : "+principal);
 	    
@@ -49,7 +53,7 @@ public class WebSocketEventHandler {
 //	    System.out.println("사용자 정보 : "+ empDto);
 	    
 	    
-	    flashService.enter(empDto);
+	    flashService.enter(empDto, sessionId);
 	    
 	    
 	    List<EmpDto> onlineUsers = flashService.list();
@@ -59,6 +63,12 @@ public class WebSocketEventHandler {
 	}
 	@EventListener
 	public void leaveOnline(SessionDisconnectEvent event) {
+		
+		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+		
+		String sessionId = accessor.getSessionId();
+	    System.out.println("퇴장한 sessionID : " + sessionId);
+
 		Principal principal = event.getUser();
 		
 		String empNo = principal.getName();
@@ -69,7 +79,7 @@ public class WebSocketEventHandler {
 	    
 //	    System.out.println("로그아웃 : "+ empNo);
 	    
-	    flashService.leave(empDto);
+	    flashService.leave(empDto, sessionId);
 	    
 	    List<EmpDto> onlineUsers = flashService.list();
 	    
