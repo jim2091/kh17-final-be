@@ -1,8 +1,10 @@
 package com.kh.finalprj.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,6 +25,7 @@ import com.kh.finalprj.vo.task.TaskDetailResponseVO;
 import com.kh.finalprj.vo.task.TaskMoveRequestVO;
 import com.kh.finalprj.vo.task.TaskMoveResponseVO;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -34,6 +37,9 @@ public class TaskRestController {
 
 	@Autowired
 	private TaskService taskService;
+	
+	@Autowired
+	private SimpMessagingTemplate simpMessagingTemplate;
 
 	// 업무 생성
 	@ApiResponse(responseCode = "200", description = "업무 생성 성공")
@@ -80,10 +86,28 @@ public class TaskRestController {
 		return taskService.update(taskDto);
 	}
 
-	// 칸반 보드 이동 수정
-	@ApiResponse(responseCode = "200", description = "칸반 이동 성공")
-	@PatchMapping(value = "/move", produces = "application/json")
-	public boolean moveTask(@RequestBody TaskMoveRequestVO moveVO) {
-		return taskService.moveTask(moveVO);
-	}
+    @ApiResponse(responseCode = "200", description = "칸반 이동 성공")
+    @PatchMapping(value = "/move", produces = "application/json")
+    public boolean moveTask(
+            @RequestBody TaskMoveRequestVO moveVO,
+            @CurrentUser TokenParseResponseVO parseVO) {
+        
+        boolean result = taskService.moveTask(moveVO);
+
+        if (result) {
+            int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
+
+            simpMessagingTemplate.convertAndSend(
+                "/public/projects/" + moveVO.getProjectNo() + "/kanban",
+                Map.of(
+                    "eventType", "TASK_MOVED",
+                    "taskNo", moveVO.getTaskNo(),
+                    "nextStatus", moveVO.getTargetStatus(),
+                    "newOrder", moveVO.getNewOrder(),
+                    "senderEmpNo", senderEmpNo 
+                )
+            );
+        }
+        return result;
+    }
 }
