@@ -108,7 +108,6 @@ public class TaskRestController {
                 )
             );
         }
-
         return result;
     }
 }
