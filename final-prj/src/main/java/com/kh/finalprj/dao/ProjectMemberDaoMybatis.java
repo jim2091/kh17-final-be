@@ -49,7 +49,8 @@ public class ProjectMemberDaoMybatis implements ProjectMemberDao{
 	public ProjectMemberDto findMember(int projectMemberNo) {
 		return sqlSession.selectOne("mapper.projectMember.findMember2", projectMemberNo);
 	}
-
+	
+	@Override
 	public String selectRole(int projectNo, int empNo) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("projectNo", projectNo);

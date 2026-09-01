@@ -32,7 +32,7 @@ public class TaskDto {
     private String taskPriority;
     private int taskProgress;
     private int taskOrder;
-    private int taskWriterNo;
+    private int taskWriterNo; 
     private String taskWriterName;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
