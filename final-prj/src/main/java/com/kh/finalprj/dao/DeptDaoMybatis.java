@@ -34,6 +34,11 @@ public class DeptDaoMybatis implements DeptDao {
 	public List<DeptListVO> selectList() {
 		return sqlSession.selectList("mapper.dept.list");
 	}
+
+	@Override
+	public boolean updateAll(DeptDto deptDto) {
+		return sqlSession.update("mapper.dept.updateAll", deptDto)>0;
+	}
 	
 	
 

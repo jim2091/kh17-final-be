@@ -72,7 +72,8 @@ public class MemberRestController {
 	}
 	
 	
-	//사용자 정보 수정(본인)
+	//사용자 정보 수정(본인) + 프로필 사진 추가 or 수정
+	
 	@PutMapping("/")
 	public ChangeEmpResponseVO updateAll(
 			@CurrentUser TokenParseResponseVO parseVO,
@@ -124,6 +125,7 @@ public class MemberRestController {
 	
 	
 	
+	//프로필 사진과 함께 본인 정보 수정 
 	
 	
 	
