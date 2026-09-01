@@ -29,6 +29,24 @@
 	select * from dept order by dept_no asc
 </select>
 
+<!-- 부서 정보 수정  -->
+
+<update id="updateAll">
+	update dept
+	set dept_name = #{deptName},
+		dept_info = #{deptInfo},
+		dept_block = #{deptBlock}
+	where dept_no = #{deptNo}
+</update>
+
+
+
+
+
+
+
+
+
 
 
 </mapper>

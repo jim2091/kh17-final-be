@@ -13,5 +13,7 @@ public interface DeptDao {
 	DeptDto selectOne(int deptNo);
 	
 	List<DeptListVO> selectList();
+	
+	boolean updateAll(DeptDto deptDto);
 
 }
