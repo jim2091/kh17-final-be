@@ -52,28 +52,4 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer{
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
