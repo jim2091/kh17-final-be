@@ -34,6 +34,11 @@ public class PositionDaoMybatis implements PositionDao {
 	public List<PositionListVO> selectList() {
 		return sqlSession.selectList("mapper.position.list");
 	}
+
+	@Override
+	public boolean updateAll(PositionDto positionDto) {
+		return sqlSession.update("mapper.position.updateAll", positionDto)>0;
+	}
 	
 	
 

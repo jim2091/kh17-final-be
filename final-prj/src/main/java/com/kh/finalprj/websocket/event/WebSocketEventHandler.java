@@ -38,7 +38,7 @@ public class WebSocketEventHandler {
 	    Principal principal = event.getUser();
 	    
 	    String sessionId = accessor.getSessionId();
-	    System.out.println("연결한 sessionID : " + sessionId);
+//	    System.out.println("연결한 sessionID : " + sessionId);
 
 //	    System.out.println("principal : "+principal);
 	    
@@ -67,7 +67,7 @@ public class WebSocketEventHandler {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 		
 		String sessionId = accessor.getSessionId();
-	    System.out.println("퇴장한 sessionID : " + sessionId);
+//	    System.out.println("퇴장한 sessionID : " + sessionId);
 
 		Principal principal = event.getUser();
 		
