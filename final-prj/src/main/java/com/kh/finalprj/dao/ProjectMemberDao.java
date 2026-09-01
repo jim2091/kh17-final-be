@@ -12,18 +12,15 @@ public interface ProjectMemberDao {
 	void add(ProjectMemberDto projectMemberDto);
 	//멤버 역할 조회
 	String selectRole(int projectNo, int empNo);
-	
 	//프로젝트 멤버 번호 조회
 	Integer findProjectMemberNo(int projectNo, int empNo);
 	//프로젝트 멤버 상세 조회
 	ProjectMemberDto findMember(int projectNo, int empNo);
-	
 	//필요해서 추가함 - 정빈
 	ProjectMemberDto findMember(int projectMemberNo);
-	
 	//프로젝트 참여자 목록
 	List<ProjectMemberListResponseVO> selectProjectMemberList(int projectNo);
 	//멤버 역할 변경
-	void updateRole(int projectNo, int projectMemberNo,String projectMemberRole);
+	int updateRole(int projectNo, int projectMemberNo,String projectMemberRole);
 	
 }

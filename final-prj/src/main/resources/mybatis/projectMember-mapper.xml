@@ -92,6 +92,6 @@
 		update project_member
 		set 	project_member_role = #{projectMemberRole}
 		where 	project_member_no = #{projectMemberNo}
-			and projectNo = #{projectNo}
+			and project_no = #{projectNo}
 	</update>
 </mapper>
