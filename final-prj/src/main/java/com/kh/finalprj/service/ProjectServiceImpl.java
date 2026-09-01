@@ -14,6 +14,7 @@ import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.error.WhoAreYouException;
+import com.kh.finalprj.error.WrongDataException;
 import com.kh.finalprj.vo.page.PageVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
@@ -196,6 +197,41 @@ public class ProjectServiceImpl implements ProjectService{
 	@Override
 	public void join(int projectNo, int empNo) {
 		//1.프로젝트 존재 여부 확인
+		ProjectDto project = projectDao.selectProject(projectNo);
+		
+		if(project == null) {
+			throw new TargetNotfoundException("존재하지 않는 프로젝트입니다.");	
+		}
+		
+		//2.공개 프로젝트인지 확인
+		if(!project.getProjectVisibility().equals("public")){
+			throw new TargetNotfoundException("공개 프로젝트가 아닙니다.");
+		}
+		
+		//3.진행중인 프로젝트인지 확인
+		if(!project.getProjectStatus().equals("active")) {
+			throw new TargetNotfoundException("종료된 프로젝트에는 참가할 수 없습니다.");
+		}
+		
+		//4.이미 참여중인지 확인
+		String role = projectMemberDao.selectRole(projectNo, empNo);
+		if(role != null) {
+			throw new WrongDataException("이미 참여중인 프로젝트입니다.");
+		}
+		
+		//5.프로젝트 멤버 번호 발급
+		int projectMemberNo = projectMemberDao.sequence();
+		
+		//6.멤버 생성
+		ProjectMemberDto projectMemberDto = ProjectMemberDto.builder()
+					.projectMemberNo(projectMemberNo)
+					.projectNo(projectNo)
+					.empNo(empNo)
+					.projectMemberRole("member")
+				.build();
+		
+		//7.프로젝트 참가
+		projectMemberDao.add(projectMemberDto);
 		
 	}
 

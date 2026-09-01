@@ -116,14 +116,14 @@
 			projectMemberRole
 		from(
 			select
-				p.project_no,
-				p.project_name,
-				p.project_purpose,
-				p.project_visibility,
-				p.project_status,
-				p.project_start,
-				p.project_deadline,
-				pm.project_member_role,
+				p.project_no as projectNo,
+				p.project_name as projectName,
+				p.project_purpose as projectPurpose,
+				p.project_visibility as projectVisibility,
+				p.project_status as projectStatus,
+				p.project_start as projectStart,
+				p.project_deadline as projectDeadline,
+				pm.project_member_role as projectMemberRole,
 				
 				row_number() over(
 					order by p.project_ctime desc
