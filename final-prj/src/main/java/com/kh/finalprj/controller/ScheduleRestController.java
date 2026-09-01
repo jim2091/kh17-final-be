@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +32,7 @@ import com.kh.finalprj.vo.schedule.ScheduleDetailResponseVO;
 import com.kh.finalprj.vo.schedule.ScheduleEditRequestVO;
 import com.kh.finalprj.vo.schedule.ScheduleEditResponseVO;
 import com.kh.finalprj.vo.schedule.ScheduleListResponseVO;
+import com.kh.finalprj.websocket.vo.ScheduleWebSocketResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,6 +49,8 @@ public class ScheduleRestController {
 	private ScheduleDao scheduleDao;
 	@Autowired
 	private ProjectPermissionService projectPermissionService;
+	@Autowired
+	private SimpMessagingTemplate simpMessagingTemplate;
 
 	@ApiResponse(responseCode = "200", description = "일정 등록 성공")
 	@PostMapping("/")
@@ -78,6 +82,17 @@ public class ScheduleRestController {
 						.scheduleEnd(scheduleEnd != null ? Timestamp.valueOf(scheduleEnd) : null)
 						.schedulePlace(request.getSchedulePlace())
 						.build());
+		
+		//일정 등록 실시간 알림(그 알림 말고 알려준다고)
+		simpMessagingTemplate.convertAndSend(
+			"/public/project/" + request.getProjectNo() + "/schedule",
+			ScheduleWebSocketResponseVO.builder()
+					.type("ADD")
+					.projectNo(request.getProjectNo())
+					.scheduleNo(scheduleNo)
+				.build()
+		);
+		
 		return ScheduleAddResponseVO.builder()
 					.scheduleNo(scheduleNo)
 				.build();
@@ -157,6 +172,16 @@ public class ScheduleRestController {
 		if (result == false)
 			throw new TargetNotfoundException();
 		
+		//일정 수정 실시간
+		simpMessagingTemplate.convertAndSend(
+			"/public/project/" + response.getProjectNo() + "/schedule",
+			ScheduleWebSocketResponseVO.builder()
+					.type("EDIT")
+					.projectNo(response.getProjectNo())
+					.scheduleNo(scheduleNo)
+				.build()
+		);
+		
 		return ScheduleEditResponseVO.builder()
 					.scheduleNo(scheduleNo)
 				.build();
@@ -184,6 +209,16 @@ public class ScheduleRestController {
 		boolean result = scheduleDao.delete(scheduleNo);
 		if (result == false)
 			throw new TargetNotfoundException();
+		
+		//일정 삭제 실시간
+		simpMessagingTemplate.convertAndSend(
+			"/public/project/" + response.getProjectNo() + "/schedule",
+			ScheduleWebSocketResponseVO.builder()
+					.type("DELETE")
+					.projectNo(response.getProjectNo())
+					.scheduleNo(scheduleNo)
+				.build()
+		);
 		
 		return ScheduleDeleteResponseVO.builder()
 					.scheduleNo(scheduleNo)
