@@ -102,7 +102,7 @@ public class ProjectController {
 		return projectService.memberList(projectNo, empNo);
 	}
 	
-	//역할 변경
+	//역할 변경 매핑
 	@ApiResponse(responseCode = "200",description = "멤버 역할 변경")
 	@PatchMapping("/{projectNo}/member/{projectMemberNo}/role")
 	public void updateMemberRole(
@@ -116,8 +116,19 @@ public class ProjectController {
 		projectService.updateMemberRole(
 			projectNo, 
 			projectMemberNo, 
-			requestVO.getProjectMemberRole(), 
+			requestVO.getProjectMemberRole(),
 			empNo
 		);
+	}
+	
+	//참여하기 매핑
+	@ApiResponse(responseCode = "200",description = "공개 프로젝트 참여하기 성공")
+	@PostMapping("/{projectNo}/join")
+	public void join (@PathVariable int projectNo, 
+			@CurrentUser TokenParseResponseVO parseVO
+	) {
+		int empNo = parseVO.getEmpNo();
+		
+		projectService.join(projectNo, empNo);
 	}
 }
