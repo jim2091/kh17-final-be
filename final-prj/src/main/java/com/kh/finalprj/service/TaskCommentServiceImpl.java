@@ -1,7 +1,6 @@
 package com.kh.finalprj.service;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,29 +19,29 @@ public class TaskCommentServiceImpl implements TaskCommentService {
 	private TaskCommentsDao taskCommentsDao;
 
 	@Autowired
-	private ProjectMemberDao projectMemberDao; 
-
+	private ProjectMemberDao projectMemberDao;
 	@Autowired
-	private TaskDao taskDao; 
+	private TaskDao taskDao;
 
 	@Override
 	@Transactional
-	public int add(TaskCommentDto taskCommentDto) {
-		if (taskCommentDto.getProjectMemberNo() <= 0 && taskCommentDto.getEmpNo() > 0) {
-			TaskDetailResponseVO task = taskDao.selectOne(taskCommentDto.getTaskNo());
-			if (task != null) {
-				Integer validMemberNo = projectMemberDao.findProjectMemberNo(task.getProjectNo(), taskCommentDto.getEmpNo());
-				if (validMemberNo != null) {
-					taskCommentDto.setProjectMemberNo(validMemberNo);
-				}
-			}
+	public int add(TaskCommentDto taskCommentDto, int loginEmpNo) {
+		TaskDetailResponseVO task = taskDao.selectOne(taskCommentDto.getTaskNo());
+		if (task == null) {
+			throw new RuntimeException("존재하지 않는 업무입니다.");
 		}
+
+		Integer projectMemberNo = projectMemberDao.findProjectMemberNo(task.getProjectNo(), loginEmpNo);
+		if (projectMemberNo == null) {
+			throw new RuntimeException("해당 프로젝트에 참여 중인 멤버가 아닙니다.");
+		}
+
+		taskCommentDto.setProjectMemberNo(projectMemberNo);
 
 		int generatedCommentNo = taskCommentsDao.sequence();
 		taskCommentDto.setTaskCommentNo(generatedCommentNo);
-
 		taskCommentsDao.add(taskCommentDto);
-		
+
 		return generatedCommentNo;
 	}
 
