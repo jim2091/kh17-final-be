@@ -66,13 +66,10 @@ public class MessageRestController {
 	@DeleteMapping("/{chatMessageNo}")
 	public void delete(
 		@PathVariable int chatMessageNo,
-		@AuthenticationPrincipal Jwt jwt
+		@CurrentUser TokenParseResponseVO parseVO
 		) {
 		
-		//[1] JWT에서 empNo 확인
-		TokenParseResponseVO parseVO = 
-			jwtService.parseAccessToken(jwt.getTokenValue());
-		
+		//[1] empNo 확인
 		int empNo = parseVO.getEmpNo();
 		
 		//[2] 삭제 대상 정보 확보
@@ -101,12 +98,9 @@ public class MessageRestController {
 	public void update(
 			@PathVariable int chatMessageNo,
 			@RequestBody MessageUpdateRequestVO request,
-			@AuthenticationPrincipal Jwt jwt
+			@CurrentUser TokenParseResponseVO parseVO
 		) {
-		//[1] JWT에서 empNo 확인
-		TokenParseResponseVO parseVO = 
-			jwtService.parseAccessToken(jwt.getTokenValue());
-		
+		//[1] empNo 확인
 		int empNo = parseVO.getEmpNo();
 		
 		//[2] 메세지 수정
@@ -133,12 +127,9 @@ public class MessageRestController {
 	@PostMapping("/{channelNo}/read")
 	public void readChannelMessage(
 			@PathVariable int channelNo,
-			@AuthenticationPrincipal Jwt jwt
+			@CurrentUser TokenParseResponseVO parseVO
 		) {
-		//[1] JWT에서 empNo 확인
-		TokenParseResponseVO parseVO = 
-			jwtService.parseAccessToken(jwt.getTokenValue());
-		
+		//[1] empNo 확인
 		int empNo = parseVO.getEmpNo();
 		
 		//[2] 안 읽은 메세지 읽음 처리
@@ -151,13 +142,10 @@ public class MessageRestController {
 	@GetMapping("/project/{projectNo}/unread")
 	public List<MessageUnreadChannelVO> selectChannelUnreadCount(
 	        @PathVariable int projectNo,
-	        @AuthenticationPrincipal Jwt jwt
+	        @CurrentUser TokenParseResponseVO parseVO
 	) {
 
-	    // [1] JWT에서 empNo 확인
-	    TokenParseResponseVO parseVO =
-	            jwtService.parseAccessToken(jwt.getTokenValue());
-
+	    // [1] empNo 확인
 	    int empNo = parseVO.getEmpNo();
 
 	    // [2] 현재 사용자의 projectMemberNo 조회

@@ -21,6 +21,7 @@ import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.ChannelService;
 import com.kh.finalprj.service.JwtService;
 import com.kh.finalprj.service.MessageService;
+import com.kh.finalprj.service.ProjectPermissionService;
 import com.kh.finalprj.vo.channel.ChannelCreateRequestVO;
 import com.kh.finalprj.vo.channel.ChannelDeleteRequestVO;
 import com.kh.finalprj.vo.channel.ChannelUpdateRequestVO;
@@ -39,6 +40,8 @@ public class ChannelRestController {
 	private ChannelDao channelDao;
 	@Autowired
 	private ChannelService channelService;
+	@Autowired
+	private ProjectPermissionService projectPermissionService;
 	
 	
 	//채널 생성
@@ -61,8 +64,11 @@ public class ChannelRestController {
 	//채널 목록
 	@ApiResponse(responseCode = "200", description = "채널 목록 조회 성공")
 	@GetMapping("/project/{projectNo}")
-	public List<ChannelDto> list(@PathVariable int projectNo) {
-		return channelService.list(projectNo);
+	public List<ChannelDto> list(
+			@PathVariable int projectNo,
+			@CurrentUser TokenParseResponseVO parseVO
+	) {
+		return channelService.list(projectNo, parseVO.getEmpNo());
 	}
 	
 	
@@ -71,8 +77,11 @@ public class ChannelRestController {
 	@GetMapping("/project/{projectNo}/{channelNo}")
 	public ChannelDto detail(
 			@PathVariable int projectNo,
-	        @PathVariable int channelNo
+	        @PathVariable int channelNo,
+	        @CurrentUser TokenParseResponseVO parseVO
 		) {
+		//프로젝트 멤버인지 검사 코드 추가
+		projectPermissionService.checkMember(projectNo, parseVO.getEmpNo());
 		ChannelDto channelDto = 
 				channelDao.selectOne(projectNo, channelNo);
 		

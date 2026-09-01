@@ -19,6 +19,8 @@ public class ChannelServiceImpl implements ChannelService{
 	private ChannelDao channelDao;
 	@Autowired
 	private ProjectMemberDao projectMemberDao;
+	@Autowired
+	private ProjectPermissionService projectPermissionService;
 	
 	private ProjectMemberDto checkChannelManager(int projectNo, int empNo) {
 		//(1) 회원 조회
@@ -67,7 +69,9 @@ public class ChannelServiceImpl implements ChannelService{
 
 	//채널 목록
 	@Override
-	public List<ChannelDto> list(int projectNo) {
+	public List<ChannelDto> list(int projectNo, int empNo) {
+		//현재 프로젝트 참여자인지 검사코드 추가
+		projectPermissionService.checkMember(projectNo, empNo);
 		return channelDao.list(projectNo);
 	}
 
