@@ -14,4 +14,7 @@ public interface TaskDao {
     boolean updatePosition(int taskNo, String taskStatus, int taskOrder);
     boolean update(TaskDto taskDto);
     boolean delete(int taskNo);
+    
+    //프로젝트에 task가 있는지 확인(프로젝트 삭제할때 사용)
+    int countByProjectNo(int projectNo);
 }
