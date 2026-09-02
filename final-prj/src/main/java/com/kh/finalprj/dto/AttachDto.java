@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class AttachDto {
 	private int attachNo;
-	private int projectNo;
 	private String attachName;
 	private String attachType;
 	private long attachSize;
