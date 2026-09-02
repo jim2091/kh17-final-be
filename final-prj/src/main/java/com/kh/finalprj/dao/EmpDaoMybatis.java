@@ -1,6 +1,8 @@
 package com.kh.finalprj.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,4 +80,36 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectList("mapper.emp.initialSearch", vo);
 	}
 
+	@Override
+	public void connect(int empNo, int attachNo) {
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("empNo", empNo);
+		params.put("attachNo", attachNo);
+		sqlSession.insert("mapper.emp.connect", params);
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

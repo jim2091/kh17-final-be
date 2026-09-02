@@ -1,7 +1,5 @@
 package com.kh.finalprj.vo.emp;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,6 +9,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 public class ChangeEmpRequestVO {
+	
 	
 	private String prevEmpPassword;
 	
