@@ -6,11 +6,12 @@ import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.TaskCommentFileDto;
 import com.kh.finalprj.dto.TaskFileDto;
 import com.kh.finalprj.vo.task.TaskFileResponseVO;
-
+@Repository
 public class TaskFileDaoMybatis implements TaskFileDao {
 
 	@Autowired

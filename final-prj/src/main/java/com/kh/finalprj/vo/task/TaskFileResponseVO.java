@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Schema(name="첨부파일 상세 응답 VO")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class TaskFileResponseVO {
-    private int taskNo;
+    private int attachNo;
     
     private String attachName;
     private String attachType;
