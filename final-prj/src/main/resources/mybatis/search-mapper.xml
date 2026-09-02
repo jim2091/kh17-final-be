@@ -4,44 +4,14 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="mapper.search">
+<mapper namespace="com.kh.finalprj.dao.SearchDao">
 
 
-    <!-- ================================================= -->
-    <!-- 프로젝트 검색 -->
-    <!-- ================================================= -->
-
-    <select id="searchProjects" resultType="ProjectDto">
-
-        select
-            project_no,
-            project_name,
-            project_purpose,
-            project_visibility,
-            project_status,
-            project_start,
-            project_deadline,
-            project_ctime,
-            project_utime
-
-        from project
-
-        where project_status = 'active'
-
-        and (
-            project_name like '%' || #{keyword} || '%'
-            or project_purpose like '%' || #{keyword} || '%'
-        )
-
-        order by project_ctime desc
-
-    </select>
-
-
-
-    <!-- ================================================= -->
-    <!-- 사용자 검색 -->
-    <!-- ================================================= -->
+    <!-- =====================================================
+         사용자 검색
+         이름 또는 이메일로 검색
+         emp_state 조건 없음
+    ====================================================== -->
 
     <select id="searchMembers" resultType="EmpDto">
 
@@ -61,48 +31,45 @@
             emp_address2,
             emp_ctime,
             emp_utime
-
         from emp
-
-        where emp_state = 'active'
-
-        and (
+        where
             emp_name like '%' || #{keyword} || '%'
             or emp_email like '%' || #{keyword} || '%'
-        )
-
         order by emp_no
 
     </select>
 
 
+    <!-- =====================================================
+         프로젝트 검색
+    ====================================================== -->
 
-    <!-- ================================================= -->
-    <!-- 파일 검색 -->
-    <!-- ================================================= -->
-
-    <select id="searchFiles" resultType="AttachDto">
+    <select id="searchProjects" resultType="ProjectDto">
 
         select
-            a.*,
-            e.emp_name as empName
-
-        from attach a
-
-        left join emp e
-            on a.attach_uploader = e.emp_no
-
-        where a.attach_name like '%' || #{keyword} || '%'
-
-        order by a.attach_no desc
+            project_no,
+            project_name,
+            project_purpose,
+            project_visibility,
+            project_status,
+            project_start,
+            project_deadline,
+            project_ctime,
+            project_utime
+        from project
+        where project_status = 'active'
+        and (
+            project_name like '%' || #{keyword} || '%'
+            or project_purpose like '%' || #{keyword} || '%'
+        )
+        order by project_ctime desc
 
     </select>
 
 
-
-    <!-- ================================================= -->
-    <!-- 업무 검색 -->
-    <!-- ================================================= -->
+    <!-- =====================================================
+         업무 검색
+    ====================================================== -->
 
     <select id="searchTasks" resultType="TaskDto">
 
@@ -122,17 +89,30 @@
             task_writer_no,
             task_ctime,
             task_utime
-
         from task
-
         where
             task_title like '%' || #{keyword} || '%'
-
-            or
-
-            task_content like '%' || #{keyword} || '%'
-
+            or task_content like '%' || #{keyword} || '%'
         order by task_ctime desc
+
+    </select>
+
+
+    <!-- =====================================================
+         파일 검색
+    ====================================================== -->
+
+    <select id="searchFiles" resultType="AttachDto">
+
+        select
+            a.*,
+            e.emp_name as empName
+        from attach a
+        left join emp e
+            on a.attach_uploader = to_char(e.emp_no)
+        where
+            a.attach_name like '%' || #{keyword} || '%'
+        order by a.attach_no desc
 
     </select>
 
