@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.projectExpectedResult">
+	<!-- 프로젝트 종료시 예상 결과 평가 -->
+	<update id="updateStatus">
+		update 	project_expected_result
+		set		project_result_status = #{projectResultStatus},
+				project_result_utime = systimestamp
+		where 	project_result_no = #{projectResultNo}
+				and project_no = #{projectNo}
+	</update>
+</mapper>

@@ -3,6 +3,7 @@ package com.kh.finalprj.service;
 import java.util.List;
 
 import com.kh.finalprj.vo.page.PageVO;
+import com.kh.finalprj.vo.project.ProjectCloseRequestVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
@@ -32,5 +33,7 @@ public interface ProjectService{
 	void changeOwner(int projectNo,int projectMemberNo, int empNo);
 	//프로젝트 삭제
 	void delete(int projectNo,int empNo);
+	//프로젝트 종료
+	void close(int projectNo,ProjectCloseRequestVO requestVO,int empNo);
 	
 }

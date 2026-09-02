@@ -7,20 +7,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.finalprj.dao.ChannelDao;
+import com.kh.finalprj.dao.ProjectCloseDao;
 import com.kh.finalprj.dao.ProjectDao;
+import com.kh.finalprj.dao.ProjectExpectedResultDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dao.TaskDao;
 import com.kh.finalprj.dto.ChannelDto;
+import com.kh.finalprj.dto.ProjectCloseDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.error.WhoAreYouException;
 import com.kh.finalprj.error.WrongDataException;
 import com.kh.finalprj.vo.page.PageVO;
+import com.kh.finalprj.vo.project.ProjectCloseRequestVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
 import com.kh.finalprj.vo.project.ProjectMemberListResponseVO;
+import com.kh.finalprj.vo.project.ProjectResultCloseRequestVO;
 import com.kh.finalprj.vo.project.ProjectUpdateRequestVO;
 import com.kh.finalprj.vo.project.PublicProjectListResponseVO;
 
@@ -36,6 +41,10 @@ public class ProjectServiceImpl implements ProjectService{
 	private ChannelDao channelDao;
 	@Autowired
 	private TaskDao taskDao;
+	@Autowired
+	private ProjectCloseDao projectCloseDao;
+	@Autowired
+	private ProjectExpectedResultDao projectExpectedResultDao;
 
 	//프로젝트 생성
 	@Transactional
@@ -328,10 +337,92 @@ public class ProjectServiceImpl implements ProjectService{
 		}
 		
 		//5.프로젝트 삭제
-		int result = projectDao.delete(projectNo);
+		boolean result = projectDao.delete(projectNo);
 		
-		if(result == 0) {
+		if(result == false) {
 			throw new TargetNotfoundException("프로젝트 삭제에 실패했습니다.");
+		}
+	}
+	
+	//프로젝트 종료
+	@Transactional
+	@Override
+	public void close(int projectNo, ProjectCloseRequestVO requestVO, int empNo) {
+		//1.프로젝트 확인
+		ProjectDto project = projectDao.selectProject(projectNo);
+		
+		if(project == null) {
+			throw new TargetNotfoundException("존재하지 않는 프로젝트입니다.");
+		}
+		
+		//2.프로젝트 참여 권한 확인
+		String role = projectMemberDao.selectRole(projectNo, empNo);
+		
+		//참여자가 아닌경우
+		if(role == null) {
+			throw new WhoAreYouException("프로젝트 참여자가 아닙니다.");
+		}
+		
+		//3.owner인지 확인
+		if(role.equals("owner")) {
+			throw new WhoAreYouException("프로젝트 권한이 없습니다.");
+			
+		}
+		
+		//4.이미 종료된 프로젝트인지 확인
+		if(project.getProjectStatus().equals("closed")) {
+			throw new WrongDataException("이미 종료된 프로젝트 입니다.");
+		}
+		
+		//5.종료 요약 검사
+		if(requestVO.getCloseSummary() == null ||
+			requestVO.getCloseSummary().isBlank()) {
+			throw new WrongDataException("프로젝트 요약을 작성해주세요.");
+		}
+		
+		//6.예상 결과 평가
+		if(requestVO.getResultList() != null) {
+			for(ProjectResultCloseRequestVO result
+				: requestVO.getResultList()) {
+				//상태 검사
+				if(!result.getProjectResultStatus().equals("achieved")
+					&&
+				!result.getProjectResultStatus().equals("unachieved")
+				) {
+					throw new WrongDataException("올바르지 않은 예상 결과 상태입니다.");
+				}
+				
+				//예상 결과 상태 변경
+				int updateResult = projectExpectedResultDao.updateStatus(
+						projectNo,
+						result.getProjectResultNo(),
+						result.getProjectResultStatus()
+				);
+				
+				//해당 프로젝트의 예상 결과가 아닌 경우
+				if(updateResult == 0) {
+					throw new TargetNotfoundException("예상 결과 정보를 찾을 수 없습니다.");
+				}
+			}
+		}
+		
+		//7.종료DTO생성
+		ProjectCloseDto projectCloseDto = ProjectCloseDto.builder()
+				.projectNo(projectNo)
+				.closeSummary(requestVO.getCloseSummary())
+				.closeGood(requestVO.getCloseGood())
+				.closeBad(requestVO.getCloseBad())
+				.closeImprovement(requestVO.getCloseImprovement())
+			.build();
+		
+		//8.프로젝트 종료 정보 등록
+		projectCloseDao.add(projectCloseDto);
+		
+		//9.프로젝트 상태 closed로 변경
+		boolean closeResult = projectDao.close(projectNo);
+		
+		if(closeResult == false) {
+			throw new WrongDataException("프로젝트를 종료할 수 없습니다.");
 		}
 	}
 

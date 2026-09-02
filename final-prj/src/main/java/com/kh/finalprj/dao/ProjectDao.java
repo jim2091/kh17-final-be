@@ -25,5 +25,7 @@ public interface ProjectDao {
 	//프로젝트 자체 조회(참여하기에 사용)
 	ProjectDto selectProject(int projectNo);
 	//프로젝트 삭제
-	int delete(int projectNo);
+	boolean delete(int projectNo);
+	//프로젝트 상태 변경
+	boolean close(int projectNo);
 }
