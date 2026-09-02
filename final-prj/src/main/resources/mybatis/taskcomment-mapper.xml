@@ -5,85 +5,87 @@
 
 <mapper namespace="mapper.taskcomment">
 
-	<!-- 시퀀스 발급 -->
+	<!-- 시퀀스 번호 단독 채번 -->
 	<select id="sequence" resultType="int">
-		select
-		seq_task_comment_no.nextval from dual
+		select seq_task_comment_no.nextval from dual
 	</select>
 
 	<!-- 1. 댓글 등록 -->
-	<insert id="add">
+	<insert id="add" parameterType="TaskCommentDto">
 		insert into task_comment (
-		task_comment_no,
-		task_no,
-		project_member_no,
-		task_comment_content,
-		task_comment_ctime,
-		task_comment_utime
+			task_comment_no,
+			task_no,
+			project_member_no,
+			task_comment_content,
+			task_comment_ctime,
+			task_comment_utime
 		)
 		values (
-		#{taskCommentNo},
-		#{taskNo},
-		#{projectMemberNo},
-		#{taskCommentContent},
-		systimestamp,
-		null
+			#{taskCommentNo},
+			#{taskNo},
+			#{projectMemberNo},
+			#{taskCommentContent},
+			systimestamp,
+			null
 		)
 	</insert>
 
-	<!-- 2. 특정 업무 댓글 목록 조회 (EMP 조인) -->
-	<select id="findComment"
-		resultType="com.kh.finalprj.dto.TaskCommentDto">
+	<!-- 2. 특정 업무 댓글 목록 조회 (작성자 사원 정보 조인) -->
+	<select id="findComment" resultType="TaskCommentDto">
 		select
-		tc.task_comment_no as taskCommentNo,
-		tc.task_no as taskNo,
-		tc.project_member_no as projectMemberNo,
-		tc.task_comment_content as taskCommentContent,
-		tc.task_comment_ctime as taskCommentCtime,
-		tc.task_comment_utime as taskCommentUtime,
-		e.emp_no as empNo,
-		e.emp_name as empName,
-		e.emp_dept_no as empDeptNo,
-		e.emp_position_no as empPositionNo
+			tc.task_comment_no      as taskCommentNo,
+			tc.task_no              as taskNo,
+			tc.project_member_no    as projectMemberNo,
+			tc.task_comment_content as taskCommentContent,
+			tc.task_comment_ctime   as taskCommentCtime,
+			tc.task_comment_utime   as taskCommentUtime,
+			e.emp_no                as empNo,
+			e.emp_name              as empName,
+			e.emp_dept_no           as empDeptNo,
+			e.emp_position_no       as empPositionNo
 		from task_comment tc
-		inner join project_member pm on
-		tc.project_member_no = pm.project_member_no
-		inner join emp e on
-		pm.emp_no = e.emp_no
+		inner join project_member pm 
+			on tc.project_member_no = pm.project_member_no
+		inner join emp e 
+			on pm.emp_no = e.emp_no
 		where tc.task_no = #{taskNo}
-		order by
-		tc.task_comment_ctime asc
+		order by tc.task_comment_ctime asc
 	</select>
 
-	<!-- 3. 단건 조회 -->
-	<select id="selectOne"
-		resultType="com.kh.finalprj.dto.TaskCommentDto">
+	<!-- 3. 단건 상세 조회 (작성자 사원 정보 조인) -->
+	<select id="selectOne" resultType="TaskCommentDto">
 		select
-		task_comment_no as taskCommentNo,
-		task_no as taskNo,
-		project_member_no as projectMemberNo,
-		task_comment_content as taskCommentContent,
-		task_comment_ctime as taskCommentCtime,
-		task_comment_utime as taskCommentUtime
-		from task_comment
-		where task_comment_no =
-		#{taskCommentNo}
+			tc.task_comment_no      as taskCommentNo,
+			tc.task_no              as taskNo,
+			tc.project_member_no    as projectMemberNo,
+			tc.task_comment_content as taskCommentContent,
+			tc.task_comment_ctime   as taskCommentCtime,
+			tc.task_comment_utime   as taskCommentUtime,
+			e.emp_no                as empNo,
+			e.emp_name              as empName,
+			e.emp_dept_no           as empDeptNo,
+			e.emp_position_no       as empPositionNo
+		from task_comment tc
+		inner join project_member pm 
+			on tc.project_member_no = pm.project_member_no
+		inner join emp e 
+			on pm.emp_no = e.emp_no
+		where tc.task_comment_no = #{taskCommentNo}
 	</select>
 
 	<!-- 4. 댓글 내용 수정 -->
-	<update id="update">
+	<update id="update" parameterType="TaskCommentDto">
 		update task_comment
 		set
-		task_comment_content = #{taskCommentContent},
-		task_comment_utime = systimestamp
+			task_comment_content = #{taskCommentContent},
+			task_comment_utime = systimestamp
 		where task_comment_no = #{taskCommentNo}
 	</update>
 
 	<!-- 5. 댓글 삭제 -->
 	<delete id="delete">
 		delete from task_comment
-		where task_comment_no =
-		#{taskCommentNo}
+		where task_comment_no = #{taskCommentNo}
 	</delete>
 
 </mapper>
