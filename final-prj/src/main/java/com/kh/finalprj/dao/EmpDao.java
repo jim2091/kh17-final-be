@@ -5,6 +5,8 @@ import java.util.List;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.vo.admin.AdminComplexSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
+import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
+import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 
 
@@ -26,4 +28,5 @@ public interface EmpDao {
 	
 	List<AdminComplexSearchResponseVO> complexSearch(AdminComplexSearchRequestVO vo);
 
+	List<AdminInitialSearchResponseVO> initialSearch(AdminInitialSearchRequestVO vo);
 }

@@ -18,6 +18,8 @@ import com.kh.finalprj.service.EmailService;
 import com.kh.finalprj.service.RandomService;
 import com.kh.finalprj.vo.admin.AdminComplexSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
+import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
+import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.admin.EmpAddRequestVO;
 import com.kh.finalprj.vo.admin.EmpAddResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
@@ -87,6 +89,14 @@ public class AdminRestController {
 //		System.out.println("검색 요청 데이터 : "+request);
 //		System.out.println("검색 응답 데이터 :"+ empDao.complexSearch(request));
 		return empDao.complexSearch(request);
+	}
+	
+	//회원 초성 검색 결과 조회
+	@PostMapping("/initial")
+	public List<AdminInitialSearchResponseVO> initial(@RequestBody AdminInitialSearchRequestVO request){
+		
+		return empDao.initialSearch(request);
+		
 	}
 	
 
