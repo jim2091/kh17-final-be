@@ -64,8 +64,12 @@ public class ProjectDaoMybatis implements ProjectDao{
 	}
 
 	@Override
-	public int delete(int projectNo) {
-		return sqlSession.delete("mapper.project.delete",projectNo);
+	public boolean delete(int projectNo) {
+		return sqlSession.delete("mapper.project.delete",projectNo)>0;
 	}
-
+	
+	@Override
+	public boolean close(int projectNo) {
+		return sqlSession.update("mapper.project.close",projectNo)>0;
+	}
 }

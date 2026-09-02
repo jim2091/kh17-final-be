@@ -18,6 +18,7 @@ import com.kh.finalprj.annotation.CurrentUser;
 import com.kh.finalprj.service.ProjectService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.page.PageVO;
+import com.kh.finalprj.vo.project.ProjectCloseRequestVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;
 import com.kh.finalprj.vo.project.ProjectDetailResponseVO;
 import com.kh.finalprj.vo.project.ProjectListResponseVO;
@@ -150,7 +151,7 @@ public class ProjectController {
 		);
 	}
 	
-	//프로젝트 삭제
+	//프로젝트 삭제 매핑
 	@ApiResponse(responseCode = "200",description = "프로젝트 삭제 성공")
 	@DeleteMapping(value = "/{projectNo}",produces = "application/json")
 	public void delete(
@@ -161,5 +162,19 @@ public class ProjectController {
 		
 		projectService.delete(projectNo, empNo);
 		
+	}
+	
+	//프로젝트 종료 매핑
+	@ApiResponse(responseCode = "200",description = "application/json")
+	@PatchMapping("/{projectNo}/close")
+	public void close(
+			@PathVariable int projectNo,
+			@RequestBody ProjectCloseRequestVO requestVO,
+			@CurrentUser TokenParseResponseVO parseVO
+			
+	) {
+		int empNo = parseVO.getEmpNo();
+		
+		projectService.close(projectNo, requestVO, empNo);
 	}
 }

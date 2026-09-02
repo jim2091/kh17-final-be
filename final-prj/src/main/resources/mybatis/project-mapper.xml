@@ -160,4 +160,13 @@
 		delete from project
 		where project_no = #{projectNo}
 	</delete>
+	
+	<!-- 프로젝트 종료 -->
+	<update id="close">
+		update 	project
+		set		project_status = 'closed',
+				project_utime = systimestamp
+		where	project_no = #{projectNo}
+				and project_status = 'active'
+	</update>
 </mapper>
