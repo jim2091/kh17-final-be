@@ -13,5 +13,7 @@ public interface PositionDao {
 	PositionDto selectOne(int positionNo);
 	
 	List<PositionListVO> selectList();
+	
+	boolean updateAll(PositionDto positionDto);
 
 }

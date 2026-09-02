@@ -50,7 +50,7 @@ public class LoginPresenceServer {
 	@MessageMapping("/onlineUsers")
 	public void onlineUsers() {
 	    simpMessagingTemplate.convertAndSend("/public/onlineUsers", flashService.list());
-	    System.out.println("수신받음");
+//	    System.out.println("수신받음");
 	}
 	
 	

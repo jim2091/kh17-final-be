@@ -29,4 +29,26 @@
 	select * from position order by position_no asc
 </select>
 
+<!-- 직급 정보 수정 -->
+<update id="updateAll">
+	update position
+	set position_name = #{positionName},
+		position_info = #{positionInfo},
+		position_block = #{positionBlock}
+	where position_no = #{positionNo}
+</update>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </mapper>
