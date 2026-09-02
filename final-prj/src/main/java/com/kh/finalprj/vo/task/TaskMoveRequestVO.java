@@ -6,6 +6,6 @@ import lombok.Data;
 public class TaskMoveRequestVO {
     private int taskNo;
     private int projectNo;
-    private String targetStatus; // 변경할 상태 ("TODO", "IN_PROGRESS", "DONE")[cite: 1, 3]
+    private String targetStatus; // 변경할 상태 ("TODO", "IN_PROGRESS", "DONE")
     private int newOrder;        // 이동할 순서 번호 (1부터 시작)
 }
