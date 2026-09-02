@@ -9,9 +9,10 @@ import lombok.Data;
 @Data @JsonIgnoreProperties(ignoreUnknown = true)
 public class AdminComplexSearchRequestVO {
 	
-	private String deptNo;
-	private String positionNo;
-	private String empState;
-	private String empName;
+//	private String deptName;
+//	private String positionName;
+//	private String empState;
+//	private String empName;
+	private String keyword;
 
 }
