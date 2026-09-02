@@ -1,5 +1,6 @@
 package com.kh.finalprj.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -320,4 +321,30 @@ public class AttachServiceCloud implements AttachService {
                 keyword
         );
     }
+    
+    
+  //회원 프로필 저장용도 
+    @Transactional
+	@Override
+	public int save(MultipartFile attach) throws IllegalStateException, IOException{
+			int attachNo = attachDao.sequence();
+			attachDao.insert(
+						AttachDto.builder()
+							.attachNo(attachNo)
+							.attachName(attach.getOriginalFilename())
+							.attachType(attach.getContentType())
+							.attachSize(attach.getSize())
+						.build()
+					);//db저장 
+			
+			
+			
+			
+			//업로드된 파일을 저장하는 코드
+			File dir = storageProperties.getLocalRoot();
+			dir.mkdirs();
+			File target = new File(dir, String.valueOf(attachNo));
+			attach.transferTo(target);//물리저장
+			return attachNo;
+		}
 }

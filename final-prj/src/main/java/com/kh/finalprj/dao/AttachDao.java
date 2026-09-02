@@ -3,6 +3,7 @@ package com.kh.finalprj.dao;
 import java.util.List;
 
 import com.kh.finalprj.dto.AttachDto;
+import com.kh.finalprj.vo.attach.AttachProfileVO;
 
 public interface AttachDao {
 
@@ -26,4 +27,7 @@ public interface AttachDao {
             int projectNo,
             String keyword
     );
+    
+    //회원 프로필 등록용 (민영)
+    void insert(AttachProfileVO attachProfileVO);
 }

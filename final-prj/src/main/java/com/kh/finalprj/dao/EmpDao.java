@@ -29,4 +29,25 @@ public interface EmpDao {
 	List<AdminComplexSearchResponseVO> complexSearch(AdminComplexSearchRequestVO vo);
 
 	List<AdminInitialSearchResponseVO> initialSearch(AdminInitialSearchRequestVO vo);
+	
+	
+	
+	void connect(int empNo, int attachNo);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

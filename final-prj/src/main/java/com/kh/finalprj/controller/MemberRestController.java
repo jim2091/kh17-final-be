@@ -1,14 +1,18 @@
 package com.kh.finalprj.controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.finalprj.annotation.AuthApiResponse;
 import com.kh.finalprj.annotation.CurrentUser;
@@ -19,6 +23,7 @@ import com.kh.finalprj.dto.DeptDto;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.PositionDto;
 import com.kh.finalprj.error.TargetNotfoundException;
+import com.kh.finalprj.service.AttachService;
 import com.kh.finalprj.vo.emp.ChangeEmpRequestVO;
 import com.kh.finalprj.vo.emp.ChangeEmpResponseVO;
 import com.kh.finalprj.vo.emp.EmpMeResponseVO;
@@ -26,7 +31,6 @@ import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 
 @Tag(name="회원 정보 관리 서비스")
 @AuthApiResponse
@@ -46,6 +50,9 @@ public class MemberRestController {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private AttachService attachService;
 	
 	@ApiResponse(responseCode = "200", description = "조회성공")
 	@GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -73,16 +80,20 @@ public class MemberRestController {
 	
 	
 	//사용자 정보 수정(본인) + 프로필 사진 추가 or 수정
-	
+	@Transactional
 	@PutMapping("/")
 	public ChangeEmpResponseVO updateAll(
 			@CurrentUser TokenParseResponseVO parseVO,
-			@Valid @RequestBody ChangeEmpRequestVO request
-			) {
+//			@Valid @RequestBody ChangeEmpRequestVO request
+			@RequestPart(value="empProfile", required=false) MultipartFile empProfile,
+			@RequestPart(value="emp") ChangeEmpRequestVO request
+			
+			) throws IllegalStateException, IOException {
 		System.out.println("request : "+ request);
 		//기존 정보 조회
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
 		if(empDto == null) throw new TargetNotfoundException();
+		
 		
 		//기존 비밀번호와 일치하는지 검증 
 		boolean passwordValid = passwordEncoder.matches(
@@ -117,6 +128,17 @@ public class MemberRestController {
 		//수정처리
 		empDao.updateAll(empDto);
 		
+		
+		
+		//프로필 있으면 등록후 사원정보와 연결
+		if(empProfile.isEmpty() == false) {
+			int attachNo = attachService.save(empProfile);
+			empDao.connect(empDto.getEmpNo(), attachNo);
+		}
+		
+		
+		
+		
 		return ChangeEmpResponseVO.builder()
 					.status(true)
 					.message("회원 정보 변경이 완료되었습니다.")
@@ -125,7 +147,6 @@ public class MemberRestController {
 	
 	
 	
-	//프로필 사진과 함께 본인 정보 수정 
 	
 	
 	

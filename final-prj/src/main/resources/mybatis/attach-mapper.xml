@@ -152,6 +152,16 @@
         order by a.attach_ctime desc
 
     </select>
+    
+    <!-- 회원프로필등록용 -->
+    <insert id="addProfile">
+		insert into attach(
+			attach_no, attach_name, attach_type, attach_size
+		)
+		values(
+			#{attachNo}, #{attachName}, #{attachType}, #{attachSize}
+		)
+	</insert>
 
 
 </mapper>

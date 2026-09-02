@@ -38,14 +38,35 @@
 <!-- 사용자의 정보 수정 -->
 <update id="updateAll">
 	update emp
-	set emp_password = #{empPassword},
-		emp_birth = #{empBirth},
-		emp_contact = #{empContact},
-		emp_post = #{empPost},
-		emp_address1 = #{empAddress1},
-		emp_address2 = #{empAddress2}, 
-		emp_utime = systimestamp
-	where emp_no = #{empNo}
+	<set>
+        <if test="empPassword != null">
+            emp_password = #{empPassword},
+        </if>
+
+        <if test="empBirth != null">
+            emp_birth = #{empBirth},
+        </if>
+
+        <if test="empContact != null">
+            emp_contact = #{empContact},
+        </if>
+
+        <if test="empPost != null">
+            emp_post = #{empPost},
+        </if>
+
+        <if test="empAddress1 != null">
+            emp_address1 = #{empAddress1},
+        </if>
+
+        <if test="empAddress2 != null">
+            emp_address2 = #{empAddress2},
+        </if>
+
+        emp_utime = systimestamp
+    </set>
+
+    where emp_no = #{empNo}
 </update>
 
 <!-- 회원 목록 -->
@@ -136,6 +157,32 @@
 	end = #{tab}
 	order by E.emp_name asc
 </select>
+
+
+<!-- 회원프로필 테이블에 저장 -->
+<insert id="connect">
+	insert into emp_profile(empNo, attach_no)
+	values(#{empNo}, #{attachNo})
+</insert>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

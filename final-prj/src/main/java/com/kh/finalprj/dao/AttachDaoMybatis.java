@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.AttachDto;
+import com.kh.finalprj.vo.attach.AttachProfileVO;
 
 @Repository
 public class AttachDaoMybatis implements AttachDao {
@@ -85,5 +86,10 @@ public class AttachDaoMybatis implements AttachDao {
 		public String getKeyword() {
 			return keyword;
 		}
+	}
+
+	@Override
+	public void insert(AttachProfileVO attachProfileVO) {
+		sqlSession.insert("mapper.attach.addProfile", attachProfileVO);		
 	}
 }
