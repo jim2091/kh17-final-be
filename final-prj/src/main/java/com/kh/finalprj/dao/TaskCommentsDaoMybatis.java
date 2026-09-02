@@ -32,7 +32,6 @@ public class TaskCommentsDaoMybatis implements TaskCommentsDao {
 
 	@Override
 	public List<TaskCommentDto> findComments(int taskNo) {
-		// 👈 mapper.taskComment -> mapper.taskcomment 로 대소문자 일치
 		return sqlSession.selectList("mapper.taskcomment.findComment", taskNo);
 	}
 
