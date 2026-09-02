@@ -60,4 +60,10 @@ public class TaskDaoMybatis implements TaskDao {
     public boolean delete(int taskNo) {
         return sqlSession.delete("mapper.task.delete", taskNo) > 0;
     }
+
+    
+	@Override
+	public int countByProjectNo(int projectNo) {
+		return sqlSession.selectOne("mapper.task.countByProjectNo", projectNo);
+	}
 }

@@ -30,6 +30,7 @@ public interface ProjectService{
 	void join(int projectNo , int empNo);
 	//owner 변경
 	void changeOwner(int projectNo,int projectMemberNo, int empNo);
-	
+	//프로젝트 삭제
+	void delete(int projectNo,int empNo);
 	
 }

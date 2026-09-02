@@ -148,4 +148,8 @@
         where task_no = #{taskNo}
     </delete>
 
+	<!-- 8.프로젝트 업무 개수  -->
+	<select id="countByProjectNo" resultType="int">
+		select count(*) from task where project_no = #{projectNo}
+	</select>
 </mapper>

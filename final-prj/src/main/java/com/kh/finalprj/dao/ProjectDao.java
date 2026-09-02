@@ -24,5 +24,6 @@ public interface ProjectDao {
 	List<ProjectListResponseVO> selectPublicProjectList(PageVO pageVO, int empNo);
 	//프로젝트 자체 조회(참여하기에 사용)
 	ProjectDto selectProject(int projectNo);
-	
+	//프로젝트 삭제
+	int delete(int projectNo);
 }

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kh.finalprj.dao.ChannelDao;
 import com.kh.finalprj.dao.ProjectDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
+import com.kh.finalprj.dao.TaskDao;
 import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
@@ -33,6 +34,8 @@ public class ProjectServiceImpl implements ProjectService{
 	private ProjectMemberDao projectMemberDao;
 	@Autowired
 	private ChannelDao channelDao;
+	@Autowired
+	private TaskDao taskDao;
 
 	//프로젝트 생성
 	@Transactional
@@ -290,6 +293,46 @@ public class ProjectServiceImpl implements ProjectService{
 				targetMember.getProjectMemberNo(), 
 				"owner"
 			);
+	}
+
+	//프로젝트 삭제
+	@Transactional
+	@Override
+	public void delete(int projectNo, int empNo) {
+		//1.프로젝트 존재 확인
+		ProjectDto project = projectDao.selectProject(projectNo);
+		
+		if(project == null) {
+			throw new TargetNotfoundException("존재하지 않는 프로젝트입니다.");
+		}
+		
+		//2.현재 사용자의 프로젝트 권한 확인
+		String role = projectMemberDao.selectRole(projectNo, empNo);
+		
+		//프로젝트 참여자가 아닌 경우
+		if(role == null) {
+			throw new WhoAreYouException("프로젝트 참여자가 아닙니다.");
+		}
+		
+		//3.owner만 삭제 가능
+		if(!role.equals("owner")) {
+			throw new WhoAreYouException("프로젝트 삭제 권한이 없습니다.");
+		}
+		
+		//4.프로젝트의 업무 개수 확인
+		int taskCount = taskDao.countByProjectNo(projectNo);
+		
+		//업무가 있으면 삭제 불가
+		if(taskCount > 0 ) {
+			throw new WrongDataException("업무가 존재하는 프로젝트는 삭제할 수 없습니다.");
+		}
+		
+		//5.프로젝트 삭제
+		int result = projectDao.delete(projectNo);
+		
+		if(result == 0) {
+			throw new TargetNotfoundException("프로젝트 삭제에 실패했습니다.");
+		}
 	}
 
 	

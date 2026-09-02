@@ -154,4 +154,10 @@
 	<select id="selectProject" resultType="ProjectDto">
 		select * from project where project_no = #{projectNo}
 	</select>
+	
+	<!-- 프로젝트 삭제 -->
+	<delete id="delete">
+		delete from project
+		where project_no = #{projectNo}
+	</delete>
 </mapper>

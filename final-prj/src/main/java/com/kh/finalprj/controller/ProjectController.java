@@ -3,6 +3,7 @@ package com.kh.finalprj.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -94,7 +95,7 @@ public class ProjectController {
 	
 	//프로젝트 멤버 목록 매핑
 	@ApiResponse(responseCode = "200",description = "프로젝트 멤버 목록 매핑")
-	@GetMapping("/{projectNo}/member")
+	@GetMapping(value = "/{projectNo}/member",produces = "application/json")
 	public List<ProjectMemberListResponseVO> memberList(
 			@PathVariable int projectNo,@CurrentUser TokenParseResponseVO parseVO
 	){
@@ -104,7 +105,7 @@ public class ProjectController {
 	
 	//역할 변경 매핑
 	@ApiResponse(responseCode = "200",description = "멤버 역할 변경")
-	@PatchMapping("/{projectNo}/member/{projectMemberNo}/role")
+	@PatchMapping(value = "/{projectNo}/member/{projectMemberNo}/role", produces = "application/json")
 	public void updateMemberRole(
 		@PathVariable int projectNo,
 		@PathVariable int projectMemberNo,
@@ -123,7 +124,7 @@ public class ProjectController {
 	
 	//참여하기 매핑
 	@ApiResponse(responseCode = "200",description = "공개 프로젝트 참여하기 성공")
-	@PostMapping("/{projectNo}/join")
+	@PostMapping(value = "/{projectNo}/join",produces = "application/json")
 	public void join (@PathVariable int projectNo, 
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
@@ -134,7 +135,7 @@ public class ProjectController {
 	
 	//owner 변경 매핑
 	@ApiResponse(responseCode = "200", description = "owner변경 성공")
-	@PatchMapping("/{projectNo}/owner/{projectMemberNo}")
+	@PatchMapping(value = "/{projectNo}/owner/{projectMemberNo}",produces = "application/json")
 	public void changeOwner(
 			@PathVariable int projectNo,
 			@PathVariable int projectMemberNo,
@@ -147,5 +148,18 @@ public class ProjectController {
 				projectMemberNo, 
 				empNo
 		);
+	}
+	
+	//프로젝트 삭제
+	@ApiResponse(responseCode = "200",description = "프로젝트 삭제 성공")
+	@DeleteMapping(value = "/{projectNo}",produces = "application/json")
+	public void delete(
+			@PathVariable int projectNo,
+			@CurrentUser TokenParseResponseVO parseVO
+	) {
+		int empNo = parseVO.getEmpNo();
+		
+		projectService.delete(projectNo, empNo);
+		
 	}
 }
