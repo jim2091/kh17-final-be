@@ -1,0 +1,57 @@
+package com.kh.finalprj.dao;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.kh.finalprj.dto.TaskCommentFileDto;
+import com.kh.finalprj.dto.TaskFileDto;
+import com.kh.finalprj.vo.task.TaskFileResponseVO;
+
+public class TaskFileDaoMybatis implements TaskFileDao {
+
+	@Autowired
+	private SqlSession sqlSession;
+	
+	// 업무 본체 첨부파일 등록
+	@Override
+	public void addTaskFile(TaskFileDto taskFileDto) {
+		sqlSession.insert("mapper.taskfile.addTaskFile", taskFileDto);
+	}
+	// 조회
+	@Override
+	public List<TaskFileResponseVO> selectFilesByTaskNo(int taskNo) {
+		return sqlSession.selectList("mapper.taskFile.selectFilesByTaskNo", taskNo);
+	}
+	// 삭제
+	@Override
+	public boolean deleteTaskFile(int taskNo, int attachNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("taskNo", taskNo);
+		params.put("attachNo", attachNo);
+		return sqlSession.delete("mapper.taskfile.deleteTaskFile", params) > 0;
+	}
+	
+	//댓글 첨부파일
+	@Override
+	public void addCommentFile(TaskCommentFileDto taskCommentFileDto) {
+		sqlSession.insert("mapper.taskfile.addCommentFile", taskCommentFileDto);
+	}
+
+	@Override
+	public List<TaskFileResponseVO> selectFilesByCommentNo(int taskCommentNo) {
+		return sqlSession.selectList("mapper.taskfile.selectFilesByCommentNo", taskCommentNo);
+	}
+
+	@Override
+	public boolean deleteCommentFile(int taskCommentNo, int attachNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("taskCommentNo", taskCommentNo);
+		params.put("attachNo", attachNo);
+		return sqlSession.delete("mapper.taskfile.deleteCommentFile", params) > 0;
+	}
+
+}
