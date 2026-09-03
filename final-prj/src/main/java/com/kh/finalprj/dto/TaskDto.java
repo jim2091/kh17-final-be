@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class TaskDto {
     private int taskNo;
     private int projectNo;
+    private String projectName;
     private String taskTitle;
     private String taskContent;
     private Integer assignedMemberNo;
