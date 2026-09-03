@@ -27,7 +27,6 @@ public interface AttachDao {
             int projectNo,
             String keyword
     );
-    
-    //회원 프로필 등록용 (민영)
+
     void insert(AttachProfileVO attachProfileVO);
 }

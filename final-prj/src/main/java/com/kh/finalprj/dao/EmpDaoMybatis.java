@@ -89,6 +89,11 @@ public class EmpDaoMybatis implements EmpDao {
 		sqlSession.insert("mapper.emp.connect", params);
 	}
 
+	@Override
+	public int findAttachNumber(int empNo) {
+		return sqlSession.selectOne("mapper.emp.findAttachNumber", empNo);
+	}
+
 	
 	
 	

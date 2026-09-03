@@ -58,7 +58,7 @@ public class MemberRestController {
 	@GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
 	public EmpMeResponseVO me(
 			@CurrentUser TokenParseResponseVO parseVO
-			) {
+			) throws IOException {
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
 		
 		if(empDto == null) throw new TargetNotfoundException();
@@ -66,6 +66,10 @@ public class MemberRestController {
 		DeptDto deptDto = deptDao.selectOne(empDto.getEmpDeptNo());
 		
 		PositionDto positionDto = positionDao.selectOne(empDto.getEmpPositionNo());
+		
+		//프로필 사진 조회
+		int attachNo = empDao.findAttachNumber(parseVO.getEmpNo());
+		attachService.load(attachNo);
 		
 		EmpMeResponseVO response = new EmpMeResponseVO();
 		
@@ -81,7 +85,11 @@ public class MemberRestController {
 	
 	//사용자 정보 수정(본인) + 프로필 사진 추가 or 수정
 	@Transactional
-	@PutMapping("/")
+	@PutMapping(
+			value = "/"
+			,produces="application/json"
+			,consumes="multipart/form-data"
+			)
 	public ChangeEmpResponseVO updateAll(
 			@CurrentUser TokenParseResponseVO parseVO,
 //			@Valid @RequestBody ChangeEmpRequestVO request
@@ -89,7 +97,7 @@ public class MemberRestController {
 			@RequestPart(value="emp") ChangeEmpRequestVO request
 			
 			) throws IllegalStateException, IOException {
-		System.out.println("request : "+ request);
+//		System.out.println("request : "+ request);
 		//기존 정보 조회
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
 		if(empDto == null) throw new TargetNotfoundException();
@@ -131,8 +139,9 @@ public class MemberRestController {
 		
 		
 		//프로필 있으면 등록후 사원정보와 연결
+		String source = "프로필";
 		if(empProfile.isEmpty() == false) {
-			int attachNo = attachService.save(empProfile);
+			int attachNo = attachService.save(empProfile, empDto.getEmpName(), source);
 			empDao.connect(empDto.getEmpNo(), attachNo);
 		}
 		

@@ -18,6 +18,7 @@ import com.kh.finalprj.dao.ProjectFileDao;
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.attach.AttachInfoVO;
+import com.kh.finalprj.vo.attach.AttachProfileVO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -326,16 +327,18 @@ public class AttachServiceCloud implements AttachService {
   //회원 프로필 저장용도 
     @Transactional
 	@Override
-	public int save(MultipartFile attach) throws IllegalStateException, IOException{
+	public int save(MultipartFile attach, String empName, String source) throws IllegalStateException, IOException{
 			int attachNo = attachDao.sequence();
 			attachDao.insert(
-						AttachDto.builder()
-							.attachNo(attachNo)
-							.attachName(attach.getOriginalFilename())
-							.attachType(attach.getContentType())
-							.attachSize(attach.getSize())
-						.build()
-					);//db저장 
+					AttachProfileVO.builder()
+						.attachNo(attachNo)
+						.attachName(attach.getOriginalFilename())
+						.attachType(attach.getContentType())
+						.attachSize(attach.getSize())
+						.attachUploader(empName)
+						.attachSource(source)
+					.build()
+				);//db저장 
 			
 			
 			
