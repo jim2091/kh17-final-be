@@ -1,6 +1,9 @@
 package com.kh.finalprj.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +22,11 @@ public class SearchServiceImpl implements SearchService {
 
 
     @Override
-    public SearchDto search(String keyword, String filter) {
+    public SearchDto search(
+            String keyword,
+            String filter,
+            int empNo
+    ) {
 
         // ========================================
         // 검색어 정리
@@ -44,28 +51,13 @@ public class SearchServiceImpl implements SearchService {
 
 
         // ========================================
-        // 결과 객체 생성
+        // 결과 객체
         // ========================================
 
         SearchDto result = new SearchDto();
 
         result.setKeyword(keyword);
         result.setFilter(filter);
-
-        /*
-         * 모든 카테고리를 먼저 빈 배열로 만들어 둡니다.
-         *
-         * 따라서 검색 결과가 없어도
-         *
-         * users: []
-         * projects: []
-         * tasks: []
-         * records: []
-         * notes: []
-         * files: []
-         *
-         * 형태로 항상 내려갑니다.
-         */
 
         result.setUsers(new ArrayList<>());
         result.setProjects(new ArrayList<>());
@@ -76,7 +68,7 @@ public class SearchServiceImpl implements SearchService {
 
 
         // ========================================
-        // 검색어가 없는 경우
+        // 검색어 없음
         // ========================================
 
         if (keyword.isEmpty()) {
@@ -95,7 +87,7 @@ public class SearchServiceImpl implements SearchService {
             );
 
             result.setProjects(
-                    searchDao.searchProjects(keyword)
+                    searchDao.searchProjects(keyword, empNo)
             );
 
             result.setTasks(
@@ -111,17 +103,26 @@ public class SearchServiceImpl implements SearchService {
 
 
         // ========================================
+        // 다중 필터 처리
+        // ========================================
+
+        Set<String> filters = new HashSet<>(
+                Arrays.asList(filter.split(","))
+        );
+
+
+        // ========================================
         // 사용자
         // ========================================
 
-        if ("user".equals(filter)
-                || "users".equals(filter)) {
+        if (
+                filters.contains("user") ||
+                filters.contains("users")
+        ) {
 
             result.setUsers(
                     searchDao.searchMembers(keyword)
             );
-
-            return result;
         }
 
 
@@ -129,14 +130,14 @@ public class SearchServiceImpl implements SearchService {
         // 프로젝트
         // ========================================
 
-        if ("project".equals(filter)
-                || "projects".equals(filter)) {
+        if (
+                filters.contains("project") ||
+                filters.contains("projects")
+        ) {
 
             result.setProjects(
-                    searchDao.searchProjects(keyword)
+                    searchDao.searchProjects(keyword, empNo)
             );
-
-            return result;
         }
 
 
@@ -144,30 +145,27 @@ public class SearchServiceImpl implements SearchService {
         // 업무
         // ========================================
 
-        if ("task".equals(filter)
-                || "tasks".equals(filter)) {
+        if (
+                filters.contains("task") ||
+                filters.contains("tasks")
+        ) {
 
             result.setTasks(
                     searchDao.searchTasks(keyword)
             );
-
-            return result;
         }
 
 
         // ========================================
-        // Records
+        // 기록
         // ========================================
 
-        if ("record".equals(filter)
-                || "records".equals(filter)) {
+        if (
+                filters.contains("record") ||
+                filters.contains("records")
+        ) {
 
-            /*
-             * 현재 records 테이블이 없으므로
-             * 빈 배열을 그대로 반환합니다.
-             */
-
-            return result;
+            // 아직 구현하지 않음
         }
 
 
@@ -175,15 +173,12 @@ public class SearchServiceImpl implements SearchService {
         // 노트
         // ========================================
 
-        if ("note".equals(filter)
-                || "notes".equals(filter)) {
+        if (
+                filters.contains("note") ||
+                filters.contains("notes")
+        ) {
 
-            /*
-             * 현재 note 테이블이 없으므로
-             * 빈 배열을 그대로 반환합니다.
-             */
-
-            return result;
+            // 아직 구현하지 않음
         }
 
 
@@ -191,41 +186,16 @@ public class SearchServiceImpl implements SearchService {
         // 파일
         // ========================================
 
-        if ("file".equals(filter)
-                || "files".equals(filter)) {
+        if (
+                filters.contains("file") ||
+                filters.contains("files")
+        ) {
 
             result.setFiles(
                     searchDao.searchFiles(keyword)
             );
-
-            return result;
         }
 
-
-        // ========================================
-        // 잘못된 필터
-        // ========================================
-
-        /*
-         * 정의되지 않은 필터가 들어오면
-         * 전체 검색으로 처리합니다.
-         */
-
-        result.setUsers(
-                searchDao.searchMembers(keyword)
-        );
-
-        result.setProjects(
-                searchDao.searchProjects(keyword)
-        );
-
-        result.setTasks(
-                searchDao.searchTasks(keyword)
-        );
-
-        result.setFiles(
-                searchDao.searchFiles(keyword)
-        );
 
         return result;
     }

@@ -18,5 +18,8 @@ public class ProjectDto {
 	private String projectStatus;
 	private Timestamp projectStart, projectDeadline;
 	private Timestamp projectCtime, projectUtime;
+	// 현재 로그인 사용자의 프로젝트 역할
+    // owner / member / null
+    private String projectRole;
 	
 }

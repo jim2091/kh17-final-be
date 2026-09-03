@@ -13,7 +13,7 @@ public interface SearchDao {
     List<EmpDto> searchMembers(String keyword);
 
     // 프로젝트 검색
-    List<ProjectDto> searchProjects(String keyword);
+    List<ProjectDto> searchProjects(String keyword, int empNo);
 
     // 업무 검색
     List<TaskDto> searchTasks(String keyword);

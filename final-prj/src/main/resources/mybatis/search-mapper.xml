@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.kh.finalprj.dao.SearchDao">
 
 
     <!-- =====================================================
          사용자 검색
-         이름 또는 이메일로 검색
-         emp_state 조건 없음
     ====================================================== -->
 
     <select id="searchMembers" resultType="EmpDto">
 
-        select
+        SELECT
             emp_no,
             emp_name,
             emp_email,
@@ -31,90 +28,151 @@
             emp_address2,
             emp_ctime,
             emp_utime
-        from emp
-        where
-            emp_name like '%' || #{keyword} || '%'
-            or emp_email like '%' || #{keyword} || '%'
-        order by emp_no
+        FROM emp
+        WHERE
+            emp_name LIKE '%' || #{keyword} || '%'
+            OR emp_email LIKE '%' || #{keyword} || '%'
+        ORDER BY emp_no
 
     </select>
 
 
     <!-- =====================================================
          프로젝트 검색
+
+         현재 로그인 사용자의 역할도 함께 조회
+
+         owner
+             → owner
+
+         manager / member
+             → member
+
+         참여하지 않은 경우
+             → null
+
+         private 프로젝트는 검색 제외
     ====================================================== -->
 
     <select id="searchProjects" resultType="ProjectDto">
 
-        select
-            project_no,
-            project_name,
-            project_purpose,
-            project_visibility,
-            project_status,
-            project_start,
-            project_deadline,
-            project_ctime,
-            project_utime
-        from project
-        where project_status = 'active'
-        and (
-            project_name like '%' || #{keyword} || '%'
-            or project_purpose like '%' || #{keyword} || '%'
-        )
-        order by project_ctime desc
+        SELECT
+            p.project_no,
+            p.project_name,
+            p.project_purpose,
+            p.project_visibility,
+            p.project_status,
+            p.project_start,
+            p.project_deadline,
+            p.project_ctime,
+            p.project_utime,
+
+            CASE
+                WHEN pm.project_member_role = 'owner'
+                    THEN 'owner'
+
+                WHEN pm.project_member_no IS NOT NULL
+                    THEN 'member'
+
+                ELSE NULL
+            END AS projectRole
+
+        FROM project p
+
+        LEFT JOIN project_member pm
+            ON p.project_no = pm.project_no
+            AND pm.emp_no = #{empNo}
+
+        WHERE
+            p.project_status = 'active'
+
+            AND p.project_visibility != 'private'
+
+            AND (
+                p.project_name LIKE '%' || #{keyword} || '%'
+                OR p.project_purpose LIKE '%' || #{keyword} || '%'
+            )
+
+        ORDER BY p.project_ctime DESC
 
     </select>
 
 
     <!-- =====================================================
          업무 검색
+
+         private 프로젝트의 업무는 검색 제외
     ====================================================== -->
 
     <select id="searchTasks" resultType="TaskDto">
 
-        select
-            task_no,
-            project_no,
-            task_title,
-            task_content,
-            assigned_member_no,
-            task_status,
-            task_order,
-            task_start,
-            task_end,
-            task_category,
-            task_priority,
-            task_progress,
-            task_writer_no,
-            task_ctime,
-            task_utime
-        from task
-        where
-            task_title like '%' || #{keyword} || '%'
-            or task_content like '%' || #{keyword} || '%'
-        order by task_ctime desc
+        SELECT
+            t.task_no,
+            t.project_no,
+            p.project_name AS projectName,
+            t.task_title,
+            t.task_content,
+            t.assigned_member_no,
+            t.task_status,
+            t.task_order,
+            t.task_start,
+            t.task_end,
+            t.task_category,
+            t.task_priority,
+            t.task_progress,
+            t.task_writer_no,
+            t.task_ctime,
+            t.task_utime
+
+        FROM task t
+
+        LEFT JOIN project p
+            ON t.project_no = p.project_no
+
+        WHERE
+            p.project_visibility != 'private'
+
+            AND (
+                t.task_title LIKE '%' || #{keyword} || '%'
+                OR t.task_content LIKE '%' || #{keyword} || '%'
+            )
+
+        ORDER BY t.task_ctime DESC
 
     </select>
 
 
     <!-- =====================================================
          파일 검색
+
+         private 프로젝트의 파일은 검색 제외
     ====================================================== -->
 
     <select id="searchFiles" resultType="AttachDto">
 
-        select
+        SELECT
             a.*,
-            e.emp_name as empName
-        from attach a
-        left join emp e
-            on a.attach_uploader = to_char(e.emp_no)
-        where
-            a.attach_name like '%' || #{keyword} || '%'
-        order by a.attach_no desc
+            e.emp_name AS empName,
+            p.project_name AS projectName
+
+        FROM attach a
+
+        LEFT JOIN emp e
+            ON a.attach_uploader = TO_CHAR(e.emp_no)
+
+        LEFT JOIN project_file pf
+            ON a.attach_no = pf.attach_no
+
+        LEFT JOIN project p
+            ON pf.project_no = p.project_no
+
+        WHERE
+            p.project_visibility != 'private'
+
+            AND a.attach_name LIKE '%' || #{keyword} || '%'
+
+        ORDER BY a.attach_no DESC
 
     </select>
-
 
 </mapper>
