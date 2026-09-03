@@ -16,6 +16,8 @@ public class AttachProfileVO {
 	private String attachName;
 	private String attachType;
 	private long attachSize;
+	private String attachUploader;
+	private String attachSource;
 	
 	//파일 유형(MIME TYPE)을 알려주기 위한 메소드
 	//-만약 유형을 알 수 없으면 null 대신 application/octet-stream을 반환한다

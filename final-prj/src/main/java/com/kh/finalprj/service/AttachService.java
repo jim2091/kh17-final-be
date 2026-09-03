@@ -22,6 +22,6 @@ public interface AttachService {
 	List<AttachDto> list(int projectNo, String keyword);
 	
 	//회원 프로필 사진 연결용(민영작성)
-	int save(MultipartFile attach)
+	int save(MultipartFile attach, String empName, String sourse)
 			throws IllegalStateException, IOException;
 }

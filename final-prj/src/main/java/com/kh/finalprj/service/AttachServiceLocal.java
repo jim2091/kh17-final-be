@@ -284,7 +284,7 @@ public class AttachServiceLocal
   //회원 프로필 저장용도 
     @Transactional
 	@Override
-	public int save(MultipartFile attach) throws IllegalStateException, IOException{
+	public int save(MultipartFile attach, String empName, String source) throws IllegalStateException, IOException{
 			int attachNo = attachDao.sequence();
 			attachDao.insert(
 						AttachProfileVO.builder()
@@ -292,6 +292,8 @@ public class AttachServiceLocal
 							.attachName(attach.getOriginalFilename())
 							.attachType(attach.getContentType())
 							.attachSize(attach.getSize())
+							.attachUploader(empName)
+							.attachSource(source)
 						.build()
 					);//db저장 
 			

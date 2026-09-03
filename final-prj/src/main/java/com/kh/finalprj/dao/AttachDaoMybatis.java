@@ -87,9 +87,10 @@ public class AttachDaoMybatis implements AttachDao {
 			return keyword;
 		}
 	}
-
 	@Override
 	public void insert(AttachProfileVO attachProfileVO) {
-		sqlSession.insert("mapper.attach.addProfile", attachProfileVO);		
+		sqlSession.insert("mapper.attach.add", attachProfileVO);		
 	}
+
+
 }

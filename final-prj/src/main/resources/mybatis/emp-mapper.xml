@@ -24,6 +24,11 @@
 	select * from emp where emp_no = #{empNo}
 </select>
 
+<!-- 프로플 테이블과 조인 후 사용자 정보 조회 -->
+<!-- select E.*, P.attach_no from emp E
+	left outer join emp_profile P on E.emp_no = P.emp_no
+where emp_no = #{empNo} -->
+
 <!-- 이메일을 통한 사용자 정보 조회 -->
 <select id="find2" resultType="empDto">
 	select * from emp where emp_email = #{empEmail}
@@ -161,9 +166,14 @@
 
 <!-- 회원프로필 테이블에 저장 -->
 <insert id="connect">
-	insert into emp_profile(empNo, attach_no)
+	insert into emp_profile(emp_no, attach_no)
 	values(#{empNo}, #{attachNo})
 </insert>
+
+<!-- 프로필 번호 조회 -->
+<select id="findAttachNumber" resultType="int">
+	select attach_no from emp_profile where emp_no = #{empNo}
+</select>
 
 
 
