@@ -69,7 +69,6 @@ public class MemberRestController {
 		
 		//프로필 사진 조회
 		int attachNo = empDao.findAttachNumber(parseVO.getEmpNo());
-		attachService.load(attachNo);
 		
 		EmpMeResponseVO response = new EmpMeResponseVO();
 		
@@ -77,6 +76,7 @@ public class MemberRestController {
 		
 		response.setDeptName(deptDto.getDeptName());
 		response.setPositionName(positionDto.getPositionName());
+		response.setAttachNo(attachNo);
 		
 		return response;
 		
@@ -140,7 +140,7 @@ public class MemberRestController {
 		
 		//프로필 있으면 등록후 사원정보와 연결
 		String source = "프로필";
-		if(empProfile.isEmpty() == false) {
+		if(empProfile != null && empProfile.isEmpty() == false) {
 			int attachNo = attachService.save(empProfile, empDto.getEmpName(), source);
 			empDao.connect(empDto.getEmpNo(), attachNo);
 		}

@@ -20,5 +20,6 @@ public class EmpMeResponseVO {
 	private String empPost;
 	private String empAddress1;
 	private String empAddress2;
+	private Integer attachNo;
 	
 }
