@@ -15,219 +15,169 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class SearchServiceImpl implements SearchService {
 
-    private final SearchDao searchDao;
+	private final SearchDao searchDao;
 
+	@Override
+	public SearchDto search(String keyword, String filter) {
 
-    @Override
-    public SearchDto search(String keyword, String filter) {
+		// ========================================
+		// 검색어 정리
+		// ========================================
 
-        // ========================================
-        // 검색어 정리
-        // ========================================
+		if (keyword == null) {
+			keyword = "";
+		}
 
-        if (keyword == null) {
-            keyword = "";
-        }
+		keyword = keyword.trim();
 
-        keyword = keyword.trim();
+		// ========================================
+		// 필터 정리
+		// ========================================
 
+		if (filter == null || filter.trim().isEmpty()) {
+			filter = "all";
+		}
 
-        // ========================================
-        // 필터 정리
-        // ========================================
+		filter = filter.trim().toLowerCase();
 
-        if (filter == null || filter.trim().isEmpty()) {
-            filter = "all";
-        }
+		// ========================================
+		// 결과 객체 생성
+		// ========================================
 
-        filter = filter.trim().toLowerCase();
+		SearchDto result = new SearchDto();
 
+		result.setKeyword(keyword);
+		result.setFilter(filter);
 
-        // ========================================
-        // 결과 객체 생성
-        // ========================================
+		/*
+		 * 모든 카테고리를 먼저 빈 배열로 만들어 둡니다.
+		 *
+		 * 따라서 검색 결과가 없어도
+		 *
+		 * users: [] projects: [] tasks: [] records: [] notes: [] files: []
+		 *
+		 * 형태로 항상 내려갑니다.
+		 */
 
-        SearchDto result = new SearchDto();
+		result.setUsers(new ArrayList<>());
+		result.setProjects(new ArrayList<>());
+		result.setTasks(new ArrayList<>());
+		result.setRecords(new ArrayList<>());
+		result.setNotes(new ArrayList<>());
+		result.setFiles(new ArrayList<>());
 
-        result.setKeyword(keyword);
-        result.setFilter(filter);
+		// ========================================
+		// 검색어가 없는 경우
+		// ========================================
 
-        /*
-         * 모든 카테고리를 먼저 빈 배열로 만들어 둡니다.
-         *
-         * 따라서 검색 결과가 없어도
-         *
-         * users: []
-         * projects: []
-         * tasks: []
-         * records: []
-         * notes: []
-         * files: []
-         *
-         * 형태로 항상 내려갑니다.
-         */
+		if (keyword.isEmpty()) {
+			return result;
+		}
 
-        result.setUsers(new ArrayList<>());
-        result.setProjects(new ArrayList<>());
-        result.setTasks(new ArrayList<>());
-        result.setRecords(new ArrayList<>());
-        result.setNotes(new ArrayList<>());
-        result.setFiles(new ArrayList<>());
+		// ========================================
+		// 전체 검색
+		// ========================================
 
+		if ("all".equals(filter)) {
 
-        // ========================================
-        // 검색어가 없는 경우
-        // ========================================
+			result.setUsers(searchDao.searchMembers(keyword));
 
-        if (keyword.isEmpty()) {
-            return result;
-        }
+			result.setProjects(searchDao.searchProjects(keyword));
 
+			result.setTasks(searchDao.searchTasks(keyword));
 
-        // ========================================
-        // 전체 검색
-        // ========================================
+			result.setFiles(searchDao.searchFiles(keyword));
 
-        if ("all".equals(filter)) {
+			return result;
+		}
 
-            result.setUsers(
-                    searchDao.searchMembers(keyword)
-            );
+		// ========================================
+		// 사용자
+		// ========================================
 
-            result.setProjects(
-                    searchDao.searchProjects(keyword)
-            );
+		if ("user".equals(filter) || "users".equals(filter)) {
 
-            result.setTasks(
-                    searchDao.searchTasks(keyword)
-            );
+			result.setUsers(searchDao.searchMembers(keyword));
 
-            result.setFiles(
-                    searchDao.searchFiles(keyword)
-            );
+			return result;
+		}
 
-            return result;
-        }
+		// ========================================
+		// 프로젝트
+		// ========================================
 
+		if ("project".equals(filter) || "projects".equals(filter)) {
 
-        // ========================================
-        // 사용자
-        // ========================================
+			result.setProjects(searchDao.searchProjects(keyword));
 
-        if ("user".equals(filter)
-                || "users".equals(filter)) {
+			return result;
+		}
 
-            result.setUsers(
-                    searchDao.searchMembers(keyword)
-            );
+		// ========================================
+		// 업무
+		// ========================================
 
-            return result;
-        }
+		if ("task".equals(filter) || "tasks".equals(filter)) {
 
+			result.setTasks(searchDao.searchTasks(keyword));
 
-        // ========================================
-        // 프로젝트
-        // ========================================
+			return result;
+		}
 
-        if ("project".equals(filter)
-                || "projects".equals(filter)) {
+		// ========================================
+		// Records
+		// ========================================
 
-            result.setProjects(
-                    searchDao.searchProjects(keyword)
-            );
+		if ("record".equals(filter) || "records".equals(filter)) {
 
-            return result;
-        }
+			/*
+			 * 현재 records 테이블이 없으므로 빈 배열을 그대로 반환합니다.
+			 */
 
+			return result;
+		}
 
-        // ========================================
-        // 업무
-        // ========================================
+		// ========================================
+		// 노트
+		// ========================================
 
-        if ("task".equals(filter)
-                || "tasks".equals(filter)) {
+		if ("note".equals(filter) || "notes".equals(filter)) {
 
-            result.setTasks(
-                    searchDao.searchTasks(keyword)
-            );
+			/*
+			 * 현재 note 테이블이 없으므로 빈 배열을 그대로 반환합니다.
+			 */
 
-            return result;
-        }
+			return result;
+		}
 
+		// ========================================
+		// 파일
+		// ========================================
 
-        // ========================================
-        // Records
-        // ========================================
+		if ("file".equals(filter) || "files".equals(filter)) {
 
-        if ("record".equals(filter)
-                || "records".equals(filter)) {
+			result.setFiles(searchDao.searchFiles(keyword));
 
-            /*
-             * 현재 records 테이블이 없으므로
-             * 빈 배열을 그대로 반환합니다.
-             */
+			return result;
+		}
 
-            return result;
-        }
+		// ========================================
+		// 잘못된 필터
+		// ========================================
 
+		/*
+		 * 정의되지 않은 필터가 들어오면 전체 검색으로 처리합니다.
+		 */
 
-        // ========================================
-        // 노트
-        // ========================================
+		result.setUsers(searchDao.searchMembers(keyword));
 
-        if ("note".equals(filter)
-                || "notes".equals(filter)) {
+		result.setProjects(searchDao.searchProjects(keyword));
 
-            /*
-             * 현재 note 테이블이 없으므로
-             * 빈 배열을 그대로 반환합니다.
-             */
+		result.setTasks(searchDao.searchTasks(keyword));
 
-            return result;
-        }
+		result.setFiles(searchDao.searchFiles(keyword));
 
-
-        // ========================================
-        // 파일
-        // ========================================
-
-        if ("file".equals(filter)
-                || "files".equals(filter)) {
-
-            result.setFiles(
-                    searchDao.searchFiles(keyword)
-            );
-
-            return result;
-        }
-
-
-        // ========================================
-        // 잘못된 필터
-        // ========================================
-
-        /*
-         * 정의되지 않은 필터가 들어오면
-         * 전체 검색으로 처리합니다.
-         */
-
-        result.setUsers(
-                searchDao.searchMembers(keyword)
-        );
-
-        result.setProjects(
-                searchDao.searchProjects(keyword)
-        );
-
-        result.setTasks(
-                searchDao.searchTasks(keyword)
-        );
-
-        result.setFiles(
-                searchDao.searchFiles(keyword)
-        );
-
-        return result;
-    }
+		return result;
+	}
 
 }
