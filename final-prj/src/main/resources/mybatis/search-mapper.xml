@@ -3,7 +3,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.kh.finalprj.dao.SearchDao">
+<mapper namespace="mapper.search">
 
 
     <!-- =====================================================
@@ -56,46 +56,50 @@
 
     <select id="searchProjects" resultType="ProjectDto">
 
-        SELECT
-            p.project_no,
-            p.project_name,
-            p.project_purpose,
-            p.project_visibility,
-            p.project_status,
-            p.project_start,
-            p.project_deadline,
-            p.project_ctime,
-            p.project_utime,
-
-            CASE
-                WHEN pm.project_member_role = 'owner'
-                    THEN 'owner'
-
-                WHEN pm.project_member_no IS NOT NULL
-                    THEN 'member'
-
-                ELSE NULL
-            END AS projectRole
-
-        FROM project p
-
-        LEFT JOIN project_member pm
-            ON p.project_no = pm.project_no
-            AND pm.emp_no = #{empNo}
-
-        WHERE
-            p.project_status = 'active'
-
-            AND p.project_visibility != 'private'
-
-            AND (
-                p.project_name LIKE '%' || #{keyword} || '%'
-                OR p.project_purpose LIKE '%' || #{keyword} || '%'
-            )
-
-        ORDER BY p.project_ctime DESC
-
-    </select>
+	    SELECT
+	        p.project_no,
+	        p.project_name,
+	        p.project_purpose,
+	        p.project_visibility,
+	        p.project_status,
+	        p.project_start,
+	        p.project_deadline,
+	        p.project_ctime,
+	        p.project_utime,
+	
+	        /* 프로젝트 전체 참여 인원 */
+	        (
+	            SELECT COUNT(*)
+	            FROM project_member pm_count
+	            WHERE pm_count.project_no = p.project_no
+	        ) AS memberCount,
+	
+	        /* 현재 로그인 사용자의 역할 */
+	        CASE
+	            WHEN pm.project_member_role = 'owner'
+	                THEN 'owner'
+	            WHEN pm.project_member_no IS NOT NULL
+	                THEN 'member'
+	            ELSE NULL
+	        END AS projectRole
+	
+	    FROM project p
+	
+	    LEFT JOIN project_member pm
+	        ON p.project_no = pm.project_no
+	        AND pm.emp_no = #{empNo}
+	
+	    WHERE
+	        p.project_status = 'active'
+	        AND p.project_visibility != 'private'
+	        AND (
+	            p.project_name LIKE '%' || #{keyword} || '%'
+	            OR p.project_purpose LIKE '%' || #{keyword} || '%'
+	        )
+	
+	    ORDER BY p.project_ctime DESC
+	
+	</select>
 
 
     <!-- =====================================================

@@ -21,5 +21,7 @@ public class ProjectDto {
 	// 현재 로그인 사용자의 프로젝트 역할
     // owner / member / null
     private String projectRole;
+    //프로젝트 참여 인원
+    private int memberCount;
 	
 }
