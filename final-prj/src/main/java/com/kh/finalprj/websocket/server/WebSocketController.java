@@ -49,10 +49,14 @@ public class WebSocketController {
 	    ///System.out.println("channelNo = " + channelNo);
 		
 		//[1] JWT에서 empNo 확인
-		TokenParseResponseVO parseVO = 
-				jwtService.parseAccessToken(jwt.getTokenValue());
+//		TokenParseResponseVO parseVO = 
+//				jwtService.parseAccessToken(jwt.getTokenValue());
+//		
+//		int empNo = parseVO.getEmpNo();
 		
-		int empNo = parseVO.getEmpNo();
+//		기존처럼 하면 처음 웹소켓 연결시 정상이던 access토큰이 만료된 이후 또 decode를 하며
+//		문제 발생. 그러니 처음 연결때 정상이었던 Jwt라면 또 검사하지 않고 그냥 sub의 empNo만 가져오도록
+		int empNo = Integer.parseInt(jwt.getSubject());
 		
 		///System.out.println("empNo = " + empNo);
 		
@@ -115,10 +119,7 @@ public class WebSocketController {
 			@AuthenticationPrincipal Jwt jwt
 		) {
 		//[1] JWT에서 empNo 확인
-		TokenParseResponseVO parseVO = 
-				jwtService.parseAccessToken(jwt.getTokenValue());
-		
-		int empNo = parseVO.getEmpNo();
+		int empNo = Integer.parseInt(jwt.getSubject());
 		
 		//[2] 채널 메시지 읽음 처리 + 읽음 결과 조회
 		MessageReadResponseVO response =
