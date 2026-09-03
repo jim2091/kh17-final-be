@@ -24,7 +24,6 @@
             task_end,
             task_category,
             task_priority,
-            task_progress,
             task_writer_no,
             task_ctime,
             task_utime
@@ -41,7 +40,6 @@
             #{taskEnd},
             #{taskCategory},
             nvl(#{taskPriority}, '보통'),
-            nvl(#{taskProgress}, 0),
             #{taskWriterNo},
             systimestamp,
             null
@@ -62,7 +60,6 @@
             t.task_end           as taskEnd,
             t.task_category      as taskCategory,
             t.task_priority      as taskPriority,
-            t.task_progress      as taskProgress,
             t.task_writer_no     as taskWriterNo,
             t.task_ctime         as taskCtime,
             t.task_utime         as taskUtime
@@ -87,7 +84,6 @@
         t.task_end             AS taskEnd,
         t.task_category        AS taskCategory,
         t.task_priority        AS taskPriority,
-        t.task_progress        AS taskProgress,
         t.task_writer_no       AS taskWriterNo,
         e_writer.emp_name      AS taskWriterName,
         t.task_ctime           AS taskCtime,
@@ -137,7 +133,6 @@
             task_end           = #{taskEnd},
             task_category      = #{taskCategory},
             task_priority      = #{taskPriority},
-            task_progress      = #{taskProgress},
             task_utime         = systimestamp
         where task_no = #{taskNo}
     </update>
