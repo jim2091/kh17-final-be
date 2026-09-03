@@ -280,24 +280,8 @@ public class AuthRestController {
 		return ResponseEntity.ok()
 				.header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
 				.body(response);
-			
-		
-		
-		
-		
-		
-		
+
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 

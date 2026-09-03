@@ -33,9 +33,10 @@ public class WebSocketEventHandler {
 	public void enterOnline(
 	        SessionConnectedEvent event) {
 
-	   StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
 	    Principal principal = event.getUser();
+	    System.out.println("principal : " + principal);
 	    
 	    String sessionId = accessor.getSessionId();
 //	    System.out.println("연결한 sessionID : " + sessionId);
