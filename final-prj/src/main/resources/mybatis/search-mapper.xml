@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE mapper
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.kh.finalprj.dao.SearchDao">
+<mapper namespace="mapper.search">
 
 
     <!-- =====================================================
          사용자 검색
+<<<<<<< HEAD
+=======
          이름 또는 이메일로 검색
+>>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchMembers" resultType="EmpDto">
@@ -32,11 +34,9 @@
             emp_utime
 
         FROM emp
-
         WHERE
             emp_name LIKE '%' || #{keyword} || '%'
             OR emp_email LIKE '%' || #{keyword} || '%'
-
         ORDER BY emp_no
 
     </select>
@@ -44,40 +44,76 @@
 
     <!-- =====================================================
          프로젝트 검색
+<<<<<<< HEAD
+
+         현재 로그인 사용자의 역할도 함께 조회
+
+         owner
+             → owner
+
+         manager / member
+             → member
+
+         참여하지 않은 경우
+             → null
+
+         private 프로젝트는 검색 제외
+=======
          프로젝트는 projectName만 표시
          projectNo는 기존대로 DTO에 존재
+>>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchProjects" resultType="ProjectDto">
 
         SELECT
-            project_no,
-            project_name,
-            project_purpose,
-            project_visibility,
-            project_status,
-            project_start,
-            project_deadline,
-            project_ctime,
-            project_utime
+            p.project_no,
+            p.project_name,
+            p.project_purpose,
+            p.project_visibility,
+            p.project_status,
+            p.project_start,
+            p.project_deadline,
+            p.project_ctime,
+            p.project_utime,
 
-        FROM project
+            CASE
+                WHEN pm.project_member_role = 'owner'
+                    THEN 'owner'
+
+                WHEN pm.project_member_no IS NOT NULL
+                    THEN 'member'
+
+                ELSE NULL
+            END AS projectRole
+
+        FROM project p
+
+        LEFT JOIN project_member pm
+            ON p.project_no = pm.project_no
+            AND pm.emp_no = #{empNo}
 
         WHERE
-            project_status = 'active'
+            p.project_status = 'active'
+
+            AND p.project_visibility != 'private'
 
             AND (
-                project_name LIKE '%' || #{keyword} || '%'
-                OR project_purpose LIKE '%' || #{keyword} || '%'
+                p.project_name LIKE '%' || #{keyword} || '%'
+                OR p.project_purpose LIKE '%' || #{keyword} || '%'
             )
 
-        ORDER BY project_ctime DESC
+        ORDER BY p.project_ctime DESC
 
     </select>
 
 
     <!-- =====================================================
          업무 검색
+<<<<<<< HEAD
+
+         private 프로젝트의 업무는 검색 제외
+=======
          
          task.project_no
              ↓
@@ -87,6 +123,7 @@
          
          화면에는 projectName을 표시하고
          projectNo는 업무 페이지 이동을 위해 유지
+>>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchTasks" resultType="TaskDto">
@@ -95,7 +132,6 @@
             t.task_no,
             t.project_no,
             p.project_name AS projectName,
-
             t.task_title,
             t.task_content,
             t.assigned_member_no,
@@ -116,9 +152,12 @@
             ON t.project_no = p.project_no
 
         WHERE
-            t.task_title LIKE '%' || #{keyword} || '%'
-            OR t.task_content LIKE '%' || #{keyword} || '%'
+            p.project_visibility != 'private'
 
+            AND (
+                t.task_title LIKE '%' || #{keyword} || '%'
+                OR t.task_content LIKE '%' || #{keyword} || '%'
+            )
         ORDER BY t.task_ctime DESC
 
     </select>
@@ -126,6 +165,10 @@
 
     <!-- =====================================================
          파일 검색
+<<<<<<< HEAD
+
+         private 프로젝트의 파일은 검색 제외
+=======
          
          attach.project_no
              ↓
@@ -134,31 +177,35 @@
          project.project_name
          
          uploader 이름도 기존대로 유지
+>>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchFiles" resultType="AttachDto">
 
-	SELECT
-	a.*,
-	e.emp_name AS empName,
-	p.project_name AS projectName
-	FROM attach a
+        SELECT
+            a.*,
+            e.emp_name AS empName,
+            p.project_name AS projectName
 
-	LEFT JOIN emp e
-	ON a.attach_uploader = TO_CHAR(e.emp_no)
+        FROM attach a
 
-	LEFT JOIN project_file pf
-	ON a.attach_no = pf.attach_no
+        LEFT JOIN emp e
+            ON a.attach_uploader = TO_CHAR(e.emp_no)
 
-	LEFT JOIN project p
-	ON pf.project_no = p.project_no
+        LEFT JOIN project_file pf
+            ON a.attach_no = pf.attach_no
 
-	WHERE
-	a.attach_name LIKE '%' || #{keyword} || '%'
+        LEFT JOIN project p
+            ON pf.project_no = p.project_no
 
-	ORDER BY a.attach_no DESC
+        WHERE
+            p.project_visibility != 'private'
+
+            AND a.attach_name LIKE '%' || #{keyword} || '%'
+
+        ORDER BY a.attach_no DESC
+
 
     </select>
-
 
 </mapper>

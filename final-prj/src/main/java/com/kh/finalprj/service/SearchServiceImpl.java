@@ -1,6 +1,9 @@
 package com.kh.finalprj.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,169 +18,186 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class SearchServiceImpl implements SearchService {
 
-	private final SearchDao searchDao;
+    private final SearchDao searchDao;
 
-	@Override
-	public SearchDto search(String keyword, String filter) {
 
-		// ========================================
-		// 검색어 정리
-		// ========================================
+    @Override
+    public SearchDto search(
+            String keyword,
+            String filter,
+            int empNo
+    ) {
 
-		if (keyword == null) {
-			keyword = "";
-		}
+        // ========================================
+        // 검색어 정리
+        // ========================================
 
-		keyword = keyword.trim();
+        if (keyword == null) {
+            keyword = "";
+        }
 
-		// ========================================
-		// 필터 정리
-		// ========================================
+        keyword = keyword.trim();
 
-		if (filter == null || filter.trim().isEmpty()) {
-			filter = "all";
-		}
 
-		filter = filter.trim().toLowerCase();
+        // ========================================
+        // 필터 정리
+        // ========================================
 
-		// ========================================
-		// 결과 객체 생성
-		// ========================================
+        if (filter == null || filter.trim().isEmpty()) {
+            filter = "all";
+        }
 
-		SearchDto result = new SearchDto();
+        filter = filter.trim().toLowerCase();
 
-		result.setKeyword(keyword);
-		result.setFilter(filter);
 
-		/*
-		 * 모든 카테고리를 먼저 빈 배열로 만들어 둡니다.
-		 *
-		 * 따라서 검색 결과가 없어도
-		 *
-		 * users: [] projects: [] tasks: [] records: [] notes: [] files: []
-		 *
-		 * 형태로 항상 내려갑니다.
-		 */
+        // ========================================
+        // 결과 객체
+        // ========================================
 
-		result.setUsers(new ArrayList<>());
-		result.setProjects(new ArrayList<>());
-		result.setTasks(new ArrayList<>());
-		result.setRecords(new ArrayList<>());
-		result.setNotes(new ArrayList<>());
-		result.setFiles(new ArrayList<>());
+        SearchDto result = new SearchDto();
 
-		// ========================================
-		// 검색어가 없는 경우
-		// ========================================
+        result.setKeyword(keyword);
+        result.setFilter(filter);
 
-		if (keyword.isEmpty()) {
-			return result;
-		}
+        result.setUsers(new ArrayList<>());
+        result.setProjects(new ArrayList<>());
+        result.setTasks(new ArrayList<>());
+        result.setRecords(new ArrayList<>());
+        result.setNotes(new ArrayList<>());
+        result.setFiles(new ArrayList<>());
 
-		// ========================================
-		// 전체 검색
-		// ========================================
 
-		if ("all".equals(filter)) {
+        // ========================================
+        // 검색어 없음
+        // ========================================
 
-			result.setUsers(searchDao.searchMembers(keyword));
+        if (keyword.isEmpty()) {
+            return result;
+        }
 
-			result.setProjects(searchDao.searchProjects(keyword));
 
-			result.setTasks(searchDao.searchTasks(keyword));
+        // ========================================
+        // 전체 검색
+        // ========================================
 
-			result.setFiles(searchDao.searchFiles(keyword));
+        if ("all".equals(filter)) {
 
-			return result;
-		}
+            result.setUsers(
+                    searchDao.searchMembers(keyword)
+            );
 
-		// ========================================
-		// 사용자
-		// ========================================
+            result.setProjects(
+                    searchDao.searchProjects(keyword, empNo)
+            );
 
-		if ("user".equals(filter) || "users".equals(filter)) {
+            result.setTasks(
+                    searchDao.searchTasks(keyword)
+            );
 
-			result.setUsers(searchDao.searchMembers(keyword));
+            result.setFiles(
+                    searchDao.searchFiles(keyword)
+            );
 
-			return result;
-		}
+            return result;
+        }
 
-		// ========================================
-		// 프로젝트
-		// ========================================
 
-		if ("project".equals(filter) || "projects".equals(filter)) {
+        // ========================================
+        // 다중 필터 처리
+        // ========================================
 
-			result.setProjects(searchDao.searchProjects(keyword));
+        Set<String> filters = new HashSet<>(
+                Arrays.asList(filter.split(","))
+        );
 
-			return result;
-		}
 
-		// ========================================
-		// 업무
-		// ========================================
+        // ========================================
+        // 사용자
+        // ========================================
 
-		if ("task".equals(filter) || "tasks".equals(filter)) {
+        if (
+                filters.contains("user") ||
+                filters.contains("users")
+        ) {
 
-			result.setTasks(searchDao.searchTasks(keyword));
+            result.setUsers(
+                    searchDao.searchMembers(keyword)
+            );
+        }
 
-			return result;
-		}
 
-		// ========================================
-		// Records
-		// ========================================
+        // ========================================
+        // 프로젝트
+        // ========================================
 
-		if ("record".equals(filter) || "records".equals(filter)) {
+        if (
+                filters.contains("project") ||
+                filters.contains("projects")
+        ) {
 
-			/*
-			 * 현재 records 테이블이 없으므로 빈 배열을 그대로 반환합니다.
-			 */
+            result.setProjects(
+                    searchDao.searchProjects(keyword, empNo)
+            );
+        }
 
-			return result;
-		}
 
-		// ========================================
-		// 노트
-		// ========================================
+        // ========================================
+        // 업무
+        // ========================================
 
-		if ("note".equals(filter) || "notes".equals(filter)) {
+        if (
+                filters.contains("task") ||
+                filters.contains("tasks")
+        ) {
 
-			/*
-			 * 현재 note 테이블이 없으므로 빈 배열을 그대로 반환합니다.
-			 */
+            result.setTasks(
+                    searchDao.searchTasks(keyword)
+            );
+        }
 
-			return result;
-		}
 
-		// ========================================
-		// 파일
-		// ========================================
+        // ========================================
+        // 기록
+        // ========================================
 
-		if ("file".equals(filter) || "files".equals(filter)) {
+        if (
+                filters.contains("record") ||
+                filters.contains("records")
+        ) {
 
-			result.setFiles(searchDao.searchFiles(keyword));
+            // 아직 구현하지 않음
+        }
 
-			return result;
-		}
 
-		// ========================================
-		// 잘못된 필터
-		// ========================================
+        // ========================================
+        // 노트
+        // ========================================
 
-		/*
-		 * 정의되지 않은 필터가 들어오면 전체 검색으로 처리합니다.
-		 */
+        if (
+                filters.contains("note") ||
+                filters.contains("notes")
+        ) {
 
-		result.setUsers(searchDao.searchMembers(keyword));
+            // 아직 구현하지 않음
+        }
 
-		result.setProjects(searchDao.searchProjects(keyword));
 
-		result.setTasks(searchDao.searchTasks(keyword));
+        // ========================================
+        // 파일
+        // ========================================
 
-		result.setFiles(searchDao.searchFiles(keyword));
+        if (
+                filters.contains("file") ||
+                filters.contains("files")
+        ) {
 
-		return result;
-	}
+            result.setFiles(
+                    searchDao.searchFiles(keyword)
+            );
+        }
+
+
+        return result;
+    }
 
 }
