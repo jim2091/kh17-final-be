@@ -219,11 +219,31 @@ public class AuthRestController {
 			
 			){
 		
-		if(refreshToken == null) throw new WhoAreYouException();
+		//지금 여기 부분 에러 해결하고 나면 원상 복구 해야함
 		
-		int empNo = Integer.parseInt(
-				jwtService.parseRefreshToken(refreshToken)
-				);
+		System.out.println("===== REFRESH START =====");
+	    System.out.println("refreshToken 존재 : " + (refreshToken != null));
+	    System.out.println("userAgent : " + userAgent);
+	    System.out.println("address : " + req.getRemoteAddr());
+	    
+		if(refreshToken == null) {
+			System.out.println("실패 : refreshToken 없음");
+			throw new WhoAreYouException();
+		}
+		
+		int empNo;
+		
+		try {
+	        empNo = Integer.parseInt(
+	            jwtService.parseRefreshToken(refreshToken)
+	        );
+	    }
+	    catch(Exception e) {
+	        System.out.println("실패 : refreshToken JWT 검증 실패");
+	        throw e;
+	    }
+
+	    System.out.println("empNo : " + empNo);
 		
 		EmpRefreshDto empRefreshDto = 
 				empRefreshDao.find(
@@ -234,9 +254,17 @@ public class AuthRestController {
 					.build()
 				);
 		
-		if(empRefreshDto == null) throw new WhoAreYouException();
+		if(empRefreshDto == null) {
+	        System.out.println("실패 : DB refresh 정보 없음");
+	        throw new WhoAreYouException();
+	    }
 		
-		if(empRefreshDto.getTokenValue().equals(refreshToken) == false) throw new WhoAreYouException();
+		if(!empRefreshDto.getTokenValue().equals(refreshToken)) {
+	        System.out.println("실패 : DB token과 cookie token 불일치");
+	        throw new WhoAreYouException();
+	    }
+		
+		System.out.println("refresh 검증 성공");
 		
 		EmpDto empDto = empDao.selectOne(empNo);
 		
