@@ -13,6 +13,5 @@ import lombok.NoArgsConstructor;
 public class TaskCommentFileDto {
 	private int taskCommentNo;
 	private int attachNo;
-	private String fileRole;
 	private Timestamp taskCommentFileCtime;
 }
