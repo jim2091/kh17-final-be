@@ -3,15 +3,11 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="mapper.search">
+<mapper namespace="com.kh.finalprj.dao.SearchDao">
 
 
     <!-- =====================================================
          사용자 검색
-<<<<<<< HEAD
-=======
-         이름 또는 이메일로 검색
->>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchMembers" resultType="EmpDto">
@@ -32,7 +28,6 @@
             emp_address2,
             emp_ctime,
             emp_utime
-
         FROM emp
         WHERE
             emp_name LIKE '%' || #{keyword} || '%'
@@ -44,7 +39,6 @@
 
     <!-- =====================================================
          프로젝트 검색
-<<<<<<< HEAD
 
          현재 로그인 사용자의 역할도 함께 조회
 
@@ -58,10 +52,6 @@
              → null
 
          private 프로젝트는 검색 제외
-=======
-         프로젝트는 projectName만 표시
-         projectNo는 기존대로 DTO에 존재
->>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchProjects" resultType="ProjectDto">
@@ -110,20 +100,8 @@
 
     <!-- =====================================================
          업무 검색
-<<<<<<< HEAD
 
          private 프로젝트의 업무는 검색 제외
-=======
-         
-         task.project_no
-             ↓
-         project.project_no
-             ↓
-         project.project_name
-         
-         화면에는 projectName을 표시하고
-         projectNo는 업무 페이지 이동을 위해 유지
->>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchTasks" resultType="TaskDto">
@@ -141,7 +119,6 @@
             t.task_end,
             t.task_category,
             t.task_priority,
-            t.task_progress,
             t.task_writer_no,
             t.task_ctime,
             t.task_utime
@@ -158,6 +135,7 @@
                 t.task_title LIKE '%' || #{keyword} || '%'
                 OR t.task_content LIKE '%' || #{keyword} || '%'
             )
+
         ORDER BY t.task_ctime DESC
 
     </select>
@@ -165,19 +143,8 @@
 
     <!-- =====================================================
          파일 검색
-<<<<<<< HEAD
 
          private 프로젝트의 파일은 검색 제외
-=======
-         
-         attach.project_no
-             ↓
-         project.project_no
-             ↓
-         project.project_name
-         
-         uploader 이름도 기존대로 유지
->>>>>>> origin/main
     ====================================================== -->
 
     <select id="searchFiles" resultType="AttachDto">
@@ -204,7 +171,6 @@
             AND a.attach_name LIKE '%' || #{keyword} || '%'
 
         ORDER BY a.attach_no DESC
-
 
     </select>
 

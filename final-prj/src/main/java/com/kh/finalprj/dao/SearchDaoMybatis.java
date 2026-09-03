@@ -18,53 +18,72 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SearchDaoMybatis implements SearchDao {
 
-	private final SqlSession sqlSession;
+    private final SqlSession sqlSession;
 
-	private static final String NAMESPACE = "com.kh.finalprj.dao.SearchDao";
+    private static final String NAMESPACE =
+            "com.kh.finalprj.dao.SearchDao";
 
-	// ========================================
-	// 사용자 검색
-	// ========================================
+    // ========================================
+    // 사용자 검색
+    // ========================================
 
-	@Override
-	public List<EmpDto> searchMembers(String keyword) {
+    @Override
+    public List<EmpDto> searchMembers(String keyword) {
 
-		return sqlSession.selectList(NAMESPACE + ".searchMembers", keyword);
-	}
+        return sqlSession.selectList(
+                NAMESPACE + ".searchMembers",
+                keyword
+        );
+    }
 
-	// ========================================
-	// 프로젝트 검색
-	// ========================================
 
-	@Override
-	public List<ProjectDto> searchProjects(String keyword, int empNo) {
+    // ========================================
+    // 프로젝트 검색
+    // ========================================
 
-		Map<String, Object> params = new HashMap<>();
+    @Override
+    public List<ProjectDto> searchProjects(
+            String keyword,
+            int empNo
+    ) {
 
-		params.put("keyword", keyword);
-		params.put("empNo", empNo);
+        Map<String, Object> params = new HashMap<>();
 
-		return sqlSession.selectList(NAMESPACE + ".searchProjects", params);
-	}
+        params.put("keyword", keyword);
+        params.put("empNo", empNo);
 
-	// ========================================
-	// 업무 검색
-	// ========================================
+        return sqlSession.selectList(
+                NAMESPACE + ".searchProjects",
+                params
+        );
+    }
 
-	@Override
-	public List<TaskDto> searchTasks(String keyword) {
 
-		return sqlSession.selectList(NAMESPACE + ".searchTasks", keyword);
-	}
+    // ========================================
+    // 업무 검색
+    // ========================================
 
-	// ========================================
-	// 파일 검색
-	// ========================================
+    @Override
+    public List<TaskDto> searchTasks(String keyword) {
 
-	@Override
-	public List<AttachDto> searchFiles(String keyword) {
+        return sqlSession.selectList(
+                NAMESPACE + ".searchTasks",
+                keyword
+        );
+    }
 
-		return sqlSession.selectList(NAMESPACE + ".searchFiles", keyword);
-	}
+
+    // ========================================
+    // 파일 검색
+    // ========================================
+
+    @Override
+    public List<AttachDto> searchFiles(String keyword) {
+
+        return sqlSession.selectList(
+                NAMESPACE + ".searchFiles",
+                keyword
+        );
+    }
 
 }
