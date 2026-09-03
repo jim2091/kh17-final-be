@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.kh.finalprj.dto.TaskCommentFileDto;
 import com.kh.finalprj.dto.TaskFileDto;
 import com.kh.finalprj.vo.task.TaskFileResponseVO;
+
 @Repository
 public class TaskFileDaoMybatis implements TaskFileDao {
 
@@ -22,12 +23,14 @@ public class TaskFileDaoMybatis implements TaskFileDao {
 	public void addTaskFile(TaskFileDto taskFileDto) {
 		sqlSession.insert("mapper.taskfile.addTaskFile", taskFileDto);
 	}
-	// 조회
+
+	// 업무 본체 첨부파일 목록 조회 (대소문자 일치 완료)
 	@Override
 	public List<TaskFileResponseVO> selectFilesByTaskNo(int taskNo) {
-		return sqlSession.selectList("mapper.taskFile.selectFilesByTaskNo", taskNo);
+		return sqlSession.selectList("mapper.taskfile.selectFilesByTaskNo", taskNo);
 	}
-	// 삭제
+
+	// 업무 본체 첨부파일 삭제
 	@Override
 	public boolean deleteTaskFile(int taskNo, int attachNo) {
 		Map<String, Object> params = new HashMap<>();
@@ -36,17 +39,19 @@ public class TaskFileDaoMybatis implements TaskFileDao {
 		return sqlSession.delete("mapper.taskfile.deleteTaskFile", params) > 0;
 	}
 	
-	//댓글 첨부파일
+	// 댓글 첨부파일 등록
 	@Override
 	public void addCommentFile(TaskCommentFileDto taskCommentFileDto) {
 		sqlSession.insert("mapper.taskfile.addCommentFile", taskCommentFileDto);
 	}
 
+	// 댓글 첨부파일 목록 조회
 	@Override
 	public List<TaskFileResponseVO> selectFilesByCommentNo(int taskCommentNo) {
 		return sqlSession.selectList("mapper.taskfile.selectFilesByCommentNo", taskCommentNo);
 	}
 
+	// 댓글 첨부파일 삭제
 	@Override
 	public boolean deleteCommentFile(int taskCommentNo, int attachNo) {
 		Map<String, Object> params = new HashMap<>();

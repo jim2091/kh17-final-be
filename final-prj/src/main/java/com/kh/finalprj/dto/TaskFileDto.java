@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 public class TaskFileDto {
     private int taskNo;
     private int attachNo;
-    private String fileRole;
     private Timestamp taskFileCtime; // 
 }
