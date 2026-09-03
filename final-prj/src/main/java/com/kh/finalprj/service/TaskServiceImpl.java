@@ -49,7 +49,7 @@ public class TaskServiceImpl implements TaskService {
 				.taskStart(requestVO.getTaskStart()).taskEnd(requestVO.getTaskEnd())
 				.taskCategory(requestVO.getTaskCategory())
 				.taskPriority(requestVO.getTaskPriority() != null ? requestVO.getTaskPriority() : "보통")
-				.taskProgress(requestVO.getTaskProgress() != null ? requestVO.getTaskProgress() : 0).build();
+				.build();
 
 		taskDao.add(taskDto);
 

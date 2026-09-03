@@ -31,7 +31,6 @@ public class TaskDto {
 
     private String taskCategory;
     private String taskPriority;
-    private int taskProgress;
     private int taskOrder;
     private int taskWriterNo; 
     private String taskWriterName;

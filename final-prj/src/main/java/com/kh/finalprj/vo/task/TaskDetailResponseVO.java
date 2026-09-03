@@ -30,7 +30,6 @@ public class TaskDetailResponseVO {
 	private Timestamp taskEnd;
 	private String taskCategory;
 	private String taskPriority;
-	private int taskProgress;
 	private int taskWriterNo;
 	private String taskWriterName;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")

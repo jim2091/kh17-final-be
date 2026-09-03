@@ -28,7 +28,6 @@ public class TaskAddRequestVO {
 
     private String taskCategory;
     private String taskPriority;
-    private Integer taskProgress;
     private String taskWriterName;
     private Timestamp taskCtime;
     private Timestamp taskUtime;
