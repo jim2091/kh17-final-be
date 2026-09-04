@@ -33,7 +33,7 @@ public class NoteCommentRestController {
     @Autowired
     private NoteCommentService noteCommentService;
 
-    // 1. 특정 노트의 댓글 목록 조회
+    //특정 노트의 댓글 목록 조회
     @Operation(summary = "노트별 댓글 목록 조회")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping("/list/{noteNo}")
@@ -41,7 +41,7 @@ public class NoteCommentRestController {
         return noteCommentService.findComments(noteNo);
     }
 
-    // 2. 댓글 단건 상세 조회
+    //댓글 단건 상세 조회
     @Operation(summary = "댓글 단건 상세 조회")
     @ApiResponse(responseCode = "200", description = "댓글 상세 조회 성공")
     @GetMapping("/{noteCommentNo}")
@@ -49,7 +49,7 @@ public class NoteCommentRestController {
         return noteCommentService.selectOne(noteCommentNo);
     }
 
-    // 3. 신규 댓글 등록
+    //신규 댓글 등록
     @Operation(summary = "신규 댓글 등록")
     @ApiResponse(responseCode = "200", description = "댓글 등록 성공")
     @PostMapping("/")
@@ -60,7 +60,7 @@ public class NoteCommentRestController {
         return noteCommentService.add(noteCommentDto, loginEmpNo);
     }
 
-    // 4. 댓글 내용 수정
+    //댓글 내용 수정
     @Operation(summary = "댓글 내용 수정")
     @ApiResponse(responseCode = "200", description = "댓글 수정 성공")
     @PutMapping("/")
@@ -68,7 +68,7 @@ public class NoteCommentRestController {
         return noteCommentService.update(noteCommentDto);
     }
 
-    // 5. 댓글 삭제
+    //댓글 삭제
     @Operation(summary = "댓글 삭제")
     @ApiResponse(responseCode = "200", description = "댓글 삭제 성공")
     @DeleteMapping("/{noteCommentNo}")

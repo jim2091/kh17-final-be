@@ -34,7 +34,7 @@ public class NoteFileRestController {
     @Autowired
     private NoteFileService noteFileService;
 
-    //노트 본체 첨부파일 업로드
+    // 1. 노트 본체 첨부파일 업로드
     @Operation(summary = "노트 본체 첨부파일 업로드")
     @ApiResponse(responseCode = "200", description = "파일 업로드 성공")
     @PostMapping(value = "/{noteNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,15 +47,15 @@ public class NoteFileRestController {
         return noteFileService.uploadNoteFile(noteNo, projectNo, uploader, file);
     }
 
-    //노트 본체 첨부파일 목록 조회
+    // 2. 노트 본체 첨부파일 목록 조회 (/{noteNo} 및 /list/{noteNo} 동시 지원)
     @Operation(summary = "노트 본체 첨부파일 목록 조회")
     @ApiResponse(responseCode = "200", description = "목록 조회 성공")
-    @GetMapping("/{noteNo}")
+    @GetMapping(value = {"/{noteNo}", "/list/{noteNo}"})
     public List<NoteFileResponseVO> getNoteFiles(@PathVariable int noteNo) {
         return noteFileService.getNoteFies(noteNo);
     }
 
-    //노트 본체 첨부파일 개별 삭제
+    // 3. 노트 본체 첨부파일 개별 삭제
     @Operation(summary = "노트 본체 첨부파일 개별 삭제")
     @ApiResponse(responseCode = "200", description = "파일 삭제 성공")
     @DeleteMapping("/{noteNo}/{attachNo}")
@@ -67,7 +67,7 @@ public class NoteFileRestController {
         return noteFileService.removeNoteFile(noteNo, attachNo, uploader);
     }
 
-    //댓글 첨부파일 업로드
+    // 4. 댓글 첨부파일 업로드
     @Operation(summary = "댓글 첨부파일 업로드")
     @ApiResponse(responseCode = "200", description = "댓글 파일 업로드 성공")
     @PostMapping(value = "/comment/{noteCommentNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -80,15 +80,15 @@ public class NoteFileRestController {
         return noteFileService.uploadCommentFile(noteCommentNo, projectNo, uploader, file);
     }
 
-    //댓글 첨부파일 목록 조회
+    // 5. 댓글 첨부파일 목록 조회 (/comment/{noteCommentNo} 및 /comment/list/{noteCommentNo} 동시 지원)
     @Operation(summary = "댓글 첨부파일 목록 조회")
     @ApiResponse(responseCode = "200", description = "댓글 파일 목록 조회 성공")
-    @GetMapping("/comment/{noteCommentNo}")
+    @GetMapping(value = {"/comment/{noteCommentNo}", "/comment/list/{noteCommentNo}"})
     public List<NoteFileResponseVO> getCommentFiles(@PathVariable int noteCommentNo) {
         return noteFileService.getCommentFiles(noteCommentNo);
     }
 
-    //댓글 첨부파일 개별 삭제
+    // 6. 댓글 첨부파일 개별 삭제
     @Operation(summary = "댓글 첨부파일 개별 삭제")
     @ApiResponse(responseCode = "200", description = "댓글 파일 삭제 성공")
     @DeleteMapping("/comment/{noteCommentNo}/{attachNo}")
