@@ -103,7 +103,6 @@ public class MemberRestController {
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
 		if(empDto == null) throw new TargetNotfoundException();
 		
-		
 		//기존 비밀번호와 일치하는지 검증 
 		boolean passwordValid = passwordEncoder.matches(
 				request.getPrevEmpPassword(),
