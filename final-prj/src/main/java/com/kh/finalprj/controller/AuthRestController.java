@@ -1,6 +1,7 @@
 package com.kh.finalprj.controller;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,9 @@ public class AuthRestController {
 		String accessToken = jwtService.createAccessToken(tokenRequest);
 		String refreshToken = jwtService.createRefreshToken(tokenRequest.getEmpNo());
 		
+		//로그인 세션 식별값 생성
+		String sessionId = UUID.randomUUID().toString();
+		
 //		System.out.println("refreshToken : "+ refreshToken);
 		
 		
@@ -108,11 +112,23 @@ public class AuthRestController {
 				.secure(false)//https 사용 여부
 				.sameSite("Lax")//허용범위(NONE:자유, Lax:유연, Strict:엄격)
 				.build();
+		ResponseCookie sessionCookie = ResponseCookie
+				.from("sessionId", sessionId)
+				//refresh 토큰과 같은 시간으로
+				.maxAge(Duration.ofSeconds(
+						jwtProperties.getRefreshTokenValidity()
+				))
+				.path("/service/auth/")
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.build();
 		
 		//refresh token 정보를 DB에 저장
 		empRefreshDao.insertOrUpdate(
 				EmpRefreshDto.builder()
 					.empNo(response.getEmpNo())
+					.sessionId(sessionId)
 					.userAgent(userAgent)
 					.userAddress(req.getRemoteAddr())
 					.tokenValue(refreshToken)
@@ -128,7 +144,8 @@ public class AuthRestController {
 					.header(
 							HttpHeaders.SET_COOKIE, 
 							accessCookie.toString(),
-							refreshCookie.toString()
+							refreshCookie.toString(),
+							sessionCookie.toString()
 							)
 					.body(response);
 	}
@@ -136,16 +153,8 @@ public class AuthRestController {
 	
 	@DeleteMapping("/logout")
 	public ResponseEntity<Void> logout(
-			@RequestHeader(
-					value="User-Agent",
-					required = false,
-					defaultValue = "UNKNOWN"
-			)String userAgent,
-			HttpServletRequest req,
-			
-			@CookieValue(value = "accessToken", required=false) String accessToken,
-			@CookieValue(value = "refreshToken", required=false) String refreshToken
-			){
+		@CookieValue(value = "sessionId", required = false) String sessionId
+	){
 		
 		ResponseCookie accessCookie = ResponseCookie
 					.from("accessToken", "")
@@ -165,45 +174,35 @@ public class AuthRestController {
 				.sameSite("Lax")
 				.build();
 		
+		ResponseCookie sessionCookie = ResponseCookie
+				.from("sessionId", "")
+				.maxAge(Duration.ZERO)
+				.path("/service/auth/")
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.build();
+		
 		try {
-			if(accessToken != null) {
-				TokenParseResponseVO parseVO = 
-						jwtService.parseAccessToken(accessToken);
-				System.out.println("parseVO : " + parseVO);
-				empRefreshDao.delete(
-						EmpRefreshDto.builder()
-							.empNo(parseVO.getEmpNo())
-							.userAgent(userAgent)
-							.userAddress(req.getRemoteAddr())
-						.build()
-				);
-			}
-			else if(refreshToken != null) {
-				int empNo = Integer.parseInt(
-						jwtService.parseRefreshToken(refreshToken)
-						);
-				empRefreshDao.delete(
-						EmpRefreshDto.builder()
-							.empNo(empNo)
-							.userAgent(userAgent)
-							.userAddress(req.getRemoteAddr())
-						.build()
-				);
-			}
+		    if(sessionId != null) {
+		        empRefreshDao.delete(
+		            EmpRefreshDto.builder()
+		                .sessionId(sessionId)
+		                .build()
+		        );
+		    }
 		}
 		catch(Exception e) {
-			
-			return ResponseEntity.noContent()
-					.header(
-						HttpHeaders.SET_COOKIE,
-						accessCookie.toString(),
-						refreshCookie.toString()
-					)
-					.build();
+		    //DB 정리에 실패해도 브라우저 쿠키는 삭제
 		}
 		
 		return ResponseEntity.noContent()
-					.header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+					.header(
+						HttpHeaders.SET_COOKIE, 
+						accessCookie.toString(), 
+						refreshCookie.toString(),
+						sessionCookie.toString()
+					)
 				.build();
 	}
 	
@@ -215,56 +214,31 @@ public class AuthRestController {
 					defaultValue = "UNKNOWN"
 			)String userAgent,
 			HttpServletRequest req,
-			@CookieValue(name = "refreshToken", required = false) String refreshToken
-			
+			@CookieValue(name = "refreshToken", required = false) String refreshToken,
+			@CookieValue(name = "sessionId", required = false) String sessionId
 			){
-		
-		//지금 여기 부분 에러 해결하고 나면 원상 복구 해야함
-		
-		System.out.println("===== REFRESH START =====");
-	    System.out.println("refreshToken 존재 : " + (refreshToken != null));
-	    System.out.println("userAgent : " + userAgent);
-	    System.out.println("address : " + req.getRemoteAddr());
 	    
-		if(refreshToken == null) {
-			System.out.println("실패 : refreshToken 없음");
+		if(refreshToken == null || sessionId == null)
 			throw new WhoAreYouException();
-		}
-		
-		int empNo;
-		
-		try {
-	        empNo = Integer.parseInt(
-	            jwtService.parseRefreshToken(refreshToken)
-	        );
-	    }
-	    catch(Exception e) {
-	        System.out.println("실패 : refreshToken JWT 검증 실패");
-	        throw e;
-	    }
 
-	    System.out.println("empNo : " + empNo);
+		
+		int empNo = Integer.parseInt(
+				jwtService.parseRefreshToken(refreshToken));
+	
 		
 		EmpRefreshDto empRefreshDto = 
 				empRefreshDao.find(
 					EmpRefreshDto.builder()
-						.empNo(empNo)
-						.userAgent(userAgent)
-						.userAddress(req.getRemoteAddr())
+						.sessionId(sessionId)
 					.build()
 				);
 		
-		if(empRefreshDto == null) {
-	        System.out.println("실패 : DB refresh 정보 없음");
-	        throw new WhoAreYouException();
-	    }
+		if(empRefreshDto == null) throw new WhoAreYouException();
 		
-		if(!empRefreshDto.getTokenValue().equals(refreshToken)) {
-	        System.out.println("실패 : DB token과 cookie token 불일치");
-	        throw new WhoAreYouException();
-	    }
+		if(empRefreshDto.getEmpNo() != empNo) throw new WhoAreYouException();
 		
-		System.out.println("refresh 검증 성공");
+		if(!empRefreshDto.getTokenValue().equals(refreshToken))
+			throw new WhoAreYouException();
 		
 		EmpDto empDto = empDao.selectOne(empNo);
 		
@@ -292,9 +266,19 @@ public class AuthRestController {
 				.sameSite("Lax")
 				.build();
 		
+		ResponseCookie sessionCookie = ResponseCookie
+				.from("sessionId", sessionId)
+				.maxAge(Duration.ofSeconds(jwtProperties.getRefreshTokenValidity()))
+				.path("/service/auth/")
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.build();
+		
 		empRefreshDao.insertOrUpdate(
 				EmpRefreshDto.builder()
 					.empNo(empNo)
+					.sessionId(sessionId)
 					.userAgent(userAgent)
 					.userAddress(req.getRemoteAddr())
 					.tokenValue(newRefreshToken)
@@ -306,7 +290,12 @@ public class AuthRestController {
 		BeanUtils.copyProperties(empDto, response);
 		
 		return ResponseEntity.ok()
-				.header(HttpHeaders.SET_COOKIE, accessCookie.toString(), refreshCookie.toString())
+				.header(
+					HttpHeaders.SET_COOKIE, 
+					accessCookie.toString(), 
+					refreshCookie.toString(),
+					sessionCookie.toString()
+				)
 				.body(response);
 
 	}
