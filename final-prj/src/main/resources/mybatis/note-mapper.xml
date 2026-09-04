@@ -1,116 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-  
+
 <mapper namespace="mapper.note">
-	<!-- 시퀀스 -->
+
+	<!-- 시퀀스 번호 단독 채번 -->
 	<select id="sequence" resultType="int">
-		select note_seq.nextval from dual
+		select note_seq.nextval from
+		dual
 	</select>
-	
-	<!-- 등록 -->
-	<insert id="add">
+
+	<!-- 1. 신규 노트 등록 -->
+	<insert id="insert" parameterType="NoteDto">
 		insert into note (
-			note_no, project_no, note_writer_no,
-			note_title, note_content
+		note_no,
+		project_no,
+		note_writer_no,
+		note_title,
+		note_content,
+		note_ctime,
+		note_utime
 		)
 		values (
-			#{noteNo}, #{projectNo}, #{noteWriterNo},
-			#{noteTitle}, #{noteContent}
+		#{noteNo},
+		#{projectNo},
+		#{noteWriterNo},
+		#{noteTitle},
+		#{noteContent},
+		systimestamp,
+		null
 		)
 	</insert>
-	
-	<!-- 수정 -->
-	<update id="update">
-		update note
-		set note_title = #{noteTitle},
-			note_content = #{noteContent},
-			note_utime = systimestamp
-		where note_no = #{noteNo}
-	</update>
-	
-	<!-- 삭제 -->
-	<delete id="delete">
-		delete note where note_no = #{noteNo}
-	</delete>
-	
-	<!-- 상세 조회 -->
-	<select id="find" resultType="noteDto">
-		select * from note where note_no = #{noteNo}
+
+	<!-- 2. 단건 상세 조회 (DAO 호출명 selectOne 일치, 작성자 사원 정보 조인) -->
+	<select id="selectOne" resultType="NoteDetailResponseVO">
+		select
+		n.note_no as noteNo,
+		n.project_no as projectNo,
+		n.note_writer_no as noteWriterNo,
+		e.emp_no as empNo,
+		e.emp_name as empName,
+		e.emp_dept_no as empDeptNo,
+		e.emp_position_no as empPositionNo,
+		n.note_title as noteTitle,
+		n.note_content as noteContent,
+		n.note_ctime as noteCtime,
+		n.note_utime as noteUtime
+		from note n
+		inner join project_member pm
+		on n.note_writer_no = pm.project_member_no
+		inner join emp e
+		on pm.emp_no = e.emp_no
+		where n.note_no = #{noteNo}
 	</select>
-	
-	<!-- 목록 조회 -->
-	<select id="list" resultType="noteDto">
+
+	<!-- 3. 프로젝트별 노트 목록 조회 (DAO 호출명 selectList 일치, 커서 페이징 및 CLOB 검색) -->
+	<select id="selectList" resultType="NoteDto">
 		select * from (
-			select rownum rn, TMP.* from (
-				select * from note
-				where project_no = #{projectNo}
-				
-				<!-- 다음 페이지 조회 -->
-				<if test="lastNo != null">
+		select rownum rn, TMP.* from (
+		select
+		n.note_no as noteNo,
+		n.project_no as projectNo,
+		n.note_writer_no as noteWriterNo,
+		n.note_title as noteTitle,
+		n.note_content as noteContent,
+		n.note_ctime as noteCtime,
+		n.note_utime as noteUtime
+		from note n
+		where n.project_no = #{projectNo}
+
+		<!-- 커서 기반 무한 스크롤 -->
+		<if test="req.lastNo != null">
 				<![CDATA[
-				and note_no < #{lastNo}
+				  and n.note_no < #{req.lastNo}
 				]]>
-				</if>
-				
-				<!-- 검색 -->
-				<if test="keyword != null and keyword != ''">
-				
-					<choose>
-						<!-- 제목 검색 -->
-						<when test="type == 'title'">
-							and instr(note_title, #{keyword}) > 0
-						</when>
-						
-						<!-- 내용 검색 -->
-						<when test="type == 'content'">
-							and dbms_lob.instr(note_content, #{keyword}) > 0
-						</when>
-						
-						<!-- 제목 + 내용 검색 -->
-						<otherwise>
-							and (
-								instr(note_title, #{keyword}) > 0
-								or dbms_lob.instr(note_content, #{keyword}) > 0
-							)
-						</otherwise>
-					</choose>
-				</if>
-				
-				order by note_no desc
-			)TMP
-		)
-		where rn between 1 and #{size}
-	</select>
-	
-	<!-- count -->
-	<select id="count" resultType="int">
-		select count(*) from note
-		where project_no = #{projectNo}
-		
-		<if test="lastNo != null">
-		<![CDATA[
-		and note_no < #{lastNo}
-		]]>
 		</if>
-		
-		<if test="keyword != null and keyword != ''">
+
+		<!-- 키워드 검색 조건 -->
+		<if test="req.keyword != null and req.keyword != ''">
 			<choose>
-				<when test = "type == 'title'">
-					and instr(note_title, #{keyword}) > 0
+				<when test="req.type == 'title'">
+					and instr(n.note_title, #{req.keyword}) > 0
 				</when>
-				<when test="type == 'content'">
-					and dbms_lob.instr(note_content, #{keyword}) > 0
+				<when test="req.type == 'content'">
+					and dbms_lob.instr(n.note_content, #{req.keyword}) > 0
 				</when>
 				<otherwise>
 					and (
-						instr(note_title, #{keyword}) > 0
-						or dbms_lob.instr(note_content, #{keyword}) > 0
+					instr(n.note_title, #{req.keyword}) > 0
+					or dbms_lob.instr(n.note_content, #{req.keyword}) > 0
+					)
+				</otherwise>
+			</choose>
+		</if>
+
+		order by n.note_no desc
+		) TMP
+		)
+		where rn between 1 and #{req.size}
+	</select>
+
+	<!-- 4. 프로젝트 노트 전체 개수 카운트 (lastNo 조건 배제) -->
+	<select id="count" resultType="int">
+		select count(*) from note
+		where project_no = #{projectNo}
+
+		<if test="req.keyword != null and req.keyword != ''">
+			<choose>
+				<when test="req.type == 'title'">
+					and instr(note_title, #{req.keyword}) > 0
+				</when>
+				<when test="req.type == 'content'">
+					and dbms_lob.instr(note_content, #{req.keyword}) > 0
+				</when>
+				<otherwise>
+					and (
+					instr(note_title, #{req.keyword}) > 0
+					or dbms_lob.instr(note_content, #{req.keyword}) > 0
 					)
 				</otherwise>
 			</choose>
 		</if>
 	</select>
+
+	<!-- 5. 노트 내용 수정 -->
+	<update id="update" parameterType="NoteDto">
+		update note
+		set
+		note_title = #{noteTitle},
+		note_content = #{noteContent},
+		note_utime = systimestamp
+		where note_no = #{noteNo}
+	</update>
+
+	<!-- 6. 노트 삭제 -->
+	<delete id="delete">
+		delete from note
+		where note_no = #{noteNo}
+	</delete>
+
 </mapper>

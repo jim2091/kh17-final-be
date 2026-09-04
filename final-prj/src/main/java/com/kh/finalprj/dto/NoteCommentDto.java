@@ -1,4 +1,4 @@
-package com.kh.finalprj.vo.task;
+package com.kh.finalprj.dto;
 
 import java.sql.Timestamp;
 
@@ -8,15 +8,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name="업무 댓글 정보 VO")
+@Schema(name = "노트 댓글 DTO")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class TaskCommentDetailResponseVO {
-	private int taskCommentNo;
-	private int taskNo;
+public class NoteCommentDto {
+	private int noteCommentNo;
+	private int noteNo;
 	private int projectMemberNo;
-	private String taskCommentContent;
-	private Timestamp taskCommentCtime;
-	private Timestamp taskCommentUtime;
+	private String noteCommentContent;
+	private Timestamp noteCommentCtime;
+	private Timestamp noteCommentUtime;
 	
 	private int empNo;
 	private String empName;

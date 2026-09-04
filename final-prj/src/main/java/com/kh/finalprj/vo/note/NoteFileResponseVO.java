@@ -1,4 +1,4 @@
-package com.kh.finalprj.vo.task;
+package com.kh.finalprj.vo.note;
 
 import java.sql.Timestamp;
 
@@ -10,17 +10,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name="업무 첨부파일 상세 응답 VO")
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class TaskFileResponseVO {
+@Schema(name = "노트 첨부파일 상세 응답 VO")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class NoteFileResponseVO {
+
     private int attachNo;
-    
     private String attachName;
     private String attachType;
     private long attachSize;
-    
-    private String fileRole;
-    
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private Timestamp ctime; 
+    private Timestamp ctime;
 }
