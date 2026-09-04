@@ -13,4 +13,65 @@
 		where 	project_result_no = #{projectResultNo}
 				and project_no = #{projectNo}
 	</update>
+	
+	<!-- 기대결과 번호 발급 -->
+	<select id="sequence">
+		select project_result_seq.nextval from dual
+	</select>
+	
+	<!-- 다음 순서 -->
+	<select id="nextOrder">
+		select nvl(max(project_result_order),0)+1
+		from project_expected_result
+		where project_no = #{projectNo}
+	</select>
+
+	<!-- 기대결과 등록 -->
+	<insert id="add">
+		insert into project_expected_result(
+			project_result_no,
+			project_no,
+			project_result_content,
+			project_result_order
+		)
+		values(
+			#{projectResultNo},
+			#{projectNo},
+			#{projectResultContent},
+			#{projectResultOrder}
+		)
+	</insert>
+	
+	<!-- 기대결과 목록 -->
+	<select id="selectList" resultType="ProjectExpectedResultDto">
+		select * from project_expected_result
+		where project_no = #{projectNo}
+		order by project_result_order asc
+	</select>
+	
+	<!-- 기대결과 상세 -->
+	<select id="find" resultType="ProjectExpectedResultDto">
+		select * from project_expected_result
+		where project_no = #{projectNo}
+			and project_result_no = #{projectResultNo}
+	</select>
+	
+	<!-- 기대결과 수정 -->
+	<update id="update">
+		update project_expected_result
+		
+		set project_result_content = #{projectResultContent},
+			project_result_utime = systimestamp
+		
+		where project_no = #{projectNo} and 
+			project_result_no = #{projectResultNo}
+	</update>
+
+	<!-- 기대결과 삭제 -->
+	<delete id="delete">
+		delete from project_expected_result
+		where project_no = #{projectNo}
+			and project_result_no = #{projectResultNo}
+	</delete>
+	
 </mapper>
