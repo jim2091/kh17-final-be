@@ -19,58 +19,10 @@ public class LoginPresenceServer {
 	@Autowired
 	private FlashService flashService;
 	
-//	@Autowired
-//	private EmpDao empDao;
-	
-
-//	@MessageMapping("/basic")
-//	@SendTo("/public/basic")
-//	public void basic(String message) {
-//		log.debug("메세지 수신 = {}", message);
-//		return message;
-//		simpMessagingTemplate.convertAndSend("/public/basic", message);
-//	}
-	
-
-	
-//	@MessageMapping("/heartbeat")
-//	public void heartbeat() {
-//		
-//		simpMessagingTemplate.convertAndSend("/public/online", true);
-//		
-//		System.out.println("heartbeat 수신");
-
-//	    String empName = principal.getName();
-//
-//	    System.out.println("heartbeat : " + empName);
-//	}
-	
-
-	
 	@MessageMapping("/onlineUsers")
 	public void onlineUsers() {
 	    simpMessagingTemplate.convertAndSend("/public/onlineUsers", flashService.list());
 //	    System.out.println("수신받음");
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 }

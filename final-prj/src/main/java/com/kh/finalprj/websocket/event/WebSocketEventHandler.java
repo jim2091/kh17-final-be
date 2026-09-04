@@ -33,29 +33,18 @@ public class WebSocketEventHandler {
 	public void enterOnline(
 	        SessionConnectedEvent event) {
 
+		//어떤 웹소켓 연결인지
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-
-	    Principal principal = event.getUser();
-	    System.out.println("principal : " + principal);
+		String sessionId = accessor.getSessionId();
 	    
-	    String sessionId = accessor.getSessionId();
-//	    System.out.println("연결한 sessionID : " + sessionId);
-
-//	    System.out.println("principal : "+principal);
-	    
+		//누가 연결했는지
+		Principal principal = event.getUser();
 	    String empNo = principal.getName();
 	    
-//	    System.out.println("로그인 : " + empNo);
-	    
 	    int empNumber = Integer.parseInt(empNo);
-
 	    EmpDto empDto = empDao.selectOne(empNumber);
 	    
-//	    System.out.println("사용자 정보 : "+ empDto);
-	    
-	    
 	    flashService.enter(empDto, sessionId);
-	    
 	    
 	    List<EmpDto> onlineUsers = flashService.list();
 	    
@@ -66,19 +55,13 @@ public class WebSocketEventHandler {
 	public void leaveOnline(SessionDisconnectEvent event) {
 		
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-		
-		String sessionId = accessor.getSessionId();
-//	    System.out.println("퇴장한 sessionID : " + sessionId);
+		String sessionId = accessor.getSessionId();		
 
 		Principal principal = event.getUser();
-		
 		String empNo = principal.getName();
-		int empNumber = Integer.parseInt(empNo);
-
-	    EmpDto empDto = empDao.selectOne(empNumber);
 		
-	    
-//	    System.out.println("로그아웃 : "+ empNo);
+		int empNumber = Integer.parseInt(empNo);
+	    EmpDto empDto = empDao.selectOne(empNumber);
 	    
 	    flashService.leave(empDto, sessionId);
 	    
@@ -88,22 +71,4 @@ public class WebSocketEventHandler {
 		
 	}
 	
-
-	
-	@EventListener
-	public void subscribe(SessionSubscribeEvent event) {
-		
-//		System.out.println("채널을 구독하였습니다");
-		SimpMessageHeaderAccessor headerAccessor = 
-				SimpMessageHeaderAccessor.wrap(event.getMessage());
-		
-		String destination = headerAccessor.getDestination();
-		
-		if(destination.equals("/public/users")) {
-			simpMessagingTemplate.convertAndSend("/public/onlineUsers", flashService.list() );
-		}
-//		System.out.println("구독명단 : "+ flashService.list());
-		
-	}
-
 }

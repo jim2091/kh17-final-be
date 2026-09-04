@@ -17,5 +17,6 @@ public interface ProjectExpectedResultDao {
 	boolean delete(int projectNo,int projectResultNo);
 	//프로젝트 결과 상태 변경
 	int updateStatus(int projectNo,int projectResultNo,String projectResultStatus);
+
 	
 }

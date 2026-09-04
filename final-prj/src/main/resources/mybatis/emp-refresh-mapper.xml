@@ -9,39 +9,29 @@
 	<insert id="add">
 		insert into emp_refresh(
 			emp_no, user_agent, 
-			user_address, token_value
+			user_address, token_value,
+			session_id
 		)
 		values(
 			#{empNo}, #{userAgent}, 
-			#{userAddress}, #{tokenValue}
+			#{userAddress}, #{tokenValue},
+			#{sessionId}
 		)
 	</insert>
 	<update id="change">
 		update emp_refresh
 		set token_value = #{tokenValue}
-		where 	emp_no = #{empNo} 
-				and 
-				user_agent = #{userAgent}
-				and
-				user_address = #{userAddress}
+		where 	session_id = #{sessionId}
 	</update>
 	<!-- 상세 조회구문 -->
 	<select id="find" resultType="EmpRefreshDto">
 		select * from emp_refresh 
-		where 	emp_no = #{empNo} 
-				and 
-				user_agent = #{userAgent}
-				and
-				user_address = #{userAddress}
+		where 	session_id = #{sessionId}
 	</select>
 	<!-- 삭제 -->
 	<delete id="delete">
 		delete emp_refresh 
-		where 	emp_no = #{empNo} 
-				and 
-				user_agent = #{userAgent}
-				and
-				user_address = #{userAddress}
+		where 	session_id = #{sessionId}
 	</delete>
 
 </mapper>

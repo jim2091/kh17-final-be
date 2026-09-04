@@ -14,5 +14,6 @@ public class AuthLoginResponseVO {
 	private String empEmail;
 	private String empName;
 	private String empLevel;
+	private Integer attachNo;
 
 }

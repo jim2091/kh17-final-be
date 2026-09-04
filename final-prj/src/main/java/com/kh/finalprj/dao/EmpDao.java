@@ -34,7 +34,7 @@ public interface EmpDao {
 	
 	void connect(int empNo, int attachNo);
 	
-	int findAttachNumber(int empNo);
+	Integer findAttachNumber(int empNo);
 	
 	
 	

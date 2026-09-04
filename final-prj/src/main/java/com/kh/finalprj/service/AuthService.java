@@ -20,8 +20,6 @@ public class AuthService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 	
-	@Autowired
-	private LoginProperties loginProperties;
 	
 	public AuthLoginResponseVO login(AuthLoginRequestVO request) {
 		EmpDto empDto = empDao.selectOne(request.getEmpEmail());
@@ -41,11 +39,16 @@ public class AuthService {
 		if(empDto.getEmpState().equals("inactive")) {
 			throw new GetOutException();
 		}
+		
+		Integer attachNo = empDao.findAttachNumber(empDto.getEmpNo());
+		
+		
 		return AuthLoginResponseVO.builder()
 					.empNo(empDto.getEmpNo())
 					.empEmail(empDto.getEmpEmail())
 					.empName(empDto.getEmpName())
 					.empLevel(empDto.getEmpLevel())
+					.attachNo(attachNo)
 				.build();
 	}
 

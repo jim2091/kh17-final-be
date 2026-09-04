@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.notecomment">
+
+	<!-- 시퀀스 번호 단독 채번 -->
+	<select id="sequence" resultType="int">
+		select seq_note_comment_no.nextval from dual
+	</select>
+
+	<!-- 1. 댓글 등록 -->
+	<insert id="add" parameterType="NoteCommentDto">
+		insert into note_comment (
+			note_comment_no,
+			note_no,
+			project_member_no,
+			note_comment_content,
+			note_comment_ctime,
+			note_comment_utime
+		)
+		values (
+			#{noteCommentNo},
+			#{noteNo},
+			#{projectMemberNo},
+			#{noteCommentContent},
+			systimestamp,
+			null
+		)
+	</insert>
+
+	<!-- 2. 특정 업무 댓글 목록 조회 (작성자 사원 정보 조인) -->
+	<select id="findComments" resultType="NoteCommentDto">
+		select
+			nc.note_comment_no      as noteCommentNo,
+			nc.note_no              as noteNo,
+			nc.project_member_no    as projectMemberNo,
+			nc.note_comment_content as noteCommentContent,
+			nc.note_comment_ctime   as noteCommentCtime,
+			nc.note_comment_utime   as noteCommentUtime,
+			e.emp_no                as empNo,
+			e.emp_name              as empName,
+			e.emp_dept_no           as empDeptNo,
+			e.emp_position_no       as empPositionNo
+		from note_comment nc
+		inner join project_member pm 
+			on nc.project_member_no = pm.project_member_no
+		inner join emp e 
+			on pm.emp_no = e.emp_no
+		where nc.note_no = #{noteNo}
+		order by nc.note_comment_ctime asc
+	</select>
+
+	<!-- 3. 단건 상세 조회 (작성자 사원 정보 조인) -->
+	<select id="selectOne" resultType="NoteCommentDetailResponseVO">
+		select
+			nc.note_comment_no      as noteCommentNo,
+			nc.note_no              as noteNo,
+			nc.project_member_no    as projectMemberNo,
+			nc.note_comment_content as noteCommentContent,
+			nc.note_comment_ctime   as noteCommentCtime,
+			nc.note_comment_utime   as noteCommentUtime,
+			e.emp_no                as empNo,
+			e.emp_name              as empName,
+			e.emp_dept_no           as empDeptNo,
+			e.emp_position_no       as empPositionNo
+		from note_comment nc
+		inner join project_member pm 
+			on nc.project_member_no = pm.project_member_no
+		inner join emp e 
+			on pm.emp_no = e.emp_no
+		where nc.note_comment_no = #{noteCommentNo}
+	</select>
+
+	<!-- 4. 댓글 내용 수정 -->
+	<update id="update" parameterType="NoteCommentDto">
+		update note_comment
+		set
+			note_comment_content = #{noteCommentContent},
+			note_comment_utime = systimestamp
+		where note_comment_no = #{noteCommentNo}
+	</update>
+
+	<!-- 5. 댓글 삭제 -->
+	<delete id="delete">
+		delete from note_comment
+		where note_comment_no = #{noteCommentNo}
+	</delete>
+
+</mapper>
