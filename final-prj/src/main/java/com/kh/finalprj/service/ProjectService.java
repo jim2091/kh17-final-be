@@ -2,6 +2,8 @@ package com.kh.finalprj.service;
 
 import java.util.List;
 
+import com.kh.finalprj.dao.ProjectExpectedResultDao;
+import com.kh.finalprj.dto.ProjectExpectedResultDto;
 import com.kh.finalprj.vo.page.PageVO;
 import com.kh.finalprj.vo.project.ProjectCloseRequestVO;
 import com.kh.finalprj.vo.project.ProjectCreateRequestVO;

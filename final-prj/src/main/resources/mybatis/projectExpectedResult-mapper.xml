@@ -13,4 +13,12 @@
 		where 	project_result_no = #{projectResultNo}
 				and project_no = #{projectNo}
 	</update>
+	
+	<!-- 프로젝트 기대결과 목록 -->
+	<select id="selectList" resultType="ProjectExpectedResultDto">
+		select * from project_expected_result
+		where project_no = #{projectNo}
+		order by project_result_order asc
+	</select>
+	
 </mapper>

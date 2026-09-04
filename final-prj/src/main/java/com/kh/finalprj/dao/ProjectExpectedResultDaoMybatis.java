@@ -1,23 +1,58 @@
 package com.kh.finalprj.dao;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.kh.finalprj.dto.ProjectExpectedResultDto;
 @Repository
 public class ProjectExpectedResultDaoMybatis implements ProjectExpectedResultDao{
 	@Autowired
 	private SqlSession sqlSession;
 
+
+	@Override
+	public int sequence() {
+		
+		return sqlSession.selectOne("mapper.projectExpectedResult.sequence");
+	}
+
+	@Override
+	public void add(ProjectExpectedResultDto dto) {
+		sqlSession.selectOne("mapper.projectExpectedResult.add",dto);
+	}
+	
+	@Override
+	public List<ProjectExpectedResultDto> selectList(int projectNo) {
+		
+		return sqlSession.selectList("mapper.projectExpectedResult.selectList",projectNo);
+	}
+
+//	@Override
+//	public boolean update(int projectNo, int projectResultNo, String projectResultContent) {
+//		Map<String,Object>params = new HashMap<>();
+//		
+//		par
+//		return false;
+//	}
+
+	@Override
+	public boolean delete(int projectNo, int projectResultNo) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 	@Override
 	public int updateStatus(int projectNo, int projectResultNo, String projectResultStatus) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("projectNo", projectNo);
 		params.put("projectResultNo", projectResultNo);
 		params.put("projectResultStatus", projectResultStatus);
-
+		
 		return sqlSession.update("mapper.projectExpectedResult.updateStatus", params);
 	}
 

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CommonsApiResponse;
 import com.kh.finalprj.annotation.CurrentUser;
+import com.kh.finalprj.dto.ProjectExpectedResultDto;
 import com.kh.finalprj.service.ProjectService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.page.PageVO;
@@ -165,8 +166,8 @@ public class ProjectController {
 	}
 	
 	//프로젝트 종료 매핑
-	@ApiResponse(responseCode = "200",description = "application/json")
-	@PatchMapping("/{projectNo}/close")
+	@ApiResponse(responseCode = "200",description = "프로젝트 종료")
+	@PatchMapping(value = "/{projectNo}/close", produces ="application/json" )
 	public void close(
 			@PathVariable int projectNo,
 			@RequestBody ProjectCloseRequestVO requestVO,
@@ -177,4 +178,5 @@ public class ProjectController {
 		
 		projectService.close(projectNo, requestVO, empNo);
 	}
+	
 }
