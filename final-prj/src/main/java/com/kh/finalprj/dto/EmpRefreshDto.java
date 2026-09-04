@@ -14,4 +14,6 @@ public class EmpRefreshDto {
 	private String userAgent;
 	private String userAddress;
 	private String tokenValue;
+	
+	private String sessionId;
 }
