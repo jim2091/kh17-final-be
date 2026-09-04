@@ -15,6 +15,7 @@ import com.kh.finalprj.dao.TaskDao;
 import com.kh.finalprj.dto.ChannelDto;
 import com.kh.finalprj.dto.ProjectCloseDto;
 import com.kh.finalprj.dto.ProjectDto;
+import com.kh.finalprj.dto.ProjectExpectedResultDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.error.WhoAreYouException;
@@ -425,6 +426,7 @@ public class ProjectServiceImpl implements ProjectService{
 			throw new WrongDataException("프로젝트를 종료할 수 없습니다.");
 		}
 	}
+
 
 	
 

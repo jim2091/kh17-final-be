@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name = "기대 결과 DTO")
+@Schema(name = "프로젝트 기대결과DTO")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class ProjectExpectedResultDto {
 
@@ -19,4 +19,5 @@ public class ProjectExpectedResultDto {
 	private int projectResultOrder;
 	private Timestamp projectResultCtime;
 	private Timestamp projectResultUtime;
+	
 }

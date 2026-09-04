@@ -14,63 +14,48 @@ public class ProjectExpectedResultDaoMybatis implements ProjectExpectedResultDao
 	@Autowired
 	private SqlSession sqlSession;
 
+
+	@Override
+	public int sequence() {
+		
+		return sqlSession.selectOne("mapper.projectExpectedResult.sequence");
+	}
+
+	@Override
+	public void add(ProjectExpectedResultDto dto) {
+		sqlSession.selectOne("mapper.projectExpectedResult.add",dto);
+	}
+	
+	@Override
+	public List<ProjectExpectedResultDto> selectList(int projectNo) {
+		
+		return sqlSession.selectList("mapper.projectExpectedResult.selectList",projectNo);
+	}
+
+//	@Override
+//	public boolean update(int projectNo, int projectResultNo, String projectResultContent) {
+//		Map<String,Object>params = new HashMap<>();
+//		
+//		par
+//		return false;
+//	}
+
+	@Override
+	public boolean delete(int projectNo, int projectResultNo) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
 	@Override
 	public int updateStatus(int projectNo, int projectResultNo, String projectResultStatus) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("projectNo", projectNo);
 		params.put("projectResultNo", projectResultNo);
 		params.put("projectResultStatus", projectResultStatus);
-
+		
 		return sqlSession.update("mapper.projectExpectedResult.updateStatus", params);
 	}
 
-	@Override
-	public int sequence() {
-		return sqlSession.selectOne("mapper.projectExpectedResult.sequence");
-	}
-	
-	@Override
-	public int nextOrder(int projectNo) {
-		return sqlSession.selectOne("mapper.projectExpectedResult.nextOrder",projectNo);
-	}
-
-	@Override
-	public void add(ProjectExpectedResultDto projectExpectedResultDto) {
-		sqlSession.insert("mapper.projectExpectedResult.add",projectExpectedResultDto);
-	}
-
-	@Override
-	public List<ProjectExpectedResultDto> selectList(int projectNo) {
-		return sqlSession.selectList("mapper.projectExpectedResult.selectList",projectNo);
-	}
-
-	@Override
-	public ProjectExpectedResultDto find(int projectNo, int projectResultNo) {
-		Map<String,Object> params = new HashMap<>();
-		params.put("projectNo", projectNo);
-		params.put("projectResultNo", projectResultNo);
-		
-		return sqlSession.selectOne("mapper.projectExpectedResult.find",params);
-	}
-
-	@Override
-	public boolean update(int projectNo, int projectResultNo, String projectResultContent) {
-		Map<String,Object>params = new HashMap<>();
-		params.put("projectNo", projectNo);
-		params.put("projectResultNo", projectResultNo);
-		params.put("projectResultContent", projectResultContent);
-		
-		return sqlSession.update("mapper.projectExpectedResult.update",params)>0;
-	}
-
-	@Override
-	public boolean delete(int projectNo, int projectResultNo) {
-		Map<String,Object>params = new HashMap<>();
-		params.put("projectNo", projectNo);
-		params.put("projectResultNo", projectResultNo);	
-		
-		return sqlSession.delete("mapper.projectExpectedResult.delete",params)>0;
-	}
 
 
 }
