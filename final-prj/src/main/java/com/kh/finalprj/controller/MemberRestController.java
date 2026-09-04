@@ -59,6 +59,7 @@ public class MemberRestController {
 	public EmpMeResponseVO me(
 			@CurrentUser TokenParseResponseVO parseVO
 			) throws IOException {
+//		System.out.println("parseVO : "+ parseVO);
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
 		
 		if(empDto == null) throw new TargetNotfoundException();
@@ -68,8 +69,7 @@ public class MemberRestController {
 		PositionDto positionDto = positionDao.selectOne(empDto.getEmpPositionNo());
 		
 		//프로필 사진 조회
-		int attachNo = empDao.findAttachNumber(parseVO.getEmpNo());
-		attachService.load(attachNo);
+		Integer attachNo = empDao.findAttachNumber(parseVO.getEmpNo());
 		
 		EmpMeResponseVO response = new EmpMeResponseVO();
 		
@@ -77,6 +77,7 @@ public class MemberRestController {
 		
 		response.setDeptName(deptDto.getDeptName());
 		response.setPositionName(positionDto.getPositionName());
+		response.setAttachNo(attachNo);
 		
 		return response;
 		
@@ -102,7 +103,6 @@ public class MemberRestController {
 		EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
 		if(empDto == null) throw new TargetNotfoundException();
 		
-		
 		//기존 비밀번호와 일치하는지 검증 
 		boolean passwordValid = passwordEncoder.matches(
 				request.getPrevEmpPassword(),
@@ -118,12 +118,15 @@ public class MemberRestController {
 		}
 		
 		//새 비밀번호와 새 비밀번호 확인이 일치하는지 검증 
-		boolean passwordConfirm = request.getNewEmpPassword1().equals(request.getNewEmpPassword2());
-		if(passwordConfirm == false) {
-			return ChangeEmpResponseVO.builder()
+		if(request.getNewEmpPassword1() != null && !request.getNewEmpPassword1().isBlank()) {
+			boolean passwordConfirm = request.getNewEmpPassword1().equals(request.getNewEmpPassword2());
+			if(passwordConfirm == false) {
+				return ChangeEmpResponseVO.builder()
 						.status(false)
 						.message("입력하신 새 비밀번호가 서로 달라요")
-					.build();
+						.build();
+			
+			}
 		}
 		
 		
@@ -140,7 +143,7 @@ public class MemberRestController {
 		
 		//프로필 있으면 등록후 사원정보와 연결
 		String source = "프로필";
-		if(empProfile.isEmpty() == false) {
+		if(empProfile != null && empProfile.isEmpty() == false) {
 			int attachNo = attachService.save(empProfile, empDto.getEmpName(), source);
 			empDao.connect(empDto.getEmpNo(), attachNo);
 		}
@@ -153,6 +156,7 @@ public class MemberRestController {
 					.message("회원 정보 변경이 완료되었습니다.")
 				.build();
 	}
+	
 	
 	
 	

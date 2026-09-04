@@ -59,9 +59,12 @@ public class EmpDaoMybatis implements EmpDao {
 	@Override
 	public boolean updateAll(EmpDto empDto) {
 		//+비밀번호 암호화 처리 
-		String origin = empDto.getEmpPassword();
-		String encrypt = passwordEncoder.encode(origin);
-		empDto.setEmpPassword(encrypt);
+		if(empDto.getEmpPassword() != null && !empDto.getEmpPassword().isBlank()) {
+			
+			String origin = empDto.getEmpPassword();
+			String encrypt = passwordEncoder.encode(origin);
+			empDto.setEmpPassword(encrypt);
+		}
 		return sqlSession.update("mapper.emp.updateAll", empDto)>0;
 	}
 
@@ -90,7 +93,7 @@ public class EmpDaoMybatis implements EmpDao {
 	}
 
 	@Override
-	public int findAttachNumber(int empNo) {
+	public Integer findAttachNumber(int empNo) {
 		return sqlSession.selectOne("mapper.emp.findAttachNumber", empNo);
 	}
 
