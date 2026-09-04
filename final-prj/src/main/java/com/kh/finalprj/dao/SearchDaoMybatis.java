@@ -21,7 +21,7 @@ public class SearchDaoMybatis implements SearchDao {
     private final SqlSession sqlSession;
 
     private static final String NAMESPACE =
-            "com.kh.finalprj.dao.SearchDao";
+            "mapper.search";
 
     // ========================================
     // 사용자 검색
