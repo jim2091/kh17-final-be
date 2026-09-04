@@ -13,7 +13,6 @@ import com.kh.finalprj.dto.EmpDto;
 @Service
 public class FlashService {
 	
-	
 	//웹소켓 온라인/오프라인 상태 플래시 저장소 
 	//한 사용자가 여러 기기에서 연결할 경우때문에 기기의 sessionId도 같이 저장
 	
