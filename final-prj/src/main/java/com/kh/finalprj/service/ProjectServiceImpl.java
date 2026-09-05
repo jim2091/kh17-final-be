@@ -125,7 +125,7 @@ public class ProjectServiceImpl implements ProjectService{
 			throw new WhoAreYouException();
 		}
 		//3.owner가 아닌경우
-		if(!role.equals("owner")) {
+		if(!"owner".equals(role)) {
 			throw new WhoAreYouException();
 		}
 		
@@ -193,12 +193,12 @@ public class ProjectServiceImpl implements ProjectService{
 		//1. 권한 확인
 		String loginUserRole = projectMemberDao.selectRole(projectNo, empNo);
 		
-		if(!loginUserRole.equals("owner")) {
+		if(!"owner".equals(loginUserRole)) {
 			throw new WhoAreYouException("프로젝트 멤버 역할 변경 권한이 없습니다.");	
 		}
 		//2.변경 가능한 역할인지 확인
-		if(!projectMemberRole.equals("manager") && 
-			!projectMemberRole.equals("member")) {
+		if(!"manager".equals(projectMemberRole) && 
+			!"member".equals(projectMemberRole)) {
 			throw new WhoAreYouException("변경할 수 없는 프로젝트 권한입니다.");
 		}
 		
@@ -269,7 +269,7 @@ public class ProjectServiceImpl implements ProjectService{
 		}
 		
 		//2.owner인지 확인
-		if(!loginMember.getProjectMemberRole().equals("owner")) {
+		if(!"owner".equals(loginMember.getProjectMemberRole())) {
 			throw new WhoAreYouException("owner 변경 권한이 없습니다");
 		}
 		
@@ -325,7 +325,7 @@ public class ProjectServiceImpl implements ProjectService{
 		}
 		
 		//3.owner만 삭제 가능
-		if(!role.equals("owner")) {
+		if(!"owner".equals(role)) {
 			throw new WhoAreYouException("프로젝트 삭제 권한이 없습니다.");
 		}
 		
@@ -349,6 +349,7 @@ public class ProjectServiceImpl implements ProjectService{
 	@Transactional
 	@Override
 	public void close(int projectNo, ProjectCloseRequestVO requestVO, int empNo) {
+		
 		//1.프로젝트 확인
 		ProjectDto project = projectDao.selectProject(projectNo);
 		
@@ -358,18 +359,18 @@ public class ProjectServiceImpl implements ProjectService{
 		
 		//2.프로젝트 참여 권한 확인
 		String role = projectMemberDao.selectRole(projectNo, empNo);
-		
+
 		//참여자가 아닌경우
 		if(role == null) {
 			throw new WhoAreYouException("프로젝트 참여자가 아닙니다.");
 		}
 		
 		//3.owner인지 확인
-		if(role.equals("owner")) {
+		if(!"owner".equals(role)) {
 			throw new WhoAreYouException("프로젝트 권한이 없습니다.");
 			
 		}
-		
+
 		//4.이미 종료된 프로젝트인지 확인
 		if(project.getProjectStatus().equals("closed")) {
 			throw new WrongDataException("이미 종료된 프로젝트 입니다.");
@@ -380,7 +381,7 @@ public class ProjectServiceImpl implements ProjectService{
 			requestVO.getCloseSummary().isBlank()) {
 			throw new WrongDataException("프로젝트 요약을 작성해주세요.");
 		}
-		
+
 		//6.예상 결과 평가
 		if(requestVO.getResultList() != null) {
 			for(ProjectResultCloseRequestVO result
@@ -400,13 +401,13 @@ public class ProjectServiceImpl implements ProjectService{
 						result.getProjectResultStatus()
 				);
 				
+				
 				//해당 프로젝트의 예상 결과가 아닌 경우
 				if(updateResult == 0) {
 					throw new TargetNotfoundException("예상 결과 정보를 찾을 수 없습니다.");
 				}
 			}
 		}
-		
 		//7.종료DTO생성
 		ProjectCloseDto projectCloseDto = ProjectCloseDto.builder()
 				.projectNo(projectNo)
@@ -415,10 +416,10 @@ public class ProjectServiceImpl implements ProjectService{
 				.closeBad(requestVO.getCloseBad())
 				.closeImprovement(requestVO.getCloseImprovement())
 			.build();
-		
+
 		//8.프로젝트 종료 정보 등록
 		projectCloseDao.add(projectCloseDto);
-		
+
 		//9.프로젝트 상태 closed로 변경
 		boolean closeResult = projectDao.close(projectNo);
 		

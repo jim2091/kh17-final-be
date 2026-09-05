@@ -15,12 +15,12 @@
 	</update>
 	
 	<!-- 기대결과 번호 발급 -->
-	<select id="sequence">
+	<select id="sequence" resultType="int">
 		select project_result_seq.nextval from dual
 	</select>
 	
 	<!-- 다음 순서 -->
-	<select id="nextOrder">
+	<select id="nextOrder" resultType="int">
 		select nvl(max(project_result_order),0)+1
 		from project_expected_result
 		where project_no = #{projectNo}

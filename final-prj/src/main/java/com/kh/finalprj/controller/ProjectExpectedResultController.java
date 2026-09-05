@@ -26,14 +26,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @CommonsApiResponse
 
 @RestController
-@RequestMapping("/api/project/{projectNo}/result")
+@RequestMapping("/api/project/{projectNo}")
 public class ProjectExpectedResultController {
 	@Autowired
 	private ProjectExpectedResultService projectExpectedResultService;
 
 	//프로젝트 예상 결과 목록
 	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 목록 조회")
-	@GetMapping(value = "/",produces = "application/json")
+	@GetMapping(value = "/result",produces = "application/json")
 	public List<ProjectExpectedResultDto> resultList(
 			@PathVariable int projectNo,
 			@CurrentUser TokenParseResponseVO parseVO
@@ -44,8 +44,8 @@ public class ProjectExpectedResultController {
 	}
 	
 	//프로젝트 예상 결과 등록
-	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 목록 조회")
-	@PostMapping(value = "/",produces = "application/json")
+	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 등록 성공")
+	@PostMapping(value = "/result",produces = "application/json")
 	public void resultadd(
 			@PathVariable int projectNo,
 			@RequestBody ProjectExpectedResultRequestVO requestVO,
@@ -58,7 +58,7 @@ public class ProjectExpectedResultController {
 	
 	//프로젝트 기대결과 수정
 	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 수정 성공")
-	@PutMapping(value = "/{projectResultNo}",produces = "application/json")
+	@PutMapping(value = "/result/{projectResultNo}",produces = "application/json")
 	public void resultUpdate(
 			@PathVariable int projectNo,
 			@PathVariable int projectResultNo,
@@ -72,7 +72,7 @@ public class ProjectExpectedResultController {
 	
 	//프로젝트 기대결과 삭제
 	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 삭제 성공")
-	@DeleteMapping(value = "/{projectResultNo}",produces = "application/json")
+	@DeleteMapping(value = "/result/{projectResultNo}",produces = "application/json")
 	public void resultDelete(
 			@PathVariable int projectNo,
 			@PathVariable int projectResultNo,
