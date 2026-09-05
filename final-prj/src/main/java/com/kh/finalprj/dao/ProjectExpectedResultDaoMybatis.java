@@ -20,10 +20,15 @@ public class ProjectExpectedResultDaoMybatis implements ProjectExpectedResultDao
 		
 		return sqlSession.selectOne("mapper.projectExpectedResult.sequence");
 	}
+	
+	@Override
+	public int nextOrder(int projectNo) {
+		return sqlSession.selectOne("mapper.projectExpectedResult.nextOrder",projectNo);
+	}
 
 	@Override
 	public void add(ProjectExpectedResultDto dto) {
-		sqlSession.selectOne("mapper.projectExpectedResult.add",dto);
+		sqlSession.insert("mapper.projectExpectedResult.add",dto);
 	}
 	
 	@Override
@@ -32,18 +37,29 @@ public class ProjectExpectedResultDaoMybatis implements ProjectExpectedResultDao
 		return sqlSession.selectList("mapper.projectExpectedResult.selectList",projectNo);
 	}
 
-//	@Override
-//	public boolean update(int projectNo, int projectResultNo, String projectResultContent) {
-//		Map<String,Object>params = new HashMap<>();
-//		
-//		par
-//		return false;
-//	}
+	@Override
+	public boolean update(int projectNo, int projectResultNo, String projectResultContent) {
+		
+		Map<String,Object>params = new HashMap<>();
+		params.put("projectNo", projectNo);
+		params.put("projectResultNo", projectResultNo);
+		params.put("projectResultContent", projectResultContent);
+		
+		int result =sqlSession.update("mapper.projectExpectedResult.update",params);
+		
+		return result>0;
+	}
 
 	@Override
 	public boolean delete(int projectNo, int projectResultNo) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		Map<String,Object>params = new HashMap<>();
+		params.put("projectNo", projectNo);
+		params.put("projectResultNo", projectResultNo);
+		
+		int result =sqlSession.update("mapper.projectExpectedResult.delete",params);
+		
+		return result>0;
 	}
 	
 	@Override
