@@ -74,4 +74,12 @@
 			and project_result_no = #{projectResultNo}
 	</delete>
 	
+	<!-- 프로젝트 재활성화 시 기대결과 초기화 -->
+	<update id="resetStatus">
+		update project_expected_result
+		set project_result_status = 'unachieved',
+			project_result_utime = systimestamp
+		where project_no = #{projectNo}
+	</update>
+	
 </mapper>

@@ -183,55 +183,27 @@ public class ProjectController {
 		projectService.close(projectNo, requestVO, empNo);
 	}
 
-//	//기대결과 목록 조회 매핑
-//	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 목록 조회")
-//	@GetMapping(value = "/{projectNo}/result",produces = "application/json")
-//	public List<ProjectExpectedResultDto>resultList(
-//			@PathVariable int projectNo,
-//			@CurrentUser TokenParseResponseVO parseVO
-//	){
-//		int empNo = parseVO.getEmpNo();
-//		
-//		return projectExpectedResultService.resultList(projectNo, empNo);
-//	}
+	//아카이브 목록 매핑
+	@ApiResponse(responseCode = "200",description = "아카이브 목록")
+	@GetMapping(value="/archive",produces = "application/json")
+	public List<ProjectListResponseVO> archiveProjectList(
+			@CurrentUser TokenParseResponseVO parseVO
+	){
+		int empNo = parseVO.getEmpNo();
+		
+		return projectService.archiveProjectList(empNo);
+		
+	}
 	
-//	//기대결과 등록
-//	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 등록")
-//	@PostMapping(value = "/{projectNo}/result",produces = "application/json")
-//	public void addResult(
-//			@PathVariable int projectNo,
-//			@RequestBody ProjectExpectedResultRequestVO requestVO,
-//			@CurrentUser TokenParseResponseVO parseVO
-//	) {
-//		int empNo = parseVO.getEmpNo();
-//		
-//		projectExpectedResultService.addResult(projectNo, requestVO, empNo);
-//	}
-//	
-//	//기대결과 수정
-//	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 수정")
-//	@PutMapping(value = "/{projectNo}/result/{projectResultNo}")
-//	public void updateResult(
-//			@PathVariable int projectNo,
-//			@PathVariable int projectResultNo,
-//			@RequestBody ProjectExpectedResultRequestVO requestVO,
-//			@CurrentUser TokenParseResponseVO parseVO
-//	) {
-//		int empNo = parseVO.getEmpNo();
-//		
-//		projectExpectedResultService.updateResult(requestVO, empNo, projectNo, projectResultNo);
-//	}
-//	
-//	//기대결과 삭제
-//	@ApiResponse(responseCode = "200",description = "프로젝트 기대결과 삭제")
-//	@DeleteMapping(value = "/{projectNo}/result/{projectResultNo}")
-//	public void deleteResult(
-//			@PathVariable int projectNo,
-//			@PathVariable int projectResultNo,
-//			@CurrentUser TokenParseResponseVO parseVO
-//	){
-//		int empNo = parseVO.getEmpNo();
-//		
-//		projectExpectedResultService.deleteResult(projectNo, projectResultNo, empNo);
-//	}
+	//프로젝트 재활성화
+	@ApiResponse(responseCode = "200",description = "프로젝트 재활성화")
+	@PatchMapping(value = "/{projectNo}/activate",produces = "application/json")
+	public void activate(
+			@PathVariable int projectNo,
+			@CurrentUser TokenParseResponseVO parseVO
+	) {
+		int empNo = parseVO.getEmpNo();
+		
+		projectService.activate(projectNo, empNo);
+	}
 }

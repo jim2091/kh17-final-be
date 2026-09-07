@@ -16,4 +16,9 @@ public class ProjectCloseDaoMybatis implements ProjectCloseDao{
 		sqlSession.insert("mapper.projectClose.add",projectCloseDto);
 	}
 
+	@Override
+	public void delete(int projectNo) {
+		sqlSession.delete("mapper.projectClose.delete",projectNo);
+	}
+
 }

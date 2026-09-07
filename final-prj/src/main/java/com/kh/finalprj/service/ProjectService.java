@@ -37,5 +37,8 @@ public interface ProjectService{
 	void delete(int projectNo,int empNo);
 	//프로젝트 종료
 	void close(int projectNo,ProjectCloseRequestVO requestVO,int empNo);
-	
+	//아카이브 목록
+	List<ProjectListResponseVO> archiveProjectList(int empNo);
+	//프로젝트 활성화
+	void activate(int projectNo,int empNo);
 }

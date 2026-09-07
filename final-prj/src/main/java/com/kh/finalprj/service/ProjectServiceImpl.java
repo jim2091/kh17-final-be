@@ -428,11 +428,62 @@ public class ProjectServiceImpl implements ProjectService{
 		}
 	}
 
+	//아카이브 목록
+	@Override
+	public List<ProjectListResponseVO> archiveProjectList(int empNo) {
+		return projectDao.selectArchiveProjectList(empNo);
+	}
+	
+	//프로젝트 재활성화
+	@Transactional
+	@Override
+	public void activate(int projectNo, int empNo) {
+		//1.프로젝트 확인
+		ProjectDto project = projectDao.selectProject(projectNo);
+		
+		if(project == null) {
+			throw new TargetNotfoundException("존재하지 않는 프로젝트 입니다.");
+			
+		}
+		
+		//2.현재 로그인 사용자의 프로젝트 권한 확인
+		String role = projectMemberDao.selectRole(projectNo, empNo);
+		
+		if(role == null) {
+			throw new WhoAreYouException("프로젝트 참여자가 아닙니다.");
+		}
+		
+		//3. owner만 재활성화 가능
+		if(!"owner".equals(role)) {
+			throw new WhoAreYouException("프로젝트 재활성화 권한이 없습니다.");
+		}
+		
+		//4.종료된 프로젝트인지 확인
+		if(!"closed".equals(project.getProjectStatus()
+		)) {
+			throw new WrongDataException("종료된 프로젝트만 재활성화할 수 있습니다");			
+		}
+		
+		//5.기존 종료 정보 삭제
+		projectCloseDao.delete(projectNo);
+		
+		//6.기대 결과 상태 초기화
+		projectExpectedResultDao.resetStatus(projectNo);
+		
+		//7.프로젝트 재활성화
+		boolean result = projectDao.activate(projectNo);
+	
+		if(result == false) {
+			throw new  WrongDataException("프로젝트를 재활성화할 수 없습니다.");
+		}
+	}
 
 	
+	
+	
+	
+	
+	
+	
 
-
-	
-	
-	
 }
