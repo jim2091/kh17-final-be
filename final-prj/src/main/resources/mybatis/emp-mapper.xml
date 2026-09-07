@@ -82,7 +82,10 @@ where emp_no = #{empNo} -->
 	    d.dept_name,
 	    p.position_name,
 	    e.emp_state,
-	    e.emp_email
+	    e.emp_email,
+	    e.emp_contact,
+	    e.emp_birth,
+	    e.emp_address1
 	FROM emp e
 	JOIN dept d
 	    ON e.emp_dept_no = d.dept_no

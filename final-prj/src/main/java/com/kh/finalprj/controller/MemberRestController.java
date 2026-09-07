@@ -1,6 +1,7 @@
 package com.kh.finalprj.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +27,11 @@ import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.PositionDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.AttachService;
+import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
+import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.ChangeEmpRequestVO;
 import com.kh.finalprj.vo.emp.ChangeEmpResponseVO;
+import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.emp.EmpMeResponseVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 
@@ -159,8 +165,11 @@ public class MemberRestController {
 	
 	
 	
-	
-	
+	//사용자 목록 조회
+	@GetMapping("/")
+	public List<EmpListVO> list(){
+		return empDao.selectList();
+	}
 	
 	
 	
