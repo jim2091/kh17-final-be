@@ -28,4 +28,9 @@ public interface ProjectDao {
 	boolean delete(int projectNo);
 	//프로젝트 상태 변경
 	boolean close(int projectNo);
+	//아카이브 목록
+	List<ProjectListResponseVO> selectArchiveProjectList(int empNo);
+	//재 활성화
+	boolean activate(int projectNo);
+	
 }

@@ -169,4 +169,33 @@
 		where	project_no = #{projectNo}
 				and project_status = 'active'
 	</update>
+	
+	<!-- 아카이브 프로젝트 목록 -->
+	<select id="archiveProjectList" resultType="ProjectListResponseVO">
+		select
+			p.project_no,
+			p.project_name,
+			p.project_purpose,
+			p.project_visibility,
+			p.project_status,
+			p.project_start,
+			p.project_deadline,
+			pm.project_member_role
+		from project p
+		inner join project_member pm
+			on p.project_no = pm.project_no
+		where pm.emp_no = #{empNo}
+			and p.project_status = 'closed'
+		order by p.project_utime desc
+			
+	</select>
+	
+	<!-- 프로젝트 재 시작 -->
+	<update id="active">
+		update project
+		set project_status = 'active',
+			project_utime = systimestamp
+		where project_no = #{projectNo}
+			and project_status = 'closed'
+	</update>
 </mapper>

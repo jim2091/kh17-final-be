@@ -72,6 +72,11 @@ public class ProjectExpectedResultDaoMybatis implements ProjectExpectedResultDao
 		return sqlSession.update("mapper.projectExpectedResult.updateStatus", params);
 	}
 
+	@Override
+	public void resetStatus(int projectNo) {
+		sqlSession.update("mapper.projectExpectedResult.resetStatus",projectNo);		
+	}
+
 
 
 }

@@ -72,4 +72,15 @@ public class ProjectDaoMybatis implements ProjectDao{
 	public boolean close(int projectNo) {
 		return sqlSession.update("mapper.project.close",projectNo)>0;
 	}
+
+	@Override
+	public List<ProjectListResponseVO> selectArchiveProjectList(int empNo) {
+		return sqlSession.selectList("mapper.project.archiveProjectList",empNo);
+	}
+
+	@Override
+	public boolean activate(int projectNo) {
+		return sqlSession.update("mapper.project.active",projectNo)>0;
+	}
+	
 }
