@@ -1,7 +1,9 @@
 package com.kh.finalprj.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import com.kh.finalprj.vo.admin.EmpAddResponseVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpEditResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
@@ -82,9 +85,22 @@ public class AdminRestController {
 	}
 	
 	//회원목록 조회(번호순)
-	@GetMapping("/")
-	public List<EmpListVO> list(){
-		return empDao.selectList();
+	@PostMapping("/")
+	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
+		int beginRownum = pageVO.getBeginRownum();
+		int endRownum = pageVO.getEndRownum();
+		
+		System.out.println("beginRownum : " + beginRownum);
+		System.out.println("endRownum : " + endRownum);
+		
+		int count = empDao.count();
+		List<EmpListVO> list = empDao.selectList(beginRownum, endRownum);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("list", list);
+		result.put("count", count);
+		
+		return result;
 		
 	}
 	//회원목록 조회(이름순)

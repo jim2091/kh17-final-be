@@ -94,6 +94,35 @@ where emp_no = #{empNo} -->
 	ORDER BY e.emp_no
 </select>
 
+<!-- 회원 목록 조회를 위한 갯수 조회 -->
+<select id="count" resultType="int">
+	select count(*) from emp
+</select>
+
+<!-- 회원 목록(페이지네이션) -->
+<select id="listPage" resultType="EmpListVO">
+	select * from 
+		(select rownum rn, TMP.* from
+			(SELECT
+			    e.emp_no,
+			    e.emp_name,
+			    d.dept_name,
+			    p.position_name,
+			    e.emp_state,
+			    e.emp_email,
+			    e.emp_contact,
+			    e.emp_birth,
+			    e.emp_address1
+			FROM emp e
+			JOIN dept d
+			    ON e.emp_dept_no = d.dept_no
+			JOIN position p
+			    ON e.emp_position_no = p.position_no
+			ORDER BY e.emp_no) TMP
+		) 
+	where rn between #{beginRownum} and #{endRownum} 
+</select>
+
 <!-- 회원 복합검색 결과 목록 -->
 
 <select id="complexSearch" resultType="AdminComplexSearchResponseVO">

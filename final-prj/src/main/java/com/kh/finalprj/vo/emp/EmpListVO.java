@@ -19,5 +19,14 @@ public class EmpListVO {
 	    private String empContact;
 	    private String empBirth;
 	    private String empAddress1;
+	    private int count;
+	    private int size = 10;
+	    
+	    
+	    //총 페이지수를 계산하여 반환하는 메소드 (pageCount)
+		public int getPageCount() {
+			if(count == 0) return 0;
+			return (count-1) / size + 1;
+		}
 
 }
