@@ -97,7 +97,16 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectOne("mapper.emp.findAttachNumber", empNo);
 	}
 
-	
+	@Override
+	public void updatePresence(int empNo, String empPresence) {
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("empNo", empNo);
+		params.put("empPresence", empPresence);
+		
+		sqlSession.update("mapper.emp.updatePresence", params);
+		
+	}
 	
 	
 	

@@ -177,12 +177,12 @@ where emp_no = #{empNo} -->
 
 
 
-
-
-
-
-
-
+<!-- 사용자 presnece 상태 변경 -->
+<update id="updatePresence">
+	update emp
+	set emp_presence = #{empPresence}
+	where emp_no = #{empNo}
+</update>
 
 
 

@@ -4,59 +4,93 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.kh.finalprj.dao.EmpDao;
+import com.kh.finalprj.dto.EmpDto;
 
 @Service
 public class PresenceService {
+
+	@Autowired
+	private EmpDao empDao;
+	
 	//empNo별로 현재 연결되어 있는 WebSocket sessionId들을 저장
 	private final Map<Integer, Set<String>> sessions = new ConcurrentHashMap<>();
 	
-	private final Map<Integer, PresenceStatus> status = new ConcurrentHashMap<>();
-	
-	public void enter(int empNo, String sessionId) {
+	public boolean enter(int empNo, String sessionId) {
 		Set<String> userSessions = sessions.get(empNo);
 		
+		//첫 웹소켓 연결일 때
 		if(userSessions == null) {
 			userSessions = ConcurrentHashMap.newKeySet();
 			sessions.put(empNo, userSessions);
+			
+			empDao.updatePresence(empNo, PresenceStatus.ONLINE.name());
+
+			userSessions.add(sessionId);
+			
+			return true;
 		}
+		
+		//이미 다른 웹소켓 연결이 존재함
 		userSessions.add(sessionId);
 		
-		//상태값이 아예 없을때만 ONLINE 넣어라.
-		//그냥 put으로 넣으면 AWAY상태가 그냥 강제로 ONLINE이 됨(탭 하나 새로 열거나 했을때도)
-		status.putIfAbsent(empNo, PresenceStatus.ONLINE);
+		return false;
+
 	}
 	
-	public void leave(int empNo, String sessionId) {
+	public boolean leave(int empNo, String sessionId) {
 		Set<String> userSessions = sessions.get(empNo);
 		
 		if(userSessions == null) {
-			return;
+			return false;
 		}
 		
 		userSessions.remove(sessionId);
 		
+		//마지막 웹소켓 연결일 끊어질 때
 		if(userSessions.isEmpty()) {
 			sessions.remove(empNo);
-			status.remove(empNo);
+			
+			empDao.updatePresence(empNo, PresenceStatus.OFFLINE.name());
+			
+			return true;
 		}
+		
+		//다른 연결이 아직 남아 있음
+		return false;
 	}
 	
-	//연결이 살아있느냐의 판정이지 실제 status는 AWAY도 있기에 이걸로 판정 불가
+	//웹소켓 연결 존재 여부
 	public boolean isOnline(int empNo) {
 		return sessions.containsKey(empNo);
 	}
 	
-	public void changeStatus(int empNo, PresenceStatus newStatus) {
+	public boolean changeStatus(int empNo, PresenceStatus newStatus) {
+		if(newStatus == null) {
+			return false;
+		}
+		
 		if(!isOnline(empNo)) {
-			return;
+			return false;
 		}
 		
 		if(newStatus == PresenceStatus.OFFLINE) {
-			return;
+			return false;
 		}
 		
-		status.put(empNo, newStatus);
+		EmpDto empDto = empDao.selectOne(empNo);
+		
+		//이미 같은 상태라면 변경할 필요 없음
+		if(newStatus.name().equals(empDto.getEmpPresence())) {
+			return false;
+		}
+
+		empDao.updatePresence(empNo, newStatus.name());
+		
+		return true;
 	}
 	
 	public PresenceStatus getStatus(int empNo) {
@@ -64,6 +98,11 @@ public class PresenceService {
 			return PresenceStatus.OFFLINE;
 		}
 		
-		return status.getOrDefault(empNo, PresenceStatus.ONLINE);
+		EmpDto empDto = empDao.selectOne(empNo);
+		//혹시 null일때 에러 안나게 온라인으로 반환
+		if(empDto.getEmpPresence() == null)
+			return PresenceStatus.ONLINE;
+		
+		return PresenceStatus.valueOf(empDto.getEmpPresence());
 	}
 }
