@@ -175,6 +175,31 @@ where emp_no = #{empNo} -->
 	select attach_no from emp_profile where emp_no = #{empNo}
 </select>
 
+<!-- 회원 활성화/비활성화 수정 -->
+
+<update id="active">
+	update emp
+	set	emp_state = 
+		case 
+			when emp_state = 'invited' or emp_state = 'inactive' then 'active'
+			else 'inactive'
+	end
+	where emp_no = #{empNo}
+</update>
+
+<!-- 회원 부서/직급 수정  -->
+<update id="memberEdit">
+	update emp
+	<set>
+		<if test="empDeptNo != null and empDeptNo != 0">
+			emp_dept_no = #{empDeptNo}
+		</if>
+		<if test="empPositionNo != null and empPositionNo != 0">
+			emp_position_no = #{empPositionNo}
+		</if>
+	</set>
+	where emp_no = #{empNo}
+</update>
 
 
 
