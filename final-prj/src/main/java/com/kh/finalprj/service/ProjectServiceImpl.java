@@ -387,9 +387,12 @@ public class ProjectServiceImpl implements ProjectService{
 			for(ProjectResultCloseRequestVO result
 				: requestVO.getResultList()) {
 				//상태 검사
-				if(!result.getProjectResultStatus().equals("achieved")
+				if(!"achieved".equals(result.getProjectResultStatus())
 					&&
-				!result.getProjectResultStatus().equals("unachieved")
+					!"unachieved".equals(result.getProjectResultStatus())
+					&&
+					!"partial".equals(result.getProjectResultStatus())
+				
 				) {
 					throw new WrongDataException("올바르지 않은 예상 결과 상태입니다.");
 				}
