@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.DeptDto;
+import com.kh.finalprj.vo.dept.DeptListSearchVO;
 import com.kh.finalprj.vo.dept.DeptListVO;
 
 @Repository
@@ -38,6 +39,11 @@ public class DeptDaoMybatis implements DeptDao {
 	@Override
 	public boolean updateAll(DeptDto deptDto) {
 		return sqlSession.update("mapper.dept.updateAll", deptDto)>0;
+	}
+
+	@Override
+	public List<DeptListSearchVO> listSearch() {
+		return sqlSession.selectList("mapper.dept.listSearch");
 	}
 	
 	

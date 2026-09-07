@@ -46,8 +46,10 @@ public interface EmpDao {
 
 	
 	
-	
-	
+	List<EmpListVO> nameAsc();
+	List<EmpListVO> emailAsc();
+	List<EmpListVO> deptAsc();
+	List<EmpListVO> positionAsc();
 	
 	
 	

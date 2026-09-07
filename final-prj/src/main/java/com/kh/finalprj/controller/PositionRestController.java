@@ -18,6 +18,7 @@ import com.kh.finalprj.vo.position.PositionAddRequestVO;
 import com.kh.finalprj.vo.position.PositionAddResponseVO;
 import com.kh.finalprj.vo.position.PositionChangeRequestVO;
 import com.kh.finalprj.vo.position.PositionChangeResponseVO;
+import com.kh.finalprj.vo.position.PositionListSearchVO;
 import com.kh.finalprj.vo.position.PositionListVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,6 +38,11 @@ public class PositionRestController {
 	@GetMapping("/")
 	public List<PositionListVO> list(){
 		return positionDao.selectList();
+	}
+	
+	@GetMapping("/search")
+	public List<PositionListSearchVO> listSearch(){
+		return positionDao.listSearch();
 	}
 	
 	
