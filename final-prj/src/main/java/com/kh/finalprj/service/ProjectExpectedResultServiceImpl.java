@@ -43,7 +43,7 @@ public class ProjectExpectedResultServiceImpl implements ProjectExpectedResultSe
 	) {
 		//1.권한 확인
 		String role = projectMemberDao.selectRole(projectNo, empNo);
-		if(!role.equals("owner")) {
+		if(!"owner".equals(role)) {
 			throw new WhoAreYouException("기대결과 등록 권한이 없습니다.");
 		}
 		
@@ -83,7 +83,7 @@ public class ProjectExpectedResultServiceImpl implements ProjectExpectedResultSe
 		//1.owner확인
 		String role = projectMemberDao.selectRole(projectNo, empNo);
 		
-		if(!role.equals("owner")) {
+		if(!"owner".equals(role)) {
 			throw new WhoAreYouException("기대결과 수정 권한이 없습니다.");
 		}
 		
@@ -112,7 +112,7 @@ public class ProjectExpectedResultServiceImpl implements ProjectExpectedResultSe
 		//1.owner확인
 		String role = projectMemberDao.selectRole(projectNo, empNo);
 		
-		if(!role.equals("owner")) {
+		if(!"owner".equals(role)) {
 			throw new WhoAreYouException("기대결과 삭제 권한이 없습니다.");
 		}
 		
