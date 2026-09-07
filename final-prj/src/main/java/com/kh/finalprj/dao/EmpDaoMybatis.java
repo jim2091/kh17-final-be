@@ -138,6 +138,19 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectList("mapper.emp.positionAsc");
 	}
 
+	@Override
+	public List<EmpListVO> selectList(int beginRownum, int endRownum) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("beginRownum" ,beginRownum);
+		params.put("endRownum" ,endRownum);
+		return sqlSession.selectList("mapper.emp.listPage", params);
+	}
+
+	@Override
+	public int count() {
+		return sqlSession.selectOne("mapper.emp.count");
+	}
+
 	
 	
 	
