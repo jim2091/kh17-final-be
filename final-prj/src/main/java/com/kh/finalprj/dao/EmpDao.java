@@ -7,6 +7,7 @@ import com.kh.finalprj.vo.admin.AdminComplexSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
+import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 
 
@@ -35,6 +36,9 @@ public interface EmpDao {
 	void connect(int empNo, int attachNo);
 	
 	Integer findAttachNumber(int empNo);
+	
+	boolean activeRequest(int empNo);
+	boolean memberEdit(EmpEditRequestVO vo);
 	
 	
 	
