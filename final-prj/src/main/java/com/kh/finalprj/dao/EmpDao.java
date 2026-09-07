@@ -37,8 +37,13 @@ public interface EmpDao {
 	
 	Integer findAttachNumber(int empNo);
 	
+
+	//presence 변경
+	void updatePresence(int empNo, String empPresence);
+
 	boolean activeRequest(int empNo);
 	boolean memberEdit(EmpEditRequestVO vo);
+
 	
 	
 	
