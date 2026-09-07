@@ -38,11 +38,32 @@ public class PresenceService {
 		
 		if(userSessions.isEmpty()) {
 			sessions.remove(empNo);
+			status.remove(empNo);
 		}
 	}
 	
 	//연결이 살아있느냐의 판정이지 실제 status는 AWAY도 있기에 이걸로 판정 불가
 	public boolean isOnline(int empNo) {
 		return sessions.containsKey(empNo);
+	}
+	
+	public void changeStatus(int empNo, PresenceStatus newStatus) {
+		if(!isOnline(empNo)) {
+			return;
+		}
+		
+		if(newStatus == PresenceStatus.OFFLINE) {
+			return;
+		}
+		
+		status.put(empNo, newStatus);
+	}
+	
+	public PresenceStatus getStatus(int empNo) {
+		if(!isOnline(empNo)) {
+			return PresenceStatus.OFFLINE;
+		}
+		
+		return status.getOrDefault(empNo, PresenceStatus.ONLINE);
 	}
 }
