@@ -20,12 +20,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @CommonsApiResponse
 
 @RestController
-@RequestMapping
+@RequestMapping("/presence")
 public class PresenceRestController {
 	@Autowired
 	private ProjectPresenceService projectPresenceService;
 	
-	@GetMapping
+	@GetMapping("/project/{projectNo}")
 	public List<PresenceResponseVO> list(
 			@PathVariable int projectNo,
 			@CurrentUser TokenParseResponseVO parseVO) {
