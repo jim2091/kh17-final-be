@@ -41,8 +41,10 @@ public interface EmpDao {
 	boolean memberEdit(EmpEditRequestVO vo);
 	
 	
-	
-	
+	List<EmpListVO> nameAsc();
+	List<EmpListVO> emailAsc();
+	List<EmpListVO> deptAsc();
+	List<EmpListVO> positionAsc();
 	
 	
 	

@@ -108,6 +108,26 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.update("mapper.emp.memberEdit", vo)>0;
 	}
 
+	@Override
+	public List<EmpListVO> nameAsc() {
+		return sqlSession.selectList("mapper.emp.nameAsc");
+	}
+
+	@Override
+	public List<EmpListVO> emailAsc() {
+		return sqlSession.selectList("mapper.emp.emailAsc");
+	}
+
+	@Override
+	public List<EmpListVO> deptAsc() {
+		return sqlSession.selectList("mapper.emp.deptAsc");
+	}
+
+	@Override
+	public List<EmpListVO> positionAsc() {
+		return sqlSession.selectList("mapper.emp.positionAsc");
+	}
+
 	
 	
 	

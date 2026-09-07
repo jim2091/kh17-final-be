@@ -87,6 +87,30 @@ public class AdminRestController {
 		return empDao.selectList();
 		
 	}
+	//회원목록 조회(이름순)
+	@GetMapping("/nameAsc")
+	public List<EmpListVO> nameAsc(){
+		return empDao.nameAsc();
+		
+	}
+	//회원목록 조회(이메일순)
+	@GetMapping("/emailAsc")
+	public List<EmpListVO> emailAsc(){
+		return empDao.emailAsc();
+		
+	}
+	//회원목록 조회(이메일순)
+	@GetMapping("/deptAsc")
+	public List<EmpListVO> deptAsc(){
+		return empDao.deptAsc();
+		
+	}
+	//회원목록 조회(이메일순)
+	@GetMapping("/positionAsc")
+	public List<EmpListVO> positionAsc(){
+		return empDao.positionAsc();
+		
+	}
 	
 	//회원 복합 검색 결과 조회 
 	@PostMapping("/complexSearch")

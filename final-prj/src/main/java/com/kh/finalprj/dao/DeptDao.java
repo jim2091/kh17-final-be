@@ -3,6 +3,7 @@ package com.kh.finalprj.dao;
 import java.util.List;
 
 import com.kh.finalprj.dto.DeptDto;
+import com.kh.finalprj.vo.dept.DeptListSearchVO;
 import com.kh.finalprj.vo.dept.DeptListVO;
 
 public interface DeptDao {
@@ -13,6 +14,8 @@ public interface DeptDao {
 	DeptDto selectOne(int deptNo);
 	
 	List<DeptListVO> selectList();
+	
+	List<DeptListSearchVO> listSearch();
 	
 	boolean updateAll(DeptDto deptDto);
 

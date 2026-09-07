@@ -206,7 +206,83 @@ where emp_no = #{empNo} -->
 
 
 
+<!-- 회원 목록(이름순) -->
+<select id="nameAsc" resultType="EmpListVO">
+	SELECT
+	    e.emp_no,
+	    e.emp_name,
+	    d.dept_name,
+	    p.position_name,
+	    e.emp_state,
+	    e.emp_email,
+	    e.emp_contact,
+	    e.emp_birth,
+	    e.emp_address1
+	FROM emp e
+	JOIN dept d
+	    ON e.emp_dept_no = d.dept_no
+	JOIN position p
+	    ON e.emp_position_no = p.position_no
+	ORDER BY e.emp_name asc
+</select>
 
+<!-- 회원 목록(이메일순) -->
+<select id="emailAsc" resultType="EmpListVO">
+	SELECT
+	    e.emp_no,
+	    e.emp_name,
+	    d.dept_name,
+	    p.position_name,
+	    e.emp_state,
+	    e.emp_email,
+	    e.emp_contact,
+	    e.emp_birth,
+	    e.emp_address1
+	FROM emp e
+	JOIN dept d
+	    ON e.emp_dept_no = d.dept_no
+	JOIN position p
+	    ON e.emp_position_no = p.position_no
+	ORDER BY e.emp_email asc
+</select>
+<!-- 회원 목록(부서이름순) -->
+<select id="deptAsc" resultType="EmpListVO">
+	SELECT
+	    e.emp_no,
+	    e.emp_name,
+	    d.dept_name,
+	    p.position_name,
+	    e.emp_state,
+	    e.emp_email,
+	    e.emp_contact,
+	    e.emp_birth,
+	    e.emp_address1
+	FROM emp e
+	JOIN dept d
+	    ON e.emp_dept_no = d.dept_no
+	JOIN position p
+	    ON e.emp_position_no = p.position_no
+	ORDER BY d.dept_name asc
+</select>
+<!-- 회원 목록(직급이름순) -->
+<select id="positionAsc" resultType="EmpListVO">
+	SELECT
+	    e.emp_no,
+	    e.emp_name,
+	    d.dept_name,
+	    p.position_name,
+	    e.emp_state,
+	    e.emp_email,
+	    e.emp_contact,
+	    e.emp_birth,
+	    e.emp_address1
+	FROM emp e
+	JOIN dept d
+	    ON e.emp_dept_no = d.dept_no
+	JOIN position p
+	    ON e.emp_position_no = p.position_no
+	ORDER BY p.position_name asc
+</select>
 
 
 

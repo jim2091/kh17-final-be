@@ -18,6 +18,7 @@ import com.kh.finalprj.vo.dept.DeptAddRequestVO;
 import com.kh.finalprj.vo.dept.DeptAddResponseVO;
 import com.kh.finalprj.vo.dept.DeptChangeRequestVO;
 import com.kh.finalprj.vo.dept.DeptChangeResponseVO;
+import com.kh.finalprj.vo.dept.DeptListSearchVO;
 import com.kh.finalprj.vo.dept.DeptListVO;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +37,12 @@ public class DeptRestController {
 	@GetMapping("/")
 	public List<DeptListVO> list(){
 		return deptDao.selectList();
+		
+	}
+	//부서목록 조회(검색용)
+	@GetMapping("/search")
+	public List<DeptListSearchVO> listSearch(){
+		return deptDao.listSearch();
 		
 	}
 	

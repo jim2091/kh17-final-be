@@ -3,6 +3,7 @@ package com.kh.finalprj.dao;
 import java.util.List;
 
 import com.kh.finalprj.dto.PositionDto;
+import com.kh.finalprj.vo.position.PositionListSearchVO;
 import com.kh.finalprj.vo.position.PositionListVO;
 
 public interface PositionDao {
@@ -15,5 +16,7 @@ public interface PositionDao {
 	List<PositionListVO> selectList();
 	
 	boolean updateAll(PositionDto positionDto);
+	
+	List<PositionListSearchVO> listSearch();
 
 }
