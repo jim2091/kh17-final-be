@@ -99,6 +99,16 @@ public class EmpDaoMybatis implements EmpDao {
 	}
 
 	@Override
+	public void updatePresence(int empNo, String empPresence) {
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("empNo", empNo);
+		params.put("empPresence", empPresence);
+		
+		sqlSession.update("mapper.emp.updatePresence", params);
+		
+	}
+
 	public boolean activeRequest(int empNo) {
 		return sqlSession.update("mapper.emp.active", empNo)>0;
 	}
@@ -128,7 +138,6 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectList("mapper.emp.positionAsc");
 	}
 
-	
 	
 	
 	
