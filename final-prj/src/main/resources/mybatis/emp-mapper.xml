@@ -82,7 +82,10 @@ where emp_no = #{empNo} -->
 	    d.dept_name,
 	    p.position_name,
 	    e.emp_state,
-	    e.emp_email
+	    e.emp_email,
+	    e.emp_contact,
+	    e.emp_birth,
+	    e.emp_address1
 	FROM emp e
 	JOIN dept d
 	    ON e.emp_dept_no = d.dept_no
@@ -175,6 +178,31 @@ where emp_no = #{empNo} -->
 	select attach_no from emp_profile where emp_no = #{empNo}
 </select>
 
+<!-- 회원 활성화/비활성화 수정 -->
+
+<update id="active">
+	update emp
+	set	emp_state = 
+		case 
+			when emp_state = 'invited' or emp_state = 'inactive' then 'active'
+			else 'inactive'
+	end
+	where emp_no = #{empNo}
+</update>
+
+<!-- 회원 부서/직급 수정  -->
+<update id="memberEdit">
+	update emp
+	<set>
+		<if test="empDeptNo != null and empDeptNo != 0">
+			emp_dept_no = #{empDeptNo}
+		</if>
+		<if test="empPositionNo != null and empPositionNo != 0">
+			emp_position_no = #{empPositionNo}
+		</if>
+	</set>
+	where emp_no = #{empNo}
+</update>
 
 
 <!-- 사용자 presnece 상태 변경 -->
