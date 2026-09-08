@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.PositionDto;
+import com.kh.finalprj.vo.page.PagenationVO;
 import com.kh.finalprj.vo.position.PositionListSearchVO;
 import com.kh.finalprj.vo.position.PositionListVO;
 
@@ -44,6 +45,16 @@ public class PositionDaoMybatis implements PositionDao {
 	@Override
 	public List<PositionListSearchVO> listSearch() {
 		return sqlSession.selectList("mapper.position.listSearch");
+	}
+
+	@Override
+	public int count() {
+		return sqlSession.selectOne("mapper.position.count");
+	}
+
+	@Override
+	public List<PositionListVO> selectList(PagenationVO pageVO) {
+		return sqlSession.selectList("mapper.position.selectList", pageVO);
 	}
 	
 	

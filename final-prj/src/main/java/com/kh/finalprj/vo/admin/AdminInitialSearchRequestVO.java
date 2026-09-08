@@ -1,6 +1,7 @@
 package com.kh.finalprj.vo.admin;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -10,5 +11,6 @@ import lombok.Data;
 public class AdminInitialSearchRequestVO {
 	
 	private String tab;
+	private PagenationVO pageVO;
 
 }

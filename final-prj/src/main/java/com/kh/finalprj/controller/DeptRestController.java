@@ -1,6 +1,8 @@
 package com.kh.finalprj.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import com.kh.finalprj.vo.dept.DeptChangeRequestVO;
 import com.kh.finalprj.vo.dept.DeptChangeResponseVO;
 import com.kh.finalprj.vo.dept.DeptListSearchVO;
 import com.kh.finalprj.vo.dept.DeptListVO;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -37,6 +40,20 @@ public class DeptRestController {
 	@GetMapping("/")
 	public List<DeptListVO> list(){
 		return deptDao.selectList();
+		
+	}
+	
+	//부서목록 조회(+페이지네이션)
+	@PostMapping("/")
+	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
+		int count = deptDao.count();
+		List<DeptListVO> list = deptDao.selectList(pageVO);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("count", count);
+		result.put("list", list);
+		
+		return result;
 		
 	}
 	//부서목록 조회(검색용)
