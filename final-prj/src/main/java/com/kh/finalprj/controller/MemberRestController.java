@@ -1,7 +1,9 @@
 package com.kh.finalprj.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +29,12 @@ import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.PositionDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.AttachService;
-import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
-import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.ChangeEmpRequestVO;
 import com.kh.finalprj.vo.emp.ChangeEmpResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.emp.EmpMeResponseVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -169,6 +170,21 @@ public class MemberRestController {
 	@GetMapping("/")
 	public List<EmpListVO> list(){
 		return empDao.selectList();
+	}
+	
+	//사용자 목록 조회(+페이지네이션)
+	@PostMapping("/")
+	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
+		
+		int count = empDao.count();
+		
+		List<EmpListVO> list = empDao.selectList(pageVO);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("list", list);
+		result.put("count", count);
+		
+		return result;
 	}
 	
 	

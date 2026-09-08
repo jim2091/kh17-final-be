@@ -16,6 +16,7 @@ import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 @Repository
 public class EmpDaoMybatis implements EmpDao {
@@ -120,12 +121,9 @@ public class EmpDaoMybatis implements EmpDao {
 
 	
 	@Override
-	public List<EmpListVO> selectList(int beginRownum, int endRownum, String sort) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("beginRownum" ,beginRownum);
-		params.put("endRownum" ,endRownum);
-		params.put("sort", sort);
-		return sqlSession.selectList("mapper.emp.listPage", params);
+	public List<EmpListVO> selectList(PagenationVO pageVO) {
+		
+		return sqlSession.selectList("mapper.emp.listPage", pageVO);
 	}
 
 	@Override

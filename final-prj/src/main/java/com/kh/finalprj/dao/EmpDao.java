@@ -9,7 +9,7 @@ import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
-import com.kh.finalprj.vo.page.PageVO;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 
 public interface EmpDao {
@@ -48,7 +48,7 @@ public interface EmpDao {
 	
 	//페이지네이션
 	int count();
-	List<EmpListVO> selectList(int beginRownum, int endRownum, String sort);
+	List<EmpListVO> selectList(PagenationVO pageVO);
 	
 	//검색 결과 수
 	int searchCount(String keyword);

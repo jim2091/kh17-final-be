@@ -87,21 +87,21 @@ public class AdminRestController {
 	//회원목록 조회(+페이지네이션)
 	@PostMapping("/")
 	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
-		int beginRownum = pageVO.getBeginRownum();
-		int endRownum = pageVO.getEndRownum();
-		String sort = pageVO.getSort();
+//		int beginRownum = pageVO.getBeginRownum();
+//		int endRownum = pageVO.getEndRownum();
+//		String sort = pageVO.getSort();
 		
 //		System.out.println("beginRownum : " + beginRownum);
 //		System.out.println("endRownum : " + endRownum);
 		
 		int count = empDao.count();
-		List<EmpListVO> list = empDao.selectList(beginRownum, endRownum, sort);
+		List<EmpListVO> list = empDao.selectList(pageVO);
 		
 		
 		Map<String, Object> result = new HashMap<>();
 		result.put("list", list);
 		result.put("count", count);
-		result.put("sort", sort);
+//		result.put("sort", sort);
 		
 		return result;
 		
