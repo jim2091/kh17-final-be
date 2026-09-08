@@ -19,13 +19,16 @@ public class NoteDetailResponseVO {
 	private int projectNo;
 	private String noteTitle;
 	private String noteContent;
-	private Integer assignedMemberNo;
-	private String assignedMemberName;
-	private String assignedMemberDept;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private Timestamp noteCtime;
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asiz/Seoul")
 	private Timestamp noteUtime;
+	
 	private int noteWriterNo;
-	private List<AttachDto> noteFiles;
+	private int empNo;
+	private String empName;
+	private String empDeptNo;
+	private String empPositionNo;
+	
+	private List<AttachDto>noteFiles;
 }

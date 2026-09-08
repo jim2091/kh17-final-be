@@ -18,4 +18,7 @@ public class NoteDto {
 	private String noteContent;
 	private Timestamp noteCtime;
 	private Timestamp noteUtime;
+	
+	//조인용
+	private String empName;
 }
