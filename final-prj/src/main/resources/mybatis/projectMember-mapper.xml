@@ -94,4 +94,11 @@
 		where 	project_member_no = #{projectMemberNo}
 			and project_no = #{projectNo}
 	</update>
+	
+	<!-- 프로젝트 멤버 탈퇴 -->
+	<delete id="delete">
+		delete from project_member
+		where project_no = #{projectNo}
+			and project_member_no = #{projectMemberNo}
+	</delete>
 </mapper>

@@ -41,4 +41,8 @@ public interface ProjectService{
 	List<ProjectListResponseVO> archiveProjectList(int empNo);
 	//프로젝트 활성화
 	void activate(int projectNo,int empNo);
+	//프로젝트 탈퇴
+	void leave(int projectNo, int empNo,Integer newOwnerMemberNo);
+	//강제 퇴장
+	void kickMember(int projectNo,int projectMemberNo,int empNo);
 }

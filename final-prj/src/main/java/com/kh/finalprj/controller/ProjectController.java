@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CommonsApiResponse;
@@ -42,8 +43,6 @@ public class ProjectController {
 
 	@Autowired
 	private ProjectService projectService;
-	@Autowired
-	private ProjectExpectedResultService projectExpectedResultService;
 	
 	//프로젝트 생성 매핑
 	@ApiResponse(responseCode = "200", description = "프로젝트 생성 성공")
@@ -52,8 +51,8 @@ public class ProjectController {
 			@RequestBody ProjectCreateRequestVO requestVO,
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
-		return projectService.create(requestVO,empNo);
+
+		return projectService.create(requestVO,parseVO.getEmpNo());
 	}
 	
 	//내 프로젝트 목록 매핑
@@ -62,8 +61,8 @@ public class ProjectController {
 	public List<ProjectListResponseVO> myProjectList(
 				@CurrentUser TokenParseResponseVO parseVO
 	){
-		int empNo = parseVO.getEmpNo();
-		return projectService.selectMyProjectList(empNo);
+
+		return projectService.selectMyProjectList(parseVO.getEmpNo());
 	}
 	
 	//프로젝트 상세 조회 매핑
@@ -73,8 +72,8 @@ public class ProjectController {
 			@PathVariable int projectNo,
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
-		return projectService.detail(projectNo, empNo);
+
+		return projectService.detail(projectNo, parseVO.getEmpNo());
 	}
 	
 	//프로젝트 수정 매핑
@@ -85,8 +84,12 @@ public class ProjectController {
 			@RequestBody ProjectUpdateRequestVO requestVO,
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
-		projectService.update(projectNo, requestVO, empNo);
+		
+		projectService.update(
+				projectNo, 
+				requestVO, 
+				parseVO.getEmpNo()
+		);
 	}
 	
 	//공개 프로젝트 조회 매핑
@@ -95,8 +98,8 @@ public class ProjectController {
 	public PublicProjectListResponseVO publicProjectList(PageVO pageVO,
 			@CurrentUser TokenParseResponseVO parseVO
 	){
-		int empNo = parseVO.getEmpNo();
-		return projectService.publicProjectList(pageVO,empNo);
+		
+		return projectService.publicProjectList(pageVO,parseVO.getEmpNo());
 	}
 	
 	//프로젝트 멤버 목록 매핑
@@ -105,8 +108,7 @@ public class ProjectController {
 	public List<ProjectMemberListResponseVO> memberList(
 			@PathVariable int projectNo,@CurrentUser TokenParseResponseVO parseVO
 	){
-		int empNo = parseVO.getEmpNo();
-		return projectService.memberList(projectNo, empNo);
+		return projectService.memberList(projectNo, parseVO.getEmpNo());
 	}
 	
 	//역할 변경 매핑
@@ -118,13 +120,12 @@ public class ProjectController {
 		@RequestBody ProjectMemberRoleUpdateRequestVO requestVO,
 		@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
 		
 		projectService.updateMemberRole(
 			projectNo, 
 			projectMemberNo, 
 			requestVO.getProjectMemberRole(),
-			empNo
+			parseVO.getEmpNo()
 		);
 	}
 	
@@ -134,9 +135,8 @@ public class ProjectController {
 	public void join (@PathVariable int projectNo, 
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
 		
-		projectService.join(projectNo, empNo);
+		projectService.join(projectNo, parseVO.getEmpNo());
 	}
 	
 	//owner 변경 매핑
@@ -147,12 +147,11 @@ public class ProjectController {
 			@PathVariable int projectMemberNo,
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
 		
 		projectService.changeOwner(
 				projectNo, 
 				projectMemberNo, 
-				empNo
+				parseVO.getEmpNo()
 		);
 	}
 	
@@ -163,9 +162,8 @@ public class ProjectController {
 			@PathVariable int projectNo,
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
 		
-		projectService.delete(projectNo, empNo);
+		projectService.delete(projectNo,parseVO.getEmpNo());
 		
 	}
 	
@@ -178,9 +176,12 @@ public class ProjectController {
 			@CurrentUser TokenParseResponseVO parseVO
 			
 	) {
-		int empNo = parseVO.getEmpNo();
 		
-		projectService.close(projectNo, requestVO, empNo);
+		projectService.close(
+				projectNo, 
+				requestVO, 
+				parseVO.getEmpNo()
+		);
 	}
 
 	//아카이브 목록 매핑
@@ -189,9 +190,8 @@ public class ProjectController {
 	public List<ProjectListResponseVO> archiveProjectList(
 			@CurrentUser TokenParseResponseVO parseVO
 	){
-		int empNo = parseVO.getEmpNo();
 		
-		return projectService.archiveProjectList(empNo);
+		return projectService.archiveProjectList(parseVO.getEmpNo());
 		
 	}
 	
@@ -202,8 +202,39 @@ public class ProjectController {
 			@PathVariable int projectNo,
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
-		int empNo = parseVO.getEmpNo();
 		
-		projectService.activate(projectNo, empNo);
+		projectService.activate(projectNo, parseVO.getEmpNo());
+	}
+	
+	//프로젝트 탈퇴
+	@ApiResponse(responseCode = "200",description = "프로젝트 탈퇴 성공")
+	@DeleteMapping(value = "/{projectNo}/member/leave",produces = "application/json")
+	public void leave(
+			@PathVariable int projectNo,
+			@RequestParam (required=false) Integer newOwnerMemberNo,
+			@CurrentUser TokenParseResponseVO parseVO
+	) {
+		
+		projectService.leave(
+				projectNo, 
+				parseVO.getEmpNo(), 
+				newOwnerMemberNo
+		);
+	}
+	
+	//프로젝트 멤버 강제퇴장
+	@ApiResponse(responseCode = "200",description = "프로젝트 강제 퇴장")
+	@DeleteMapping(value = "/{projectNo}/member/{projectMemberNo}", produces = "application/json")
+	public void kickMember (
+			@PathVariable int projectNo,
+			@PathVariable int projectMemberNo,
+			@CurrentUser TokenParseResponseVO parseVO
+	) {
+		
+		projectService.kickMember(
+				projectNo, 
+				projectMemberNo, 
+				parseVO.getEmpNo()
+		);
 	}
 }
