@@ -215,5 +215,32 @@
 	
 	</select>
 
+	<!-- ===================================================== 프로젝트 참여 이력을 조회할 
+		사용자 정보 부서 / 직급 / 이메일 / 연락처 조회 ====================================================== -->
+
+	<select id="searchUserInfo"
+		resultType="ProjectHistoryResponseDto">
+
+		SELECT
+		e.emp_no AS empNo,
+		e.emp_name AS empName,
+		e.emp_email AS empEmail,
+		d.dept_name AS deptName,
+		p.position_name AS positionName,
+		e.emp_contact AS empContact
+
+		FROM emp e
+
+		INNER JOIN dept d
+		ON e.emp_dept_no = d.dept_no
+
+		INNER JOIN position p
+		ON e.emp_position_no = p.position_no
+
+		WHERE
+		e.emp_no = #{_parameter}
+
+	</select>
+
 
 </mapper>

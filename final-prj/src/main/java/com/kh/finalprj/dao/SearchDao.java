@@ -6,6 +6,7 @@ import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectHistoryDto;
+import com.kh.finalprj.dto.ProjectHistoryResponseDto;
 import com.kh.finalprj.dto.TaskDto;
 
 public interface SearchDao {
@@ -24,5 +25,8 @@ public interface SearchDao {
     
     // 사용자의 프로젝트 참여 이력
     List<ProjectHistoryDto> searchProjectHistory(int empNo);
+    
+    // 프로젝트 이력 조회용 사용자 정보
+	ProjectHistoryResponseDto searchUserInfo(int empNo);
 
 }
