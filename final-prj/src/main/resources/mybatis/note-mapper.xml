@@ -39,6 +39,34 @@
 		n.note_no as noteNo,
 		n.project_no as projectNo,
 		n.note_writer_no as noteWriterNo,
+		e.emp_no as
+		empNo,
+		e.emp_name as empName,
+		e.emp_dept_no as empDeptNo,
+		e.emp_position_no as empPositionNo,
+		n.note_title as noteTitle,
+		n.note_content as noteContent,
+		n.note_ctime as noteCtime,
+		n.note_utime
+		as noteUtime
+		from note n
+		inner join project_member pm
+		on n.note_writer_no
+		= pm.project_member_no
+		inner join emp e
+		on pm.emp_no = e.emp_no
+		where
+		n.note_no = #{noteNo}
+	</select>
+
+	<!-- 3. 프로젝트별 노트 목록 조회 (DAO 호출명 selectList 일치, 커서 페이징 및 CLOB 검색) -->
+	<select id="selectList" resultType="NoteDto">
+		select * from(
+		select rownum rn, TMP.*from(
+		select
+		n.note_no as noteNo,
+		n.project_no as projectNo,
+		n.note_writer_no as noteWriterNo,
 		e.emp_no as empNo,
 		e.emp_name as empName,
 		e.emp_dept_no as empDeptNo,
@@ -48,36 +76,17 @@
 		n.note_ctime as noteCtime,
 		n.note_utime as noteUtime
 		from note n
-		inner join project_member pm
-		on n.note_writer_no = pm.project_member_no
-		inner join emp e
-		on pm.emp_no = e.emp_no
-		where n.note_no = #{noteNo}
-	</select>
-
-	<!-- 3. 프로젝트별 노트 목록 조회 (DAO 호출명 selectList 일치, 커서 페이징 및 CLOB 검색) -->
-	<select id="selectList" resultType="NoteDto">
-		select * from (
-		select rownum rn, TMP.* from (
-		select
-		n.note_no as noteNo,
-		n.project_no as projectNo,
-		n.note_writer_no as noteWriterNo,
-		n.note_title as noteTitle,
-		n.note_content as noteContent,
-		n.note_ctime as noteCtime,
-		n.note_utime as noteUtime
-		from note n
+		inner join project_member pm on n.note_writer_no = pm.project_member_no
+		inner join emp e on pm.emp_no = e.emp_no
 		where n.project_no = #{projectNo}
-
-		<!-- 커서 기반 무한 스크롤 -->
+		<!-- 커서 페이징 -->
 		<if test="req.lastNo != null">
-				<![CDATA[
-				  and n.note_no < #{req.lastNo}
-				]]>
+            <![CDATA[
+                and n.note_no < #{req.lastNo}
+            ]]>
 		</if>
 
-		<!-- 키워드 검색 조건 -->
+		<!-- 키워드 검색 -->
 		<if test="req.keyword != null and req.keyword != ''">
 			<choose>
 				<when test="req.type == 'title'">
@@ -117,7 +126,8 @@
 				<otherwise>
 					and (
 					instr(note_title, #{req.keyword}) > 0
-					or dbms_lob.instr(note_content, #{req.keyword}) > 0
+					or
+					dbms_lob.instr(note_content, #{req.keyword}) > 0
 					)
 				</otherwise>
 			</choose>
@@ -128,7 +138,8 @@
 	<update id="update" parameterType="NoteDto">
 		update note
 		set
-		note_title = #{noteTitle},
+		note_title =
+		#{noteTitle},
 		note_content = #{noteContent},
 		note_utime = systimestamp
 		where note_no = #{noteNo}
