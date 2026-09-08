@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @CommonsApiResponse
 
 @RestController
-@RequestMapping("/presence")
+@RequestMapping("/api/presence")
 public class PresenceRestController {
 	@Autowired
 	private ProjectPresenceService projectPresenceService;
