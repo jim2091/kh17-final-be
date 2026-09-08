@@ -22,5 +22,6 @@ public interface ProjectMemberDao {
 	List<ProjectMemberListResponseVO> selectProjectMemberList(int projectNo);
 	//멤버 역할 변경
 	int updateRole(int projectNo, int projectMemberNo,String projectMemberRole);
-	
+	//프로젝트 멤버 탈퇴
+	int delete(int projectNo,int projectMemberNo);
 }

@@ -480,13 +480,136 @@ public class ProjectServiceImpl implements ProjectService{
 			throw new  WrongDataException("프로젝트를 재활성화할 수 없습니다.");
 		}
 	}
-
 	
+	//프로젝트 멤버 탈퇴
+	@Transactional
+	@Override
+	public void leave(int projectNo, int empNo, Integer newOwnerMemberNo) {
+		//1.프로젝트 확인
+		ProjectDto project = projectDao.selectProject(projectNo);
+			
+			if(project == null) {
+				throw new TargetNotfoundException("존재하지 않는 프로젝트 입니다.");
+				
+			}
+		//2.종료 프로젝트인지 확인
+		if("closed".equals(
+				project.getProjectStatus()
+			)) {
+				throw new WrongDataException("종료된 프로젝트에서는 탈퇴할 수 없습니다.");
+			}
+			
+		//3.현재 로그인 사용자의 프로젝트 멤버 정보
+		ProjectMemberDto loginMember = projectMemberDao.findMember(projectNo, empNo);
+		
+			if(loginMember == null) {
+				throw new WhoAreYouException("프로젝트 참가자가 아닙니다.");
+			}
+		
+		//4.owner인 경우
+		if("owner".equals(
+			loginMember.getProjectMemberRole()		
+			)) {
+				//다름 owner를 선택하지 않은 경우
+				if(newOwnerMemberNo == null) {
+					throw new WrongDataException("owner는 새로운 owner를 지정해야 탈퇴할 수 있습니다.");
+				}
+			}
+			//새 owner조회
+			ProjectMemberDto newOwner = 
+					projectMemberDao.findMember(newOwnerMemberNo);
+			
+			if(newOwner == null) {
+				throw new TargetNotfoundException("새로운 owner 정보를 찾을 수 없습니다.");
+			}
+			
+			//같은 프로젝트 멤버인지 확인
+			if(newOwner.getProjectNo() != projectNo) {
+				throw new WrongDataException("해당 프로젝트의 멤버가 아닙니다.");
+			}
+			
+			//자기자신 선택 안되게
+			if(newOwner.getProjectNo()
+					== loginMember.getProjectMemberNo()) {
+				throw new WrongDataException("자기 자신에게 owner를 위임할 수 없습니다.");
+			}
+			
+			//새 owner로 변경
+			projectMemberDao.updateRole(
+					projectNo, newOwner.getProjectMemberNo(), "owner"
+			);
+		
+		//5.현재 로그인 멤버 삭제
+		int result = projectMemberDao.delete(
+				projectNo, loginMember.getProjectMemberNo()
+		);
+		
+		if(result == 0) {
+			throw new TargetNotfoundException("프로젝트 멤버 정보를 찾을 수 없습니다.");
+		}
+		
+	}
 	
+	//프로젝트 멤버 강제퇴장
+	@Transactional
+	@Override
+	public void kickMember(int projectNo, int projectMemberNo, int empNo) {
+		//1.프로젝트 확인
+		ProjectDto project = projectDao.selectProject(projectNo);
+			
+			if(project == null) {
+				throw new TargetNotfoundException("존재하지 않는 프로젝트 입니다.");
+				
+			}
+		//2.종료 프로젝트인지 확인
+		if("closed".equals(
+				project.getProjectStatus()
+			)) {
+				throw new WrongDataException("종료된 프로젝트에서는 탈퇴할 수 없습니다.");
+			}
+			
+		//3.현재 로그인 사용자의 프로젝트 멤버 정보
+		ProjectMemberDto loginMember = projectMemberDao.findMember(projectNo, empNo);
+		
+			if(loginMember == null) {
+				throw new WhoAreYouException("프로젝트 참가자가 아닙니다.");
+			}
+		
+		//4.owner확인
+		if(!"owner".equals(
+			loginMember.getProjectMemberRole()		
+			)) {
+				throw new WhoAreYouException("멤버 강제퇴장 권한이 없습니다.");
+			}
+		
+		//5.강제퇴장 대상 조회
+		ProjectMemberDto targetMember = 
+				projectMemberDao.findMember(projectMemberNo);
 	
+		if(targetMember == null) {
+			throw new TargetNotfoundException("프로젝트 멤버 정보를 찾을 수 없습니다.");
+		}
+		
+		//6.같은 프로젝트인지
+		if(targetMember.getProjectNo() != projectNo) {
+			throw new WrongDataException("해당 프로젝트의 멤버가 아닙니다.");
+		}
+		
+		//7.owner 자신 강제퇴장 방지
+		if(loginMember.getProjectMemberNo()
+				==
+			targetMember.getProjectMemberNo()) {
+			
+				throw new WrongDataException("해당 프로젝트의 멤버가 아닙니다.");
+		}
+		
+		//8.삭제
+		int result = projectMemberDao.delete(projectNo, projectMemberNo);
+		
+		if(result == 0) {
+			throw new TargetNotfoundException("프로젝트 멤버 정보를 찾을 수 없습니다.");
+		}
 	
-	
-	
-	
+	}	
 
 }

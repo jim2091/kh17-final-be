@@ -71,4 +71,12 @@ public class ProjectMemberDaoMybatis implements ProjectMemberDao{
 		params.put("projectMemberRole", projectMemberRole);
 		return sqlSession.update("mapper.projectMember.updateRole",params);
 	}
+
+	@Override
+	public int delete(int projectNo, int projectMemberNo) {
+		Map<String,Object>params = new HashMap<>();
+		params.put("projectNo", projectNo);
+		params.put("projectMemberNo",projectMemberNo);
+		return sqlSession.delete("mapper.projectMember.delete",params);
+	}
 }
