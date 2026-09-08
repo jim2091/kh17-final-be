@@ -3,12 +3,14 @@ package com.kh.finalprj.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.finalprj.dao.SearchDao;
+import com.kh.finalprj.dto.ProjectHistoryDto;
 import com.kh.finalprj.dto.SearchDto;
 
 import lombok.RequiredArgsConstructor;
@@ -198,6 +200,12 @@ public class SearchServiceImpl implements SearchService {
 
 
         return result;
+    }
+    
+    @Override
+    public List<ProjectHistoryDto> searchProjectHistory(int empNo) {
+
+        return searchDao.searchProjectHistory(empNo);
     }
 
 }

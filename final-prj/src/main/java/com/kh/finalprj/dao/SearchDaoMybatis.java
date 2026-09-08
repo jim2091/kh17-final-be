@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.ProjectDto;
+import com.kh.finalprj.dto.ProjectHistoryDto;
 import com.kh.finalprj.dto.TaskDto;
 
 import lombok.RequiredArgsConstructor;
@@ -83,6 +84,15 @@ public class SearchDaoMybatis implements SearchDao {
         return sqlSession.selectList(
                 NAMESPACE + ".searchFiles",
                 keyword
+        );
+    }
+    
+    @Override
+    public List<ProjectHistoryDto> searchProjectHistory(int empNo) {
+
+        return sqlSession.selectList(
+                NAMESPACE + ".searchProjectHistory",
+                empNo
         );
     }
 

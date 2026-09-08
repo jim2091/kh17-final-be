@@ -5,6 +5,7 @@ import java.util.List;
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.ProjectDto;
+import com.kh.finalprj.dto.ProjectHistoryDto;
 import com.kh.finalprj.dto.TaskDto;
 
 public interface SearchDao {
@@ -20,5 +21,8 @@ public interface SearchDao {
 
     // 파일 검색
     List<AttachDto> searchFiles(String keyword);
+    
+    // 사용자의 프로젝트 참여 이력
+    List<ProjectHistoryDto> searchProjectHistory(int empNo);
 
 }
