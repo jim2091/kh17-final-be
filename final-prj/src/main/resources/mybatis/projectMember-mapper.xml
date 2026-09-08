@@ -33,6 +33,7 @@
 		from project_member
 		where project_no = #{projectNo}
 		and emp_no = #{empNo}
+		and project_member_status = 'active'
 	</select>
 	
 	<!-- 프로젝트 멤버 상세 조회 -->
@@ -46,6 +47,7 @@
 		from project_member
 		where project_no = #{projectNo}
 			and emp_no = #{empNo}
+			and project_member_status = 'active'
 	</select>
 	
 
@@ -53,6 +55,7 @@
 	<select id="findMember2" resultType="ProjectMemberDto">
 		select * from project_member
 		where project_member_no = #{projectMemberNo}
+		and project_member_status = 'active'
 	</select>
 	
 	<select id="selectRole" resultType="String">
@@ -60,6 +63,7 @@
 			from project_member
 		where project_no = #{projectNo}
 			and emp_no = #{empNo}
+			and project_member_status = 'active'
 	</select>
 	
 	<!-- 
@@ -75,9 +79,13 @@
 				pm.project_member_job,
 				pm.project_member_ctime
 		from project_member pm
+		
 		inner join emp e
 			on pm.emp_no = e.emp_no
+			
 		where pm.project_no =#{projectNo}
+			and project_member_status = 'active'
+			
 		order by 
 			case pm.project_member_role
 				when 'owner' then 1
@@ -93,12 +101,22 @@
 		set 	project_member_role = #{projectMemberRole}
 		where 	project_member_no = #{projectMemberNo}
 			and project_no = #{projectNo}
+			and project_member_status = 'active'
 	</update>
 	
 	<!-- 프로젝트 멤버 탈퇴 -->
-	<delete id="delete">
-		delete from project_member
+	<update id="deactivate">
+		update project_member
+		set	project_member_status = 'inactive'
 		where project_no = #{projectNo}
 			and project_member_no = #{projectMemberNo}
-	</delete>
+			and project_member_status = 'active'
+	</update>
+	
+	<!-- 과거 참여 여부 확인 -->
+	<select id="findMemberAny" resultType="ProjectMemberDto">
+		select * from project_member
+		where project_no = #{projectNo}
+		and emp_no = #{empNo}
+	</select>
 </mapper>

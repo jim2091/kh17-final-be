@@ -17,5 +17,6 @@ public class ProjectMemberDto {
 	private int empNo;
 	private String projectMemberRole;
 	private String projectMemberJob;
+	private String projectMemberStatus;
 	private Timestamp projectMemberCtime;
 }

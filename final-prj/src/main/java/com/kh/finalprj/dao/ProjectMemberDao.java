@@ -23,5 +23,8 @@ public interface ProjectMemberDao {
 	//멤버 역할 변경
 	int updateRole(int projectNo, int projectMemberNo,String projectMemberRole);
 	//프로젝트 멤버 탈퇴
-	int delete(int projectNo,int projectMemberNo);
+	boolean deactivate(int projectNo,int projectMemberNo);
+	//과거에 프로젝트 멤버였는지 조회
+	ProjectMemberDto findMemberAny(int projectNo,int empNo);
+	
 }

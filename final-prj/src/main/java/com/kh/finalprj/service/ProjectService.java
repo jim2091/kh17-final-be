@@ -42,7 +42,7 @@ public interface ProjectService{
 	//프로젝트 활성화
 	void activate(int projectNo,int empNo);
 	//프로젝트 탈퇴
-	void leave(int projectNo, int empNo,Integer newOwnerMemberNo);
+	void leave(int projectNo, int empNo);
 	//강제 퇴장
 	void kickMember(int projectNo,int projectMemberNo,int empNo);
 }

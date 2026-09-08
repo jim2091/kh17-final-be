@@ -73,10 +73,18 @@ public class ProjectMemberDaoMybatis implements ProjectMemberDao{
 	}
 
 	@Override
-	public int delete(int projectNo, int projectMemberNo) {
+	public boolean deactivate(int projectNo, int projectMemberNo) {
 		Map<String,Object>params = new HashMap<>();
 		params.put("projectNo", projectNo);
 		params.put("projectMemberNo",projectMemberNo);
-		return sqlSession.delete("mapper.projectMember.delete",params);
+		return sqlSession.update("mapper.projectMember.deactivate",params)>0;
+	}
+
+	@Override
+	public ProjectMemberDto findMemberAny(int projectNo, int empNo) {
+		Map<String,Object>params = new HashMap<>();
+		params.put("projectNo", projectNo);
+		params.put("empNo",empNo);
+		return sqlSession.selectOne("mapper.projectMember.findMemberAny",params);
 	}
 }

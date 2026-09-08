@@ -211,14 +211,12 @@ public class ProjectController {
 	@DeleteMapping(value = "/{projectNo}/member/leave",produces = "application/json")
 	public void leave(
 			@PathVariable int projectNo,
-			@RequestParam (required=false) Integer newOwnerMemberNo,
 			@CurrentUser TokenParseResponseVO parseVO
 	) {
 		
 		projectService.leave(
 				projectNo, 
-				parseVO.getEmpNo(), 
-				newOwnerMemberNo
+				parseVO.getEmpNo()
 		);
 	}
 	
