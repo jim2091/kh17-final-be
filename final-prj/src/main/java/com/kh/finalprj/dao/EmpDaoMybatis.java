@@ -118,31 +118,13 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.update("mapper.emp.memberEdit", vo)>0;
 	}
 
+	
 	@Override
-	public List<EmpListVO> nameAsc() {
-		return sqlSession.selectList("mapper.emp.nameAsc");
-	}
-
-	@Override
-	public List<EmpListVO> emailAsc() {
-		return sqlSession.selectList("mapper.emp.emailAsc");
-	}
-
-	@Override
-	public List<EmpListVO> deptAsc() {
-		return sqlSession.selectList("mapper.emp.deptAsc");
-	}
-
-	@Override
-	public List<EmpListVO> positionAsc() {
-		return sqlSession.selectList("mapper.emp.positionAsc");
-	}
-
-	@Override
-	public List<EmpListVO> selectList(int beginRownum, int endRownum) {
+	public List<EmpListVO> selectList(int beginRownum, int endRownum, String sort) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("beginRownum" ,beginRownum);
 		params.put("endRownum" ,endRownum);
+		params.put("sort", sort);
 		return sqlSession.selectList("mapper.emp.listPage", params);
 	}
 
@@ -151,6 +133,17 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectOne("mapper.emp.count");
 	}
 
+	@Override
+	public int searchCount(String keyword) {
+		return sqlSession.selectOne("mapper.emp.searchCount", keyword);
+	}
+
+	@Override
+	public int tabCount(String tab) {
+		return sqlSession.selectOne("mapper.emp.tabCount", tab);
+	}
+
+	
 	
 	
 	

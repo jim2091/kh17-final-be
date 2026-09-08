@@ -84,63 +84,64 @@ public class AdminRestController {
 		return empDao.checkAvailableEmail(empEmail);
 	}
 	
-	//회원목록 조회(번호순)
+	//회원목록 조회(+페이지네이션)
 	@PostMapping("/")
 	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
 		int beginRownum = pageVO.getBeginRownum();
 		int endRownum = pageVO.getEndRownum();
+		String sort = pageVO.getSort();
 		
-		System.out.println("beginRownum : " + beginRownum);
-		System.out.println("endRownum : " + endRownum);
+//		System.out.println("beginRownum : " + beginRownum);
+//		System.out.println("endRownum : " + endRownum);
 		
 		int count = empDao.count();
-		List<EmpListVO> list = empDao.selectList(beginRownum, endRownum);
+		List<EmpListVO> list = empDao.selectList(beginRownum, endRownum, sort);
+		
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("list", list);
+		result.put("count", count);
+		result.put("sort", sort);
+		
+		return result;
+		
+	}
+	
+	
+	//회원 복합 검색 결과 조회 
+	@PostMapping("/complexSearch")
+	public Map<String, Object> list(@RequestBody AdminComplexSearchRequestVO request ){
+//		System.out.println("검색 요청 데이터 : "+request);
+//		System.out.println("검색 응답 데이터 :"+ empDao.complexSearch(request));
+//		 System.out.println("keyword = " + request.getKeyword());
+//		    System.out.println("pageVO = " + request.getPageVO());
+		String keyword = request.getKeyword();
+		int count = empDao.searchCount(keyword);
+		List<AdminComplexSearchResponseVO> list = empDao.complexSearch(request);
 		
 		Map<String, Object> result = new HashMap<>();
 		result.put("list", list);
 		result.put("count", count);
 		
 		return result;
-		
-	}
-	//회원목록 조회(이름순)
-	@GetMapping("/nameAsc")
-	public List<EmpListVO> nameAsc(){
-		return empDao.nameAsc();
-		
-	}
-	//회원목록 조회(이메일순)
-	@GetMapping("/emailAsc")
-	public List<EmpListVO> emailAsc(){
-		return empDao.emailAsc();
-		
-	}
-	//회원목록 조회(이메일순)
-	@GetMapping("/deptAsc")
-	public List<EmpListVO> deptAsc(){
-		return empDao.deptAsc();
-		
-	}
-	//회원목록 조회(이메일순)
-	@GetMapping("/positionAsc")
-	public List<EmpListVO> positionAsc(){
-		return empDao.positionAsc();
-		
-	}
-	
-	//회원 복합 검색 결과 조회 
-	@PostMapping("/complexSearch")
-	public List<AdminComplexSearchResponseVO> list(@RequestBody AdminComplexSearchRequestVO request ){
-//		System.out.println("검색 요청 데이터 : "+request);
-//		System.out.println("검색 응답 데이터 :"+ empDao.complexSearch(request));
-		return empDao.complexSearch(request);
 	}
 	
 	//회원 초성 검색 결과 조회
 	@PostMapping("/initial")
-	public List<AdminInitialSearchResponseVO> initial(@RequestBody AdminInitialSearchRequestVO request){
+	public Map<String, Object> initial(@RequestBody AdminInitialSearchRequestVO request){
 		
-		return empDao.initialSearch(request);
+		String tab = request.getTab();
+//		System.out.println("tab : "+ tab);
+		int count = empDao.tabCount(tab);
+		List<AdminInitialSearchResponseVO> list = empDao.initialSearch(request);
+		
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("list", list);
+		result.put("count", count);
+//		System.out.println("list : "+ list);
+		
+		return result;
 		
 	}
 	
@@ -148,7 +149,7 @@ public class AdminRestController {
 	//회원 활성화<->비활성화 수정
 	@PatchMapping("/active/{empNo}")
 	public EmpActiveResponseVO active(@PathVariable int empNo) {
-		
+		System.out.println("empNo : "+ empNo);
 		EmpActiveResponseVO result = new EmpActiveResponseVO();
 		
 		boolean valid = empDao.activeRequest(empNo);

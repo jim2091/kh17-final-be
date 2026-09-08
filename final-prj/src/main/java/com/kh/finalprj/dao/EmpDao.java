@@ -46,15 +46,16 @@ public interface EmpDao {
 	boolean memberEdit(EmpEditRequestVO vo);
 
 	
-	
-	List<EmpListVO> nameAsc();
-	List<EmpListVO> emailAsc();
-	List<EmpListVO> deptAsc();
-	List<EmpListVO> positionAsc();
 	//페이지네이션
-	List<EmpListVO> selectList(int beginRownum, int endRownum);
-	
 	int count();
+	List<EmpListVO> selectList(int beginRownum, int endRownum, String sort);
+	
+	//검색 결과 수
+	int searchCount(String keyword);
+	//초성 검색 결과 수
+	int tabCount(String tab);
+	
+	
 	
 	
 	

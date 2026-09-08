@@ -1,6 +1,7 @@
 package com.kh.finalprj.vo.admin;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -14,5 +15,5 @@ public class AdminComplexSearchRequestVO {
 //	private String empState;
 //	private String empName;
 	private String keyword;
-
+	private PagenationVO pageVO;
 }

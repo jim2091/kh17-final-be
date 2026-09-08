@@ -11,6 +11,8 @@ public class PagenationVO {
 	
 	private Integer page=1;
 	private Integer size=10;
+	private String sort;
+	private String direction;
 	
 	
 	public int getBeginRownum() {

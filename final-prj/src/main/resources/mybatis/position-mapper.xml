@@ -29,6 +29,22 @@
 	select * from position order by position_block asc, position_no asc
 </select>
 
+<!-- 직급 목록 페이지네이션을 위한 목록 개수 -->
+<select id="count" resultType="int">
+	select count(*) from position
+</select>
+
+<!-- 직급 목록 조회(페이지네이션) -->
+<select id="selectList" resultType="PositionListVO">
+select * from(
+	select rownum rn, TMP.* from
+	(
+		select * from position order by position_block asc, position_no asc
+	)TMP
+)
+where rn between #{beginRownum} and #{endRownum}
+</select>
+
 <!-- 직급 정보 수정 -->
 <update id="updateAll">
 	update position

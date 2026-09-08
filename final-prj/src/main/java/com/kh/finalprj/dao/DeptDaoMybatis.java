@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.kh.finalprj.dto.DeptDto;
 import com.kh.finalprj.vo.dept.DeptListSearchVO;
 import com.kh.finalprj.vo.dept.DeptListVO;
+import com.kh.finalprj.vo.page.PagenationVO;
 
 @Repository
 public class DeptDaoMybatis implements DeptDao {
@@ -44,6 +45,16 @@ public class DeptDaoMybatis implements DeptDao {
 	@Override
 	public List<DeptListSearchVO> listSearch() {
 		return sqlSession.selectList("mapper.dept.listSearch");
+	}
+
+	@Override
+	public int count() {
+		return sqlSession.selectOne("mapper.dept.count");
+	}
+
+	@Override
+	public List<DeptListVO> selectList(PagenationVO pageVO) {
+		return sqlSession.selectList("mapper.dept.selectList", pageVO);
 	}
 	
 	

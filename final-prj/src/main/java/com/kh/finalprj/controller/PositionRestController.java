@@ -1,6 +1,8 @@
 package com.kh.finalprj.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kh.finalprj.annotation.AuthApiResponse;
 import com.kh.finalprj.dao.PositionDao;
 import com.kh.finalprj.dto.PositionDto;
+import com.kh.finalprj.vo.dept.DeptListVO;
+import com.kh.finalprj.vo.page.PagenationVO;
 import com.kh.finalprj.vo.position.PositionAddRequestVO;
 import com.kh.finalprj.vo.position.PositionAddResponseVO;
 import com.kh.finalprj.vo.position.PositionChangeRequestVO;
@@ -38,6 +42,21 @@ public class PositionRestController {
 	@GetMapping("/")
 	public List<PositionListVO> list(){
 		return positionDao.selectList();
+	}
+	
+	@PostMapping("/")
+	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
+		int count = positionDao.count();
+		List<PositionListVO> list = positionDao.selectList(pageVO);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("count", count);
+		result.put("list", list);
+		
+//		System.out.println("list: "+ list);
+		
+		return result;
+		
 	}
 	
 	@GetMapping("/search")
