@@ -10,7 +10,7 @@ import lombok.Data;
 public class EmpEditRequestVO {
 	
 	private int empNo;
-	private int empDeptNo;
-	private int empPositionNo;
+	private Integer empDeptNo;
+	private Integer empPositionNo;
 
 }
