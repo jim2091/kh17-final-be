@@ -67,6 +67,7 @@ where emp_no = #{empNo} -->
         <if test="empAddress2 != null">
             emp_address2 = #{empAddress2},
         </if>
+        	emp_state = 'active',
 
         emp_utime = systimestamp
     </set>
@@ -112,12 +113,18 @@ where emp_no = #{empNo} -->
 			    e.emp_email,
 			    e.emp_contact,
 			    e.emp_birth,
-			    e.emp_address1
+			    e.emp_post,
+			    e.emp_address1,
+			    e.emp_address2,
+			    ep.attach_no
 			FROM emp e
 			JOIN dept d
 			    ON e.emp_dept_no = d.dept_no
 			JOIN position p
 			    ON e.emp_position_no = p.position_no
+			LEFT JOIN emp_profile ep
+   				ON e.emp_no = ep.emp_no
+			where e.emp_level = 'member'
 			    
 			<choose>
 				<when test="sort == 'empName'">
@@ -155,16 +162,22 @@ select * from (
 	    e.emp_email,
 	    e.emp_contact,
 	    e.emp_birth,
-	    e.emp_address1
+	    e.emp_post,
+	    e.emp_address1,
+	    e.emp_address2,
+	    ep.attach_no
 	from emp E
 	join dept D 
 		on E.emp_dept_no = D.dept_no
 	join position P 
 		on E.emp_position_no = P.position_no
+	LEFT JOIN emp_profile ep
+   		ON e.emp_no = ep.emp_no
 	<where>
+	e.emp_level = 'member'
 		<if test="keyword != null and keyword != ''">
 		
-		 
+		 and(
 			D.dept_name LIKE '%' || #{keyword} || '%'
 		
 			or P.position_name LIKE '%' || #{keyword} || '%'
@@ -172,7 +185,7 @@ select * from (
 			or E.emp_state = #{keyword}
 		
             or e.emp_name LIKE '%' || #{keyword} || '%'
-        
+        )
         </if>
 	</where>
 		order by e.emp_no asc
@@ -190,9 +203,10 @@ select count(*) from emp E
 	join position P 
 		on E.emp_position_no = P.position_no
 	<where>
+			e.emp_level = 'member'
 		<if test="keyword != null and keyword != ''">
 		
-		 
+		 and(
 			D.dept_name LIKE '%' || #{keyword} || '%'
 		
 			or P.position_name LIKE '%' || #{keyword} || '%'
@@ -200,10 +214,9 @@ select count(*) from emp E
 			or E.emp_state = #{keyword}
 		
             or e.emp_name LIKE '%' || #{keyword} || '%'
-        
+        )
         </if>
 	</where>
-order by e.emp_no asc
 </select>
 
 <!-- 회원 초성 검색 결과 목록-->
@@ -221,13 +234,19 @@ select * from(
 	    e.emp_email,
 	    e.emp_contact,
 	    e.emp_birth,
-	    e.emp_address1
+	    e.emp_post,
+	    e.emp_address1,
+	    e.emp_address2,
+	    ep.attach_no
 	from emp_initial_view E
 	join dept D
 		on E.emp_dept_no = D.dept_no
 	join position P
 		on E.emp_position_no = P.position_no
-	where case
+	LEFT JOIN emp_profile ep
+   		ON e.emp_no = ep.emp_no
+	where e.emp_level = 'member'
+	and case
 		when E.initial_no in(0,1) then 'ㄱ'
 		when E.initial_no = 2 then 'ㄴ'
 		when E.initial_no in(3,4) then 'ㄷ'
@@ -256,7 +275,8 @@ select count(*) from emp_initial_view E
 		on E.emp_dept_no = D.dept_no
 	join position P
 		on E.emp_position_no = P.position_no
-	where case
+	where e.emp_level = 'member'
+	and case
 		when E.initial_no in(0,1) then 'ㄱ'
 		when E.initial_no = 2 then 'ㄴ'
 		when E.initial_no in(3,4) then 'ㄷ'
@@ -293,7 +313,7 @@ select count(*) from emp_initial_view E
 	update emp
 	set	emp_state = 
 		case 
-			when emp_state = 'invited' or emp_state = 'inactive' then 'active'
+			when emp_state = 'inactive' then 'active'
 			else 'inactive'
 	end
 	where emp_no = #{empNo}

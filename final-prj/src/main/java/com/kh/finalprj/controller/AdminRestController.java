@@ -162,10 +162,16 @@ public class AdminRestController {
 	
 	
 	//회원 부서/직급 수정
-	@PutMapping("/memberEdit/{empNo}")
+	@PutMapping("/memberEdit/")
 	public EmpEditResponseVO memberEdit(@RequestBody EmpEditRequestVO request) {
 		
 		EmpEditResponseVO result = new EmpEditResponseVO();
+		
+		if ((request.getEmpDeptNo() == null || request.getEmpDeptNo() == 0)
+		        && (request.getEmpPositionNo() == null || request.getEmpPositionNo() == 0)) {
+			return result;
+		}
+		
 		
 		boolean valid = empDao.memberEdit(request);
 		
