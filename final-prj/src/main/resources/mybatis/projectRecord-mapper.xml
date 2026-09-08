@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.projectRecord">
+
+	<!-- 시퀀스 -->
+	<select id="sequence" resultType="int">
+		select project_record_seq.nextval from dual
+	</select>
+	
+	<!-- Record 등록 -->
+	<insert id="insert">
+		insert into project_record (
+			project_record_no,
+			project_no,
+			project_record_writer_no,
+			project_record_type,
+			project_record_title,
+			project_record_content
+		)
+		values(
+			#{projectRecordNo},
+			#{projectNo},
+			#{projectRecordWriterNo},
+			#{projectRecordType},
+			#{projectRecordTitle},
+			#{projectRecordContent}
+		)
+	</insert>
+	
+	<!-- ISSUE 전용 정보 등록 -->
+	<insert id="insertIssue">
+		insert into project_record_issue (
+			project_record_no
+		)
+		values(
+			#{projectRecordNo}
+		)
+		
+	</insert>
+	
+</mapper>

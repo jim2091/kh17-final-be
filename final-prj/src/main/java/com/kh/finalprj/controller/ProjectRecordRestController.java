@@ -1,0 +1,44 @@
+package com.kh.finalprj.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.kh.finalprj.annotation.CommonsApiResponse;
+import com.kh.finalprj.annotation.CurrentUser;
+import com.kh.finalprj.service.ProjectRecordService;
+import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordAddRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
+@Tag(name = "프로젝트 record API")
+@CommonsApiResponse
+@RestController
+@RequestMapping("/api/record")
+public class ProjectRecordRestController {
+	
+	@Autowired
+	private ProjectRecordService projectRecordService;
+	
+	//등록
+	@Operation(summary = "프로젝트 record 등록")
+	@ApiResponse(responseCode = "200", description = "record 등록 성공")
+	@PostMapping("/project/{projectNo}")
+	public ProjectRecordAddResponseVO add(
+			@PathVariable int projectNo,
+			@Valid @RequestBody ProjectRecordAddRequestVO request,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		return projectRecordService.add(projectNo, parseVO.getEmpNo(), request);
+	}
+	
+	
+}
