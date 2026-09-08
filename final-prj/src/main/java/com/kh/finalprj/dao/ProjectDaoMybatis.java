@@ -80,7 +80,7 @@ public class ProjectDaoMybatis implements ProjectDao{
 
 	@Override
 	public boolean activate(int projectNo) {
-		return sqlSession.update("mapper.project.active",projectNo)>0;
+		return sqlSession.update("mapper.project.activate",projectNo)>0;
 	}
 	
 }

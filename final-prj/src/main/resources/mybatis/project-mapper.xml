@@ -47,6 +47,7 @@
 		inner join project_member pm
 			on p.project_no = pm.project_no
 		where pm.emp_no = #{empNo}
+			and pm.project_member_status = 'active'
 			and p.project_status = 'active'
 		order by p.project_ctime desc
 	</select>
@@ -71,6 +72,7 @@
 			on p.project_no = pm.project_no
 		where p.project_no = #{projectNo}
 			and pm.emp_no = #{empNo} 
+			and pm.project_member_status = 'active'
 	</select>
 	
 	<!-- 프로젝트 수정 -->
@@ -130,9 +132,12 @@
 				) as rn
 			
 		from project p
+		
 		left outer join project_member pm
 			on p.project_no = pm.project_no
 			and pm.emp_no = #{empNo}
+			and pm.project_member_status = 'active'
+			
 		where p.project_visibility = 'public'
 			and p.project_status = 'active'
 			
@@ -182,20 +187,26 @@
 			p.project_deadline,
 			pm.project_member_role
 		from project p
+		
 		inner join project_member pm
 			on p.project_no = pm.project_no
+			
 		where pm.emp_no = #{empNo}
 			and p.project_status = 'closed'
+			and pm.project_member_status = 'active'
+			
 		order by p.project_utime desc
 			
 	</select>
 	
 	<!-- 프로젝트 재 시작 -->
-	<update id="active">
+	<update id="activate">
 		update project
 		set project_status = 'active',
 			project_utime = systimestamp
 		where project_no = #{projectNo}
 			and project_status = 'closed'
 	</update>
+	
+	
 </mapper>

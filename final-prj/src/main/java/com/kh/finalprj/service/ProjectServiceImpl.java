@@ -234,10 +234,12 @@ public class ProjectServiceImpl implements ProjectService{
 			throw new TargetNotfoundException("종료된 프로젝트에는 참가할 수 없습니다.");
 		}
 		
-		//4.이미 참여중인지 확인
-		String role = projectMemberDao.selectRole(projectNo, empNo);
-		if(role != null) {
-			throw new WrongDataException("이미 참여중인 프로젝트입니다.");
+		//4.이 프로젝트에 참여한 이력이 있는지 확인
+		ProjectMemberDto member = 
+				projectMemberDao.findMemberAny(projectNo,empNo);
+		
+		if(member != null) {
+			throw new WrongDataException("이미 참여했거나 탈퇴한 프로젝트에는 다시 참여할 수 없습니다.");
 		}
 		
 		//5.프로젝트 멤버 번호 발급
@@ -484,7 +486,7 @@ public class ProjectServiceImpl implements ProjectService{
 	//프로젝트 멤버 탈퇴
 	@Transactional
 	@Override
-	public void leave(int projectNo, int empNo, Integer newOwnerMemberNo) {
+	public void leave(int projectNo, int empNo) {
 		//1.프로젝트 확인
 		ProjectDto project = projectDao.selectProject(projectNo);
 			
@@ -509,42 +511,18 @@ public class ProjectServiceImpl implements ProjectService{
 		//4.owner인 경우
 		if("owner".equals(
 			loginMember.getProjectMemberRole()		
-			)) {
-				//다름 owner를 선택하지 않은 경우
-				if(newOwnerMemberNo == null) {
-					throw new WrongDataException("owner는 새로운 owner를 지정해야 탈퇴할 수 있습니다.");
-				}
-			}
-			//새 owner조회
-			ProjectMemberDto newOwner = 
-					projectMemberDao.findMember(newOwnerMemberNo);
-			
-			if(newOwner == null) {
-				throw new TargetNotfoundException("새로운 owner 정보를 찾을 수 없습니다.");
-			}
-			
-			//같은 프로젝트 멤버인지 확인
-			if(newOwner.getProjectNo() != projectNo) {
-				throw new WrongDataException("해당 프로젝트의 멤버가 아닙니다.");
-			}
-			
-			//자기자신 선택 안되게
-			if(newOwner.getProjectNo()
-					== loginMember.getProjectMemberNo()) {
-				throw new WrongDataException("자기 자신에게 owner를 위임할 수 없습니다.");
-			}
-			
-			//새 owner로 변경
-			projectMemberDao.updateRole(
-					projectNo, newOwner.getProjectMemberNo(), "owner"
+		)) {
+			throw new WrongDataException(
+					"owner는 탈퇴할 수 없습니다. 다른 멤버에게 owner를 위임해주세요"
 			);
+		}
 		
-		//5.현재 로그인 멤버 삭제
-		int result = projectMemberDao.delete(
+		//5.탈퇴
+		boolean result = projectMemberDao.deactivate(
 				projectNo, loginMember.getProjectMemberNo()
 		);
 		
-		if(result == 0) {
+		if(result == false) {
 			throw new TargetNotfoundException("프로젝트 멤버 정보를 찾을 수 없습니다.");
 		}
 		
@@ -604,9 +582,9 @@ public class ProjectServiceImpl implements ProjectService{
 		}
 		
 		//8.삭제
-		int result = projectMemberDao.delete(projectNo, projectMemberNo);
+		boolean result = projectMemberDao.deactivate(projectNo, projectMemberNo);
 		
-		if(result == 0) {
+		if(result == false) {
 			throw new TargetNotfoundException("프로젝트 멤버 정보를 찾을 수 없습니다.");
 		}
 	
