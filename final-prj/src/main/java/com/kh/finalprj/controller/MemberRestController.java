@@ -29,12 +29,11 @@ import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.PositionDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.AttachService;
-import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
-import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.ChangeEmpRequestVO;
 import com.kh.finalprj.vo.emp.ChangeEmpResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.emp.EmpMeResponseVO;
+import com.kh.finalprj.vo.emp.MemberListVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
@@ -180,7 +179,7 @@ public class MemberRestController {
 		
 		int count = empDao.count();
 		
-		List<EmpListVO> list = empDao.selectList(pageVO);
+		List<MemberListVO> list = empDao.memberList(pageVO);
 		
 		Map<String, Object> result = new HashMap<>();
 		result.put("list", list);

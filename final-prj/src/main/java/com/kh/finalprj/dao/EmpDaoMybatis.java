@@ -18,6 +18,7 @@ import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
+import com.kh.finalprj.vo.emp.MemberListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
 @Repository
@@ -151,6 +152,11 @@ public class EmpDaoMybatis implements EmpDao {
 	@Override
 	public boolean becomeAdmin(int empNo) {
 		return sqlSession.update("mapper.emp.becomeAdmin", empNo)>0;
+	}
+
+	@Override
+	public List<MemberListVO> memberList(PagenationVO pageVO) {
+		return sqlSession.selectList("mapper.emp.memberList", pageVO);
 	}
 
 	

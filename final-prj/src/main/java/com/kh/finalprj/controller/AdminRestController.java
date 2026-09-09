@@ -134,7 +134,7 @@ public class AdminRestController {
 	public Map<String, Object> initial(@RequestBody AdminInitialSearchRequestVO request){
 		
 		String tab = request.getTab();
-//		System.out.println("tab : "+ tab);
+		System.out.println("tab : "+ tab);
 		int count = empDao.tabCount(tab);
 		List<AdminInitialSearchResponseVO> list = empDao.initialSearch(request);
 		
@@ -167,6 +167,7 @@ public class AdminRestController {
 	//회원 부서/직급 수정
 	@PutMapping("/memberEdit/")
 	public EmpEditResponseVO memberEdit(@RequestBody EmpEditRequestVO request) {
+		System.out.println("수정할 회원 정보 : "+ request);
 		
 		EmpEditResponseVO result = new EmpEditResponseVO();
 		
@@ -203,6 +204,10 @@ public class AdminRestController {
 		
 	}
 	
+	@GetMapping("/")
+	public List<EmpListVO> list(){
+		return empDao.selectList();
+	}
 	
 	
 	
