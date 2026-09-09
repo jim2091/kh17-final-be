@@ -42,4 +42,86 @@
 		
 	</insert>
 	
+	<!-- 프로젝트별 Record 목록 -->
+	<select id="list" resultType="ProjectRecordListResponseVO">
+		select
+			pr.project_record_no,
+			pr.project_record_type,
+			pr.project_record_title,
+			pr.project_record_writer_no,
+			e.emp_name project_record_writer_name,
+			pr.project_record_ctime,
+			pr.project_record_utime,
+			pri.issue_status project_record_issue_status
+			
+		from project_record pr
+		
+			join project_member pm
+				on pr.project_record_writer_no = pm.project_member_no
+			
+			join emp e
+				on pm.emp_no = e.emp_no
+				
+			left outer join project_record_issue pri
+				on pr.project_record_no = pri.project_record_no
+		
+		where pr.project_no = #{projectNo}
+		
+		order by pr.project_record_no desc
+	</select>
+	
+	
+	<!-- java 필드명과 맞추려고 준 alias가 Oracle의 30자 제한을 넘어서 resultMap 추가 -->
+	<resultMap id="projectRecordDetailResultMap"
+			type="ProjectRecordDetailResponseVO"
+			autoMapping="true">
+	
+		<result property="projectRecordIssueResolution"
+				column="issue_resolution"/>
+				
+		<result property="projectRecordIssueResolvedAt"
+				column="issue_resolved_at"/>		
+	</resultMap>
+	
+	
+	<!-- Record 상세 조회 -->
+	<select id="detail" resultMap="projectRecordDetailResultMap">
+		select
+			pr.project_record_no,
+			pr.project_no,
+			pr.project_record_type,
+			pr.project_record_title,
+			pr.project_record_content,
+			pr.project_record_writer_no,
+			writer.emp_name project_record_writer_name,
+			pr.project_record_modifier_no,
+			modifier.emp_name project_record_modifier_name,
+			pr.project_record_ctime,
+			pr.project_record_utime,
+			pri.issue_status project_record_issue_status,
+			pri.issue_resolution,
+			pri.issue_resolved_at
+			
+		from project_record pr
+		
+			join project_member writer_pm
+				on pr.project_record_writer_no = writer_pm.project_member_no
+				
+			join emp writer
+				on writer_pm.emp_no = writer.emp_no
+				
+			left outer join project_member modifier_pm
+				on pr.project_record_modifier_no = modifier_pm.project_member_no
+				
+			left outer join emp modifier
+				on modifier_pm.emp_no = modifier.emp_no
+				
+			left outer join project_record_issue pri
+				on pr.project_record_no = pri.project_record_no
+				
+			where pr.project_record_no = #{projectRecordNo}
+	</select>
+	
+	
+	
 </mapper>
