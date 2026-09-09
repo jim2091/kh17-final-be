@@ -122,6 +122,106 @@
 			where pr.project_record_no = #{projectRecordNo}
 	</select>
 	
+	<!-- 각 원본 연결 -->
 	
+		
+	<insert id="insertTask">
+		insert into project_record_task (
+			project_record_no,
+			task_no
+		)
+		values (
+			#{projectRecordNo},
+			#{taskNo}
+		)
+	</insert>
+	<insert id="insertMessage">
+		insert into project_record_message (
+			project_record_no,
+			chat_message_no
+		)
+		values (
+			#{projectRecordNo},
+			#{chatMessageNo}
+		)
+	</insert>
+	<insert id="insertNote">
+		insert into project_record_note (
+			project_record_no,
+			note_no
+		)
+		values (
+			#{projectRecordNo},
+			#{noteNo}
+		)
+	</insert>
+	<insert id="insertAttach">
+		insert into project_record_attach (
+			project_record_no,
+			attach_no
+		)
+		values (
+			#{projectRecordNo},
+			#{attachNo}
+		)
+	</insert>
 	
+	<!-- Record 연관 원본 목록 조회 -->
+	<select id="selectRelatedList" resultType="ProjectRecordRelatedResponseVO">
+		select
+			'TASK' related_type,
+			t.task_no related_no,
+			t.task_title related_title,
+			t.task_status related_status
+			
+		from project_record_task prt
+			join task t
+				on prt.task_no = t.task_no
+		
+		where prt.project_record_no = #{projectRecordNo}
+				
+		union all
+		
+		select
+			'MESSAGE' related_type,
+			cm.chat_message_no related_no,
+			cm.chat_message_content related_title,
+			null related_status
+		
+		from project_record_message prm
+			join chat_message cm
+				on prm.chat_message_no = cm.chat_message_no
+				
+		where prm.project_record_no = #{projectRecordNo}
+		
+		union all
+		
+		select
+			'NOTE' related_type,
+			n.note_no related_no,
+			n.note_title related_title,
+			null related_status
+			
+		from project_record_note prn
+			join note n
+				on prn.note_no = n.note_no
+				
+		where prn.project_record_no = #{projectRecordNo}
+		
+		union all
+		
+		select
+			'ATTACH' related_type,
+			a.attach_no related_no,
+			a.attach_name related_title,
+			null related_status
+			
+		from project_record_attach pra
+			join attach a
+				on pra.attach_no = a.attach_no
+				
+		where pra.project_record_no = #{projectRecordNo}
+				
+		
+	</select>
 </mapper>
