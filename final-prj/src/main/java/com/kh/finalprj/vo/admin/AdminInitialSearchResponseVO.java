@@ -15,6 +15,7 @@ public class AdminInitialSearchResponseVO {
 	private String deptName;
 	private String positionName;
 	private String empState;
+	private String empLevel;
 	private String empEmail;
 	private String empContact;
     private String empBirth;

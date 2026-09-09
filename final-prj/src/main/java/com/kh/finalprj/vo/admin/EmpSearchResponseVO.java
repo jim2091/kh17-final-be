@@ -6,22 +6,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name="사용자 복합검색(관리자용) 응답 데이터")
+@Schema(name="키워드로 사용자 목록 검색하기 응답 VO")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class AdminComplexSearchResponseVO {
+public class EmpSearchResponseVO {
 	
 	private int empNo;
 	private String empName;
 	private String deptName;
 	private String positionName;
-	private String empState;
 	private String empLevel;
 	private String empEmail;
 	private String empContact;
-    private String empBirth;
-    private String empPost;
-    private String empAddress1;
-    private String empAddress2;
-    private int attachNo;
+	private String empAddress1;
 
 }
