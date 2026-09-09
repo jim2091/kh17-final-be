@@ -20,6 +20,7 @@ import com.kh.finalprj.annotation.CurrentUser;
 import com.kh.finalprj.dto.TaskCommentDto;
 import com.kh.finalprj.service.TaskCommentService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
+import com.kh.finalprj.vo.task.TaskCommentDetailResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,6 +41,14 @@ public class TaskCommentRestController {
     @GetMapping(value = "/list/{taskNo}", produces = "application/json")
     public List<TaskCommentDto> list(@PathVariable int taskNo) {
         return taskCommentService.findComments(taskNo);
+    }
+    
+    // 업무 댓글 단건 조회
+    @GetMapping(value = "/{taskCommentNo}", produces = "application/json")
+    public TaskCommentDetailResponseVO detail(
+            @PathVariable int taskCommentNo) {
+
+        return taskCommentService.selectOne(taskCommentNo);
     }
 
     @ApiResponse(responseCode = "200", description = "댓글 등록 성공")

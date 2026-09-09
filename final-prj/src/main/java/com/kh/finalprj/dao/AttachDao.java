@@ -28,5 +28,8 @@ public interface AttachDao {
             String keyword
     );
 
+    // 첨부파일이 연결된 프로젝트 번호 조회
+    Integer selectProjectNo(int attachNo);
+
     void insert(AttachProfileVO attachProfileVO);
 }

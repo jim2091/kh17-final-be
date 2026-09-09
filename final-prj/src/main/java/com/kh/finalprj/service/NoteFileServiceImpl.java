@@ -55,7 +55,7 @@ public class NoteFileServiceImpl implements NoteFileService {
 			}
 		}
 
-		int attachNo = attachService.save(validProjectNo, file, validUploader, "NOTE");
+		int attachNo = attachService.save(validProjectNo, file, validUploader, "NOTE", noteNo);
 
 		NoteFileDto noteFileDto = NoteFileDto.builder()
 				.noteNo(noteNo)
@@ -112,7 +112,7 @@ public class NoteFileServiceImpl implements NoteFileService {
 			}
 		}
 
-		int attachNo = attachService.save(validProjectNo, file, validUploader, "NOTE_COMMENT");
+		int attachNo = attachService.save(validProjectNo, file, validUploader, "NOTE_COMMENT", noteCommentNo);
 
 		NoteCommentFileDto commentFileDto = NoteCommentFileDto.builder()
 				.noteCommentNo(noteCommentNo)

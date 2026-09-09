@@ -46,7 +46,7 @@ public class TaskFileServiceImpl implements TaskFileService {
             TaskDetailResponseVO task = taskDao.selectOne(taskNo);
             if (task != null) validProjectNo = task.getProjectNo();
         }
-        int attachNo = attachService.save(validProjectNo, file, validUploader, "TASK");
+        int attachNo = attachService.save(validProjectNo, file, validUploader, "TASK", taskNo);
         taskFileDao.addTaskFile(TaskFileDto.builder().taskNo(taskNo).attachNo(attachNo).build());
         return TaskFileResponseVO.builder().attachNo(attachNo).attachName(file.getOriginalFilename()).attachType(file.getContentType()).attachSize(file.getSize()).build();
     }
@@ -82,7 +82,7 @@ public class TaskFileServiceImpl implements TaskFileService {
                 if (task != null) validProjectNo = task.getProjectNo();
             }
         }
-        int attachNo = attachService.save(validProjectNo, file, validUploader, "TASK_COMMENT");
+        int attachNo = attachService.save(validProjectNo, file, validUploader, "TASK_COMMENT", taskCommentNo);
         taskFileDao.addCommentFile(TaskCommentFileDto.builder().taskCommentNo(taskCommentNo).attachNo(attachNo).build());
         return TaskFileResponseVO.builder().attachNo(attachNo).attachName(file.getOriginalFilename()).attachType(file.getContentType()).attachSize(file.getSize()).build();
     }
