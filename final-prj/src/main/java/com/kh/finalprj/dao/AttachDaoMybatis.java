@@ -12,85 +12,174 @@ import com.kh.finalprj.vo.attach.AttachProfileVO;
 @Repository
 public class AttachDaoMybatis implements AttachDao {
 
-	@Autowired
-	private SqlSession sqlSession;
+    @Autowired
+    private SqlSession sqlSession;
 
-	@Override
-	public int sequence() {
-		return sqlSession.selectOne("mapper.attach.sequence");
-	}
+    @Override
+    public int sequence() {
+        return sqlSession.selectOne("mapper.attach.sequence");
+    }
 
-	@Override
-	public void insert(AttachDto attachDto) {
-		sqlSession.insert("mapper.attach.add", attachDto);
-	}
+    // =========================================================
+    // 프로젝트 파일 등록
+    // =========================================================
 
-	@Override
-	public AttachDto selectOne(int attachNo) {
-		return sqlSession.selectOne("mapper.attach.find", attachNo);
-	}
+    @Override
+    public void insert(AttachDto attachDto) {
+        sqlSession.insert(
+                "mapper.attach.addProjectFile",
+                attachDto
+        );
+    }
 
-	@Override
-	public AttachDto selectOne(Integer attachNo) {
+    // =========================================================
+    // 파일 단건 조회
+    // =========================================================
 
-		if (attachNo == null) {
-			return null;
-		}
+    @Override
+    public AttachDto selectOne(int attachNo) {
+        return sqlSession.selectOne(
+                "mapper.attach.find",
+                attachNo
+        );
+    }
 
-		return sqlSession.selectOne("mapper.attach.find", attachNo);
-	}
+    @Override
+    public AttachDto selectOne(Integer attachNo) {
 
-	@Override
-	public boolean delete(int attachNo) {
-		return sqlSession.delete("mapper.attach.delete", attachNo) > 0;
-	}
+        if (attachNo == null) {
+            return null;
+        }
 
-	@Override
-	public List<AttachDto> selectList(List<Integer> attachNumbers) {
+        return sqlSession.selectOne(
+                "mapper.attach.find",
+                attachNo
+        );
+    }
 
-		if (attachNumbers == null || attachNumbers.isEmpty()) {
+    // =========================================================
+    // 파일 삭제
+    // =========================================================
 
-			return List.of();
-		}
+    @Override
+    public boolean delete(int attachNo) {
 
-		return sqlSession.selectList("mapper.attach.findList", attachNumbers);
-	}
+        return sqlSession.delete(
+                "mapper.attach.delete",
+                attachNo
+        ) > 0;
+    }
 
-	@Override
-	public List<AttachDto> selectListByProject(int projectNo) {
+    // =========================================================
+    // 파일 목록
+    // =========================================================
 
-		return sqlSession.selectList("mapper.attach.selectListByProject", projectNo);
-	}
+    @Override
+    public List<AttachDto> selectList(
+            List<Integer> attachNumbers
+    ) {
 
-	@Override
-	public List<AttachDto> selectListByProjectAndKeyword(int projectNo, String keyword) {
+        if (
+                attachNumbers == null ||
+                attachNumbers.isEmpty()
+        ) {
+            return List.of();
+        }
 
-		return sqlSession.selectList("mapper.attach.selectListByProjectAndKeyword",
-				new ProjectFileSearch(projectNo, keyword));
-	}
+        return sqlSession.selectList(
+                "mapper.attach.findList",
+                attachNumbers
+        );
+    }
 
-	private static class ProjectFileSearch {
+    // =========================================================
+    // 프로젝트별 파일 조회
+    // =========================================================
 
-		private final int projectNo;
-		private final String keyword;
+    @Override
+    public List<AttachDto> selectListByProject(
+            int projectNo
+    ) {
 
-		public ProjectFileSearch(int projectNo, String keyword) {
-			this.projectNo = projectNo;
-			this.keyword = keyword;
-		}
+        return sqlSession.selectList(
+                "mapper.attach.selectListByProject",
+                projectNo
+        );
+    }
 
-		public int getProjectNo() {
-			return projectNo;
-		}
+    // =========================================================
+    // 프로젝트별 파일 검색
+    // =========================================================
 
-		public String getKeyword() {
-			return keyword;
-		}
-	}
-	@Override
-	public void insert(AttachProfileVO attachProfileVO) {
-		sqlSession.insert("mapper.attach.add", attachProfileVO);		
-	}
+    @Override
+    public List<AttachDto> selectListByProjectAndKeyword(
+            int projectNo,
+            String keyword
+    ) {
 
+        return sqlSession.selectList(
+                "mapper.attach.selectListByProjectAndKeyword",
+                new ProjectFileSearch(
+                        projectNo,
+                        keyword
+                )
+        );
+    }
 
-}
+    // =========================================================
+    // 첨부파일이 연결된 프로젝트 번호 조회
+    // =========================================================
+
+    @Override
+    public Integer selectProjectNo(int attachNo) {
+
+        return sqlSession.selectOne(
+                "mapper.attach.selectProjectNo",
+                attachNo
+        );
+    }
+
+    // =========================================================
+    // 프로젝트 파일 검색용 객체
+    // =========================================================
+
+    private static class ProjectFileSearch {
+
+        private final int projectNo;
+        private final String keyword;
+
+        public ProjectFileSearch(
+                int projectNo,
+                String keyword
+        ) {
+            this.projectNo = projectNo;
+            this.keyword = keyword;
+        }
+
+        public int getProjectNo() {
+            return projectNo;
+        }
+
+        public String getKeyword() {
+            return keyword;
+        }
+    }
+
+    // =========================================================
+    // 회원 프로필 사진
+    //
+    // 기존 코드 그대로 유지
+    // =========================================================
+
+    @Override
+    public void insert(
+            AttachProfileVO attachProfileVO
+    ) {
+
+        sqlSession.insert(
+                "mapper.attach.add",
+                attachProfileVO
+        );
+    }
+
+}		

@@ -10,18 +10,41 @@ import com.kh.finalprj.vo.attach.AttachInfoVO;
 
 public interface AttachService {
 
-	int save(int projectNo, MultipartFile attach, String uploader, String source)
-			throws IllegalStateException, IOException;
+	// 프로젝트 파일 저장
+	int save(
+			int projectNo,
+			MultipartFile attach,
+			String uploader,
+			String source,
+			Integer sourceNo
+	) throws IllegalStateException, IOException;
 
-	void delete(Integer attachNo, String uploader);
+	// 파일 삭제
+	void delete(
+			Integer attachNo,
+			String uploader
+	);
 
-	AttachInfoVO load(int attachNo) throws IOException;
+	// 파일 다운로드
+	AttachInfoVO load(
+			int attachNo
+	) throws IOException;
 
-	List<AttachDto> list(int projectNo);
+	// 프로젝트 파일 목록
+	List<AttachDto> list(
+			int projectNo
+	);
 
-	List<AttachDto> list(int projectNo, String keyword);
-	
-	//회원 프로필 사진 연결용(민영작성)
-	int save(MultipartFile attach, String empName, String sourse)
-			throws IllegalStateException, IOException;
+	// 프로젝트 파일 검색
+	List<AttachDto> list(
+			int projectNo,
+			String keyword
+	);
+
+	// 회원 프로필 사진 연결용
+	int save(
+			MultipartFile attach,
+			String empName,
+			String source
+	) throws IllegalStateException, IOException;
 }

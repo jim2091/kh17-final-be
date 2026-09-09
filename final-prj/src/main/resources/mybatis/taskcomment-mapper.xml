@@ -53,7 +53,7 @@
 	</select>
 
 	<!-- 3. 단건 상세 조회 (작성자 사원 정보 조인) -->
-	<select id="selectOne" resultType="TaskCommentDto">
+	<select id="selectOne" resultType="TaskCommentDetailResponseVO">
 		select
 			tc.task_comment_no      as taskCommentNo,
 			tc.task_no              as taskNo,

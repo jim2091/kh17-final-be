@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.finalprj.configuration.StorageProperties;
 import com.kh.finalprj.dao.AttachDao;
 import com.kh.finalprj.dao.ProjectFileDao;
+import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.attach.AttachInfoVO;
@@ -44,6 +45,9 @@ public class AttachServiceCloud implements AttachService {
     private ProjectFileDao projectFileDao;
 
     @Autowired
+    private ProjectMemberDao projectMemberDao;
+
+    @Autowired
     private S3Client s3Client;
 
     @Autowired
@@ -51,7 +55,7 @@ public class AttachServiceCloud implements AttachService {
 
 
     // =========================================================
-    // 1. 파일 저장
+    // 1. 프로젝트 파일 저장
     // =========================================================
 
     @Transactional
@@ -60,57 +64,68 @@ public class AttachServiceCloud implements AttachService {
             int projectNo,
             MultipartFile attach,
             String uploader,
-            String source
+            String source,
+            Integer sourceNo
     ) throws IllegalStateException, IOException {
 
         if (attach == null || attach.isEmpty()) {
             return 0;
         }
 
-        if (uploader == null ||
-                uploader.trim().isEmpty()) {
-
+        if (
+                uploader == null ||
+                uploader.trim().isEmpty()
+        ) {
             throw new IllegalStateException(
                     "파일 업로더 정보가 없습니다."
             );
         }
 
-        if (source == null ||
-                source.trim().isEmpty()) {
-
-            source = "파일함";
+        if (
+                source == null ||
+                source.trim().isEmpty()
+        ) {
+            source = "FILE";
         }
 
-
-        // 파일 번호 생성
         int attachNo = attachDao.sequence();
 
-
-        // 파일 정보 생성
         AttachDto dto = AttachDto.builder()
                 .attachNo(attachNo)
-                .attachName(attach.getOriginalFilename())
-                .attachType(attach.getContentType())
-                .attachSize(attach.getSize())
-                .attachUploader(uploader)
-                .attachSource(source)
+                .attachName(
+                        attach.getOriginalFilename()
+                )
+                .attachType(
+                        attach.getContentType()
+                )
+                .attachSize(
+                        attach.getSize()
+                )
+                .attachUploader(
+                        uploader
+                )
+                .attachSource(
+                        source
+                )
+                .attachSourceNo(
+                        sourceNo
+                )
                 .build();
 
-
-        // 1. attach 테이블 저장
+        // ATTACH 저장
         attachDao.insert(dto);
 
+        // PROJECT_FILE 연결
+        projectFileDao.insert(
+                projectNo,
+                attachNo
+        );
 
-        // 2. 프로젝트와 파일 연결
-        projectFileDao.insert(projectNo, attachNo);
-
-
-        // 3. AWS S3 저장
+        // S3 저장
         String objectKey =
                 storageProperties.getAwsRoot()
                 + "/"
                 + attachNo;
-
 
         PutObjectRequest request =
                 PutObjectRequest.builder()
@@ -123,7 +138,6 @@ public class AttachServiceCloud implements AttachService {
                         )
                         .build();
 
-
         PutObjectResponse response =
                 s3Client.putObject(
                         request,
@@ -132,13 +146,11 @@ public class AttachServiceCloud implements AttachService {
                         )
                 );
 
-
         log.debug("<AWS S3 파일 업로드 완료>");
         log.debug("projectNo = {}", projectNo);
         log.debug("attachNo = {}", attachNo);
         log.debug("object key = {}", objectKey);
         log.debug("ETag = {}", response.eTag());
-
 
         return attachNo;
     }
@@ -159,6 +171,15 @@ public class AttachServiceCloud implements AttachService {
             return;
         }
 
+        if (
+                uploader == null ||
+                uploader.trim().isEmpty()
+        ) {
+            throw new IllegalStateException(
+                    "로그인 사용자 정보가 없습니다."
+            );
+        }
+
         AttachDto attachDto =
                 attachDao.selectOne(attachNo);
 
@@ -166,36 +187,97 @@ public class AttachServiceCloud implements AttachService {
             throw new TargetNotfoundException();
         }
 
-        if (uploader == null ||
-                uploader.trim().isEmpty()) {
+
+        // =====================================================
+        // 파일이 어느 프로젝트에 연결되어 있는지 확인
+        // =====================================================
+
+        Integer projectNo =
+                attachDao.selectProjectNo(attachNo);
+
+
+        // =====================================================
+        // 삭제 권한 검사
+        //
+        // 1. 업로더 본인
+        // 2. 프로젝트 owner
+        // 3. 프로젝트 manager
+        //
+        // 프로필 파일처럼 project_file 연결이 없는 파일은
+        // 업로더 본인만 삭제 가능
+        // =====================================================
+
+        boolean isUploader =
+                uploader.equals(
+                        attachDto.getAttachUploader()
+                );
+
+
+        boolean isOwnerOrManager = false;
+
+
+        if (projectNo != null) {
+
+            try {
+
+                int empNo =
+                        Integer.parseInt(
+                                uploader
+                        );
+
+                String role =
+                        projectMemberDao.selectRole(
+                                projectNo,
+                                empNo
+                        );
+
+                isOwnerOrManager =
+                        "owner".equalsIgnoreCase(role)
+                        ||
+                        "manager".equalsIgnoreCase(role);
+
+            } catch (NumberFormatException e) {
+
+                log.warn(
+                        "로그인 사용자 번호 변환 실패: {}",
+                        uploader
+                );
+
+            }
+        }
+
+
+        // =====================================================
+        // 최종 권한 검사
+        // =====================================================
+
+        if (
+                !isUploader &&
+                !isOwnerOrManager
+        ) {
 
             throw new IllegalStateException(
-                    "로그인 사용자 정보가 없습니다."
+                    "파일을 삭제할 권한이 없습니다."
             );
         }
 
-        if (!uploader.equals(
-                attachDto.getAttachUploader()
-        )) {
 
-            throw new IllegalStateException(
-                    "본인이 업로드한 파일만 삭제할 수 있습니다."
-            );
-        }
+        // =====================================================
+        // DB 삭제
+        // PROJECT_FILE은 FK ON DELETE CASCADE
+        // =====================================================
 
-
-        // attach 삭제
-        // project_file은 FK ON DELETE CASCADE라서
-        // 연결 관계도 같이 삭제됩니다.
         attachDao.delete(attachNo);
 
 
+        // =====================================================
         // S3 삭제
+        // =====================================================
+
         String objectKey =
                 storageProperties.getAwsRoot()
                 + "/"
                 + attachNo;
-
 
         DeleteObjectRequest request =
                 DeleteObjectRequest.builder()
@@ -205,15 +287,15 @@ public class AttachServiceCloud implements AttachService {
                         .key(objectKey)
                         .build();
 
-
         DeleteObjectResponse response =
                 s3Client.deleteObject(request);
 
-
         log.debug("<AWS 파일 삭제 완료>");
+
         log.debug(
                 "HTTP status = {}",
-                response.sdkHttpResponse().statusCode()
+                response.sdkHttpResponse()
+                        .statusCode()
         );
     }
 
@@ -234,12 +316,10 @@ public class AttachServiceCloud implements AttachService {
             throw new TargetNotfoundException();
         }
 
-
         String objectKey =
                 storageProperties.getAwsRoot()
                 + "/"
                 + attachNo;
-
 
         GetObjectRequest request =
                 GetObjectRequest.builder()
@@ -249,14 +329,11 @@ public class AttachServiceCloud implements AttachService {
                         .key(objectKey)
                         .build();
 
-
         ResponseInputStream<GetObjectResponse> stream =
                 s3Client.getObject(request);
 
-
         GetObjectResponse response =
                 stream.response();
-
 
         log.debug(
                 "Content-Type = {}",
@@ -273,17 +350,13 @@ public class AttachServiceCloud implements AttachService {
                 response.eTag()
         );
 
-
         byte[] data =
                 stream.readAllBytes();
-
 
         Resource resource =
                 new ByteArrayResource(data);
 
-
         stream.close();
-
 
         return AttachInfoVO.builder()
                 .attachDto(attachDto)
@@ -322,32 +395,66 @@ public class AttachServiceCloud implements AttachService {
                 keyword
         );
     }
-    
-    
-  //회원 프로필 저장용도 
+
+
+    // =========================================================
+    // 6. 회원 프로필 사진 저장
+    // =========================================================
+
     @Transactional
-	@Override
-	public int save(MultipartFile attach, String empName, String source) throws IllegalStateException, IOException{
-			int attachNo = attachDao.sequence();
-			attachDao.insert(
-					AttachProfileVO.builder()
-						.attachNo(attachNo)
-						.attachName(attach.getOriginalFilename())
-						.attachType(attach.getContentType())
-						.attachSize(attach.getSize())
-						.attachUploader(empName)
-						.attachSource(source)
-					.build()
-				);//db저장 
-			
-			
-			
-			
-			//업로드된 파일을 저장하는 코드
-			File dir = storageProperties.getLocalRoot();
-			dir.mkdirs();
-			File target = new File(dir, String.valueOf(attachNo));
-			attach.transferTo(target);//물리저장
-			return attachNo;
-		}
+    @Override
+    public int save(
+            MultipartFile attach,
+            String empName,
+            String source
+    ) throws IllegalStateException, IOException {
+
+        if (attach == null || attach.isEmpty()) {
+            return 0;
+        }
+
+        int attachNo =
+                attachDao.sequence();
+
+        attachDao.insert(
+                AttachProfileVO.builder()
+                        .attachNo(attachNo)
+                        .attachName(
+                                attach.getOriginalFilename()
+                        )
+                        .attachType(
+                                attach.getContentType()
+                        )
+                        .attachSize(
+                                attach.getSize()
+                        )
+                        .attachUploader(
+                                empName
+                        )
+                        .attachSource(
+                                source
+                        )
+                        .build()
+        );
+
+        File dir =
+                storageProperties.getLocalRoot();
+
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        File target =
+                new File(
+                        dir,
+                        String.valueOf(
+                                attachNo
+                        )
+                );
+
+        attach.transferTo(target);
+
+        return attachNo;
+    }
+
 }

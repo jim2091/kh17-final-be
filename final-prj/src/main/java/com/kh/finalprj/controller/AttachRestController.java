@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.finalprj.configuration.StorageProperties;
 import com.kh.finalprj.dao.AttachDao;
+import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.AttachService;
@@ -40,202 +41,327 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 @RequestMapping("/api/attach")
 public class AttachRestController {
 
-	@Autowired
-	private AttachService attachService;
+    @Autowired
+    private AttachService attachService;
+
+    @Autowired
+    private Environment environment;
+
+    @Autowired
+    private AttachDao attachDao;
+
+    @Autowired
+    private ProjectMemberDao projectMemberDao;
+
+    @Autowired
+    private S3Presigner s3Presigner;
+
+    @Autowired
+    private StorageProperties storageProperties;
+
+
+    // =========================================================
+    // 1. 파일 업로드
+    // =========================================================
+
+    @PostMapping("/upload")
+    public int upload(
+            @RequestParam int projectNo,
+            @RequestParam MultipartFile attach,
+            @RequestParam(required = false) String source,
+            @RequestParam(required = false) Integer sourceNo,
+            Authentication authentication
+    ) throws IllegalStateException, IOException {
+
+        String uploader = null;
+
+        if (authentication != null) {
+            uploader = authentication.getName();
+        }
+
+        log.debug("projectNo = {}", projectNo);
+        log.debug("uploader = {}", uploader);
+        log.debug("source = {}", source);
+        log.debug("sourceNo = {}", sourceNo);
+
+        if (
+                uploader == null ||
+                uploader.trim().isEmpty()
+        ) {
+            throw new IllegalStateException(
+                    "로그인 사용자 정보가 없습니다."
+            );
+        }
+
+        return attachService.save(
+                projectNo,
+                attach,
+                uploader,
+                source,
+                sourceNo
+        );
+    }
+
+
+    // =========================================================
+    // 2. 파일 다운로드
+    // =========================================================
+
+    @GetMapping("/{attachNo}")
+    public ResponseEntity<?> download(
+            @PathVariable int attachNo
+    ) throws IOException {
+
+        if (
+                environment.matchesProfiles("cloud")
+        ) {
+
+            return ResponseEntity
+                    .status(302)
+                    .location(
+                            URI.create(
+                                    "./p/" + attachNo
+                            )
+                    )
+                    .build();
+        }
+
+        AttachInfoVO vo =
+                attachService.load(
+                        attachNo
+                );
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_TYPE,
+                        vo.getAttachDto()
+                                .getAttachType()
+                )
+                .contentLength(
+                        vo.getAttachDto()
+                                .getAttachSize()
+                )
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename(
+                                        vo.getAttachDto()
+                                                .getAttachName(),
+                                        StandardCharsets.UTF_8
+                                )
+                                .build()
+                                .toString()
+                )
+                .body(
+                        vo.getResource()
+                );
+    }
+
+
+    // =========================================================
+    // 3. AWS S3 Presigned URL
+    // =========================================================
+
+    @GetMapping("/p/{attachNo}")
+    public ResponseEntity<?> presigned(
+            @PathVariable int attachNo
+    ) {
+
+        AttachDto attachDto =
+                attachDao.selectOne(attachNo);
+
+        if (attachDto == null) {
+            throw new TargetNotfoundException();
+        }
+
+        String objectKey =
+                storageProperties.getAwsRoot()
+                + "/"
+                + attachNo;
+
+        GetObjectRequest request =
+                GetObjectRequest.builder()
+                        .bucket(
+                                storageProperties.getAwsBucket()
+                        )
+                        .key(objectKey)
+                        .responseContentDisposition(
+                                ContentDisposition.attachment()
+                                        .filename(
+                                                attachDto.getAttachName(),
+                                                StandardCharsets.UTF_8
+                                        )
+                                        .build()
+                                        .toString()
+                        )
+                        .build();
+
+        GetObjectPresignRequest presignRequest =
+                GetObjectPresignRequest.builder()
+                        .signatureDuration(
+                                Duration.ofMinutes(
+                                        storageProperties
+                                                .getPresignedLimit()
+                                )
+                        )
+                        .getObjectRequest(request)
+                        .build();
+
+        String url =
+                s3Presigner
+                        .presignGetObject(
+                                presignRequest
+                        )
+                        .url()
+                        .toString();
+
+        return ResponseEntity
+                .status(302)
+                .location(
+                        URI.create(url)
+                )
+                .build();
+    }
+
+
+    // =========================================================
+    // 4. 파일 삭제
+    // =========================================================
+
+    @DeleteMapping("/{attachNo}")
+    public void delete(
+            @PathVariable int attachNo,
+            Authentication authentication
+    ) {
+
+        if (authentication == null) {
+            throw new IllegalStateException(
+                    "로그인 사용자 정보가 없습니다."
+            );
+        }
+
+        String uploader =
+                authentication.getName();
+
+        log.debug(
+                "삭제 요청 파일 번호 = {}",
+                attachNo
+        );
+
+        log.debug(
+                "삭제 요청 사용자 = {}",
+                uploader
+        );
+
+        attachService.delete(
+                attachNo,
+                uploader
+        );
+    }
+
+
+    // =========================================================
+    // 5. 프로젝트별 파일 목록 조회
+    // =========================================================
+
+    @GetMapping("/list/{projectNo}")
+    public ResponseEntity<?> list(
+            @PathVariable int projectNo,
+            @RequestParam(required = false) String keyword,
+            Authentication authentication
+    ) {
+
+        if (authentication == null) {
+            throw new IllegalStateException(
+                    "로그인 사용자 정보가 없습니다."
+            );
+        }
+
+        String loginUser =
+                authentication.getName();
+
+        List<AttachDto> files;
+
+        if (
+                keyword == null ||
+                keyword.trim().isEmpty()
+        ) {
+
+            files =
+                    attachService.list(
+                            projectNo
+                    );
+
+        } else {
+
+            files =
+                    attachService.list(
+                            projectNo,
+                            keyword
+                    );
+        }
+
+
+        // =====================================================
+        // 현재 사용자의 프로젝트 역할 조회
+        // =====================================================
+
+        String loginRole = null;
+
+        try {
+
+            int empNo =
+                    Integer.parseInt(
+                            loginUser
+                    );
+
+            loginRole =
+                    projectMemberDao.selectRole(
+                            projectNo,
+                            empNo
+                    );
+
+        } catch (NumberFormatException e) {
+
+            log.warn(
+                    "로그인 사용자 번호 변환 실패: {}",
+                    loginUser
+            );
+        }
+
+
+        log.debug(
+                "프로젝트 파일 목록 조회"
+        );
+
+        log.debug(
+                "projectNo = {}",
+                projectNo
+        );
+
+        log.debug(
+                "현재 로그인 사용자 = {}",
+                loginUser
+        );
+
+        log.debug(
+                "현재 사용자 역할 = {}",
+                loginRole
+        );
+
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "files",
+                        files,
+                        "loginUser",
+                        loginUser,
+                        "loginRole",
+                        loginRole == null
+                                ? ""
+                                : loginRole
+                )
+        );
+    }
 
-	@Autowired
-	private Environment environment;
-
-	@Autowired
-	private AttachDao attachDao;
-
-	@Autowired
-	private S3Presigner s3Presigner;
-
-	@Autowired
-	private StorageProperties storageProperties;
-
-	// =========================================================
-	// 1. 파일 업로드
-	// =========================================================
-
-	@PostMapping("/upload")
-	public int upload(
-
-			@RequestParam int projectNo,
-
-			@RequestParam MultipartFile attach,
-
-			@RequestParam(required = false) String source,
-
-			Authentication authentication
-
-	) throws IllegalStateException, IOException {
-
-		String uploader = null;
-
-		if (authentication != null) {
-			uploader = authentication.getName();
-		}
-
-		log.debug("projectNo = {}", projectNo);
-		log.debug("uploader = {}", uploader);
-		log.debug("source = {}", source);
-
-		if (uploader == null || uploader.trim().isEmpty()) {
-
-			throw new IllegalStateException("로그인 사용자 정보가 없습니다.");
-		}
-
-		return attachService.save(projectNo, attach, uploader, source);
-	}
-
-	// =========================================================
-	// 2. 파일 다운로드
-	// =========================================================
-
-	@GetMapping("/{attachNo}")
-	public ResponseEntity<?> download(
-
-			@PathVariable int attachNo
-
-	) throws IOException {
-
-		if (environment.matchesProfiles("cloud")) {
-
-			return ResponseEntity.status(302).location(URI.create("./p/" + attachNo)).build();
-		}
-
-		AttachInfoVO vo = attachService.load(attachNo);
-
-		return ResponseEntity.ok()
-
-				.header(HttpHeaders.CONTENT_TYPE, vo.getAttachDto().getAttachType())
-
-				.contentLength(vo.getAttachDto().getAttachSize())
-
-				.header(HttpHeaders.CONTENT_DISPOSITION,
-						ContentDisposition.attachment()
-								.filename(vo.getAttachDto().getAttachName(), StandardCharsets.UTF_8).build().toString())
-
-				.body(vo.getResource());
-	}
-
-	// =========================================================
-	// 3. AWS S3 Presigned URL
-	// =========================================================
-
-	@GetMapping("/p/{attachNo}")
-	public ResponseEntity<?> presigned(
-
-			@PathVariable int attachNo
-
-	) {
-
-		AttachDto attachDto = attachDao.selectOne(attachNo);
-
-		if (attachDto == null) {
-			throw new TargetNotfoundException();
-		}
-
-		String objectKey = storageProperties.getAwsRoot() + "/" + attachNo;
-
-		GetObjectRequest request = GetObjectRequest.builder()
-
-				.bucket(storageProperties.getAwsBucket())
-
-				.key(objectKey)
-
-				.responseContentDisposition(ContentDisposition.attachment()
-						.filename(attachDto.getAttachName(), StandardCharsets.UTF_8).build().toString())
-
-				.build();
-
-		GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-
-				.signatureDuration(Duration.ofMinutes(storageProperties.getPresignedLimit()))
-
-				.getObjectRequest(request)
-
-				.build();
-
-		String url = s3Presigner.presignGetObject(presignRequest).url().toString();
-
-		log.debug("presigned url = {}", url);
-
-		return ResponseEntity.status(302).location(URI.create(url)).build();
-	}
-
-	// =========================================================
-	// 4. 파일 삭제
-	// =========================================================
-
-	@DeleteMapping("/{attachNo}")
-	public void delete(
-
-			@PathVariable int attachNo,
-
-			Authentication authentication
-
-	) {
-
-		if (authentication == null) {
-
-			throw new IllegalStateException("로그인 사용자 정보가 없습니다.");
-		}
-
-		String uploader = authentication.getName();
-
-		log.debug("삭제 요청 파일 번호 = {}", attachNo);
-
-		log.debug("삭제 요청 사용자 = {}", uploader);
-
-		attachService.delete(attachNo, uploader);
-	}
-
-	// =========================================================
-	// 5. 프로젝트별 파일 목록 조회
-	// =========================================================
-
-	@GetMapping("/list/{projectNo}")
-	public ResponseEntity<?> list(
-
-			@PathVariable int projectNo,
-
-			@RequestParam(required = false) String keyword,
-
-			Authentication authentication
-
-	) {
-
-		if (authentication == null) {
-
-			throw new IllegalStateException("로그인 사용자 정보가 없습니다.");
-		}
-
-		String loginUser = authentication.getName();
-
-		List<AttachDto> files;
-
-		if (keyword == null || keyword.trim().isEmpty()) {
-
-			files = attachService.list(projectNo);
-
-		} else {
-
-			files = attachService.list(projectNo, keyword);
-		}
-
-		log.debug("프로젝트 파일 목록 조회");
-
-		log.debug("projectNo = {}", projectNo);
-
-		log.debug("현재 로그인 사용자 = {}", loginUser);
-
-		return ResponseEntity.ok(
-
-				Map.of("files", files, "loginUser", loginUser)
-
-		);
-	}
 }
