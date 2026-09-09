@@ -11,6 +11,7 @@ import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
+import com.kh.finalprj.vo.emp.MemberListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
 
@@ -55,6 +56,8 @@ public interface EmpDao {
 	//페이지네이션
 	int count();
 	List<EmpListVO> selectList(PagenationVO pageVO);
+	
+	List<MemberListVO> memberList(PagenationVO pageVO);
 	
 	//검색 결과 수
 	int searchCount(String keyword);

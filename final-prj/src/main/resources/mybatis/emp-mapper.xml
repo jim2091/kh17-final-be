@@ -100,7 +100,7 @@ where emp_no = #{empNo} -->
 	select count(*) from emp where emp_level = 'member'
 </select>
 
-<!-- 회원 목록(페이지네이션) -->
+<!-- 회원 목록(페이지네이션, 관리자용) -->
 <select id="listPage" resultType="EmpListVO">
 	select * from 
 		(select rownum rn, TMP.* from
@@ -127,16 +127,54 @@ where emp_no = #{empNo} -->
    				ON e.emp_no = ep.emp_no
 			<choose>
 				<when test="sort == 'empName'">
-					order by e.emp_name asc, e.emp_no asc
+					<choose>
+						<when test="direction == 'desc'">
+							order by e.emp_name desc, e.emp_no asc
+						</when>
+						<otherwise>
+							order by e.emp_name asc, e.emp_no asc
+						</otherwise>
+					</choose>
 				</when>
 				<when test="sort == 'empEmail'">
-					order by e.emp_email asc, e.emp_no asc
+					<choose>
+						<when test="direction == 'desc'">
+							order by e.emp_email desc, e.emp_no asc
+						</when>
+						<otherwise>
+							order by e.emp_email asc, e.emp_no asc
+						</otherwise>
+					</choose>
 				</when>
 				<when test="sort == 'deptName'">
-					order by d.dept_name asc, e.emp_no asc
+					<choose>
+						<when test="direction == 'desc'">
+							order by d.dept_name desc, e.emp_no asc
+						</when>
+						<otherwise>
+							order by d.dept_name asc, e.emp_no asc
+						</otherwise>
+					</choose>
 				</when>
 				<when test="sort == 'positionName'">
-					order by p.position_name asc, e.emp_no asc
+					<choose>
+						<when test="direction == 'desc'">
+							order by p.position_name desc, e.emp_no asc
+						</when>
+						<otherwise>
+							order by p.position_name asc, e.emp_no asc
+						</otherwise>
+					</choose>
+				</when>
+				<when test="sort == 'empState'">
+					<choose>
+						<when test="direction == 'desc'">
+							order by e.emp_state desc, e.emp_no asc
+						</when>
+						<otherwise>
+							order by e.emp_state asc, e.emp_no asc
+						</otherwise>
+					</choose>
 				</when>
 				<otherwise>
 					order by e.emp_no asc
@@ -225,7 +263,7 @@ select * from(
 	    d.dept_name,
 	    p.position_name,
 	    e.emp_state,
-	    e.emp_level
+	    e.emp_level,
 	    e.emp_email,
 	    e.emp_contact,
 	    e.emp_birth,
@@ -240,7 +278,7 @@ select * from(
 		on E.emp_position_no = P.position_no
 	LEFT JOIN emp_profile ep
    		ON e.emp_no = ep.emp_no
-	and case
+	where case
 		when E.initial_no in(0,1) then 'ㄱ'
 		when E.initial_no = 2 then 'ㄴ'
 		when E.initial_no in(3,4) then 'ㄷ'
@@ -317,7 +355,7 @@ select count(*) from emp_initial_view E
 	update emp
 	<set>
 		<if test="empDeptNo != null and empDeptNo != 0">
-			emp_dept_no = #{empDeptNo}
+			emp_dept_no = #{empDeptNo},
 		</if>
 		<if test="empPositionNo != null and empPositionNo != 0">
 			emp_position_no = #{empPositionNo}
@@ -343,10 +381,8 @@ from emp E
 	join position P 
 		on E.emp_position_no = P.position_no
 <where>
-	e.emp_level = 'member'
 		<if test="keyword != null and keyword != ''">
 		
-		 and(
 			D.dept_name LIKE '%' || #{keyword} || '%'
 		
 			or P.position_name LIKE '%' || #{keyword} || '%'
@@ -354,7 +390,6 @@ from emp E
 			or E.emp_state = #{keyword}
 		
             or e.emp_name LIKE '%' || #{keyword} || '%'
-        )
         </if>
 </where>
 order by e.emp_no asc
@@ -387,7 +422,28 @@ order by e.emp_no asc
 	where emp_no = #{empNo}
 </update>
 
-
+<!-- 회원 목록(페이지네이션, 사용자용) -->
+<select id="memberList" resultType="MemberListVO">
+	select * from 
+		(select rownum rn, TMP.* from
+			(SELECT
+			    e.emp_name,
+			    d.dept_name,
+			    p.position_name,
+			    e.emp_email,
+			    e.emp_contact,
+			    e.emp_birth,
+			    e.emp_address1
+			FROM emp e
+			JOIN dept d
+			    ON e.emp_dept_no = d.dept_no
+			JOIN position p
+			    ON e.emp_position_no = p.position_no
+			where e.emp_level = 'member'
+			) TMP
+		) 
+	where rn between #{beginRownum} and #{endRownum} 
+</select>
 
 
 
