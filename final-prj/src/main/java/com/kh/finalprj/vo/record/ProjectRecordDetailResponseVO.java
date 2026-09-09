@@ -1,6 +1,7 @@
 package com.kh.finalprj.vo.record;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,7 @@ public class ProjectRecordDetailResponseVO {
 	private String projectRecordIssueStatus;
 	private String projectRecordIssueResolution;
 	private Timestamp projectRecordIssueResolvedAt;
+	
+	//연관 원본
+	private List<ProjectRecordRelatedResponseVO> relatedList;
 }

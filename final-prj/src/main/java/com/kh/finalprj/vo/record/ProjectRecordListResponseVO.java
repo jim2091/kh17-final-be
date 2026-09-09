@@ -14,8 +14,8 @@ public class ProjectRecordListResponseVO {
 	private int projectRecordNo;
 	private String projectRecordType;
 	private String projectRecordTitle;
-	private int projectWriterNo;
-	private String projectWriterName;
+	private int projectRecordWriterNo;
+	private String projectRecordWriterName;
 	private Timestamp projectRecordCtime;
 	private Timestamp projectRecordUtime;
 	

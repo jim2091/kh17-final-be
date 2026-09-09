@@ -1,5 +1,7 @@
 package com.kh.finalprj.vo.record;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,4 +23,10 @@ public class ProjectRecordAddRequestVO {
 	
 	@NotBlank
 	private String projectRecordContent;
+	
+	//관련 원본
+	private List<Integer> taskNoList;
+	private List<Integer> chatMessageNoList;
+	private List<Integer> noteNoList;
+	private List<Integer> attachNoList;
 }
