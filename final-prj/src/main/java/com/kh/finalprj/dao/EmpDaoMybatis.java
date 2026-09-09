@@ -15,6 +15,8 @@ import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
+import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
+import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
@@ -139,6 +141,16 @@ public class EmpDaoMybatis implements EmpDao {
 	@Override
 	public int tabCount(String tab) {
 		return sqlSession.selectOne("mapper.emp.tabCount", tab);
+	}
+
+	@Override
+	public List<EmpSearchResponseVO> empSearch(EmpSearchRequestVO vo) {
+		return sqlSession.selectList("mapper.emp.empSearch", vo);
+	}
+
+	@Override
+	public boolean becomeAdmin(int empNo) {
+		return sqlSession.update("mapper.emp.becomeAdmin", empNo)>0;
 	}
 
 	

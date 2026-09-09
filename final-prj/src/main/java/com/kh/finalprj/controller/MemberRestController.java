@@ -29,6 +29,8 @@ import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.PositionDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.AttachService;
+import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
+import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.ChangeEmpRequestVO;
 import com.kh.finalprj.vo.emp.ChangeEmpResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
@@ -186,6 +188,8 @@ public class MemberRestController {
 		
 		return result;
 	}
+	
+
 	
 	
 	

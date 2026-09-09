@@ -27,8 +27,11 @@ import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.admin.EmpActiveResponseVO;
 import com.kh.finalprj.vo.admin.EmpAddRequestVO;
 import com.kh.finalprj.vo.admin.EmpAddResponseVO;
+import com.kh.finalprj.vo.admin.EmpAdminResponseVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpEditResponseVO;
+import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
+import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
@@ -149,7 +152,7 @@ public class AdminRestController {
 	//회원 활성화<->비활성화 수정
 	@PatchMapping("/active/{empNo}")
 	public EmpActiveResponseVO active(@PathVariable int empNo) {
-		System.out.println("empNo : "+ empNo);
+//		System.out.println("empNo : "+ empNo);
 		EmpActiveResponseVO result = new EmpActiveResponseVO();
 		
 		boolean valid = empDao.activeRequest(empNo);
@@ -180,7 +183,25 @@ public class AdminRestController {
 		return result;
 	}
 	
+	//검색 키워드로 사용자 목록 조회(페이지네이션 없음)
+	@PostMapping("/empSearch")
+	public List<EmpSearchResponseVO> list(@RequestBody EmpSearchRequestVO request){
+//		System.out.println("키워드 : "+ request.getKeyword());
+		return empDao.empSearch(request);
+	}
 	
+	//관리자로 변경하기
+	@PatchMapping("/becomeAdmin/{empNo}")
+	public EmpAdminResponseVO admin(@PathVariable int empNo) {
+		EmpAdminResponseVO result = new EmpAdminResponseVO();
+		
+		boolean valid = empDao.becomeAdmin(empNo);
+		
+		BeanUtils.copyProperties(valid, result);
+		
+		return result;
+		
+	}
 	
 	
 	
