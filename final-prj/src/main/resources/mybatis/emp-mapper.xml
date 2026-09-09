@@ -97,7 +97,7 @@ where emp_no = #{empNo} -->
 
 <!-- 회원 목록 조회를 위한 갯수 조회 -->
 <select id="count" resultType="int">
-	select count(*) from emp where emp_level = 'member'
+	select count(*) from emp
 </select>
 
 <!-- 회원 목록(페이지네이션, 관리자용) -->
