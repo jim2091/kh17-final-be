@@ -35,4 +35,9 @@ public interface ProjectRecordDao {
 	void deleteAttachList(int projectRecordNo);
 	
 	boolean delete(int projectRecordNo);
+	
+	//issue 관련 추가 메서드
+	boolean resolveIssue(ProjectRecordIssueDto projectRecordIssueDto);
+	boolean reopenIssue(int projectRecordNo);
+	boolean updateModifier(ProjectRecordDto projectRecordDto);
 }

@@ -6,6 +6,7 @@ import com.kh.finalprj.vo.record.ProjectRecordAddRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 
 public interface ProjectRecordService {
@@ -23,5 +24,9 @@ public interface ProjectRecordService {
 	void edit(int projectRecordNo, int empNo, ProjectRecordEditRequestVO request);
 	
 	void delete(int projectRecordNo, int empNo);
+	
+	void resolveIssue(int projectRecordNo, int empNo, ProjectRecordIssueResolveRequestVO request);
+	
+	void reopenIssue(int projectRecordNo, int empNo);
 
 }
