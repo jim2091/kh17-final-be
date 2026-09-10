@@ -7,6 +7,7 @@ import com.kh.finalprj.vo.admin.AdminComplexSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
+import com.kh.finalprj.vo.admin.EmpActiveAllRequestVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
@@ -45,7 +46,11 @@ public interface EmpDao {
 	//presence 변경
 	void updatePresence(int empNo, String empPresence);
 
+	//상태변경
 	boolean activeRequest(int empNo);
+	
+	//상태 일괄 변경
+	boolean activeAllRequest(EmpActiveAllRequestVO vo);
 	
 	//관리자<->멤버 변경
 	boolean becomeAdmin(int empNo);
