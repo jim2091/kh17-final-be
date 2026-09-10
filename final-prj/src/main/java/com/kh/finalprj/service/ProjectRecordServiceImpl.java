@@ -183,7 +183,7 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		
 		boolean ownerOrManager = "owner".equals(role) || "manager".equals(role);
 		
-		if(!writer || !ownerOrManager)
+		if(!writer && !ownerOrManager)
 			throw new GetOutException();
 		
 		//원본 task 연결 수정
@@ -249,6 +249,37 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		
 		//수정
 		boolean result = projectRecordDao.edit(projectRecordDto);
+		
+		if(!result)
+			throw new TargetNotfoundException();
+		
+	}
+	
+	@Override
+	@Transactional
+	public void delete(int projectRecordNo, int empNo) {
+		
+		//삭제할 record 조회
+		ProjectRecordDetailResponseVO target = projectRecordDao.detail(projectRecordNo);
+		
+		if(target == null)
+			throw new TargetNotfoundException();
+		
+		//로그인 사용자 프로젝트 멤버 정보 조회
+		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
+		
+		//삭제 권한
+		boolean writer = target.getProjectRecordWriterNo() == projectMemberDto.getProjectMemberNo();
+		
+		String role = projectMemberDto.getProjectMemberRole();
+		
+		boolean ownerOrManager = "owner".equals(role) || "manager".equals(role);
+		
+		if(!writer && !ownerOrManager)
+			throw new GetOutException();
+		
+		//삭제
+		boolean result = projectRecordDao.delete(projectRecordNo);
 		
 		if(!result)
 			throw new TargetNotfoundException();

@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
+import software.amazon.awssdk.services.s3.S3Client;
 import com.kh.finalprj.dto.ProjectRecordDto;
 import com.kh.finalprj.dto.ProjectRecordIssueDto;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
@@ -16,9 +16,15 @@ import com.kh.finalprj.vo.record.ProjectRecordRelatedResponseVO;
 
 @Repository
 public class ProjectRecordDaoMybatis implements ProjectRecordDao{
+
+    private final S3Client s3Client;
 	
 	@Autowired
 	private SqlSession sqlSession;
+
+    ProjectRecordDaoMybatis(S3Client s3Client) {
+        this.s3Client = s3Client;
+    }
 	
 	@Override
 	public int sequence() {
@@ -108,5 +114,10 @@ public class ProjectRecordDaoMybatis implements ProjectRecordDao{
 	@Override
 	public void deleteAttachList(int projectRecordNo) {
 		sqlSession.delete("mapper.projectRecord.deleteAttachList", projectRecordNo);
+	}
+	
+	@Override
+	public boolean delete(int projectRecordNo) {
+		return sqlSession.delete("mapper.projectRecord.delete", projectRecordNo) > 0;
 	}
 }
