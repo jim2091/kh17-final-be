@@ -29,6 +29,8 @@ import com.kh.finalprj.vo.admin.EmpActiveResponseVO;
 import com.kh.finalprj.vo.admin.EmpAddRequestVO;
 import com.kh.finalprj.vo.admin.EmpAddResponseVO;
 import com.kh.finalprj.vo.admin.EmpAdminResponseVO;
+import com.kh.finalprj.vo.admin.EmpChangeDeptAllRequestVO;
+import com.kh.finalprj.vo.admin.EmpChangePositionAllRequestVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpEditResponseVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
@@ -167,7 +169,7 @@ public class AdminRestController {
 	@PatchMapping("/activeAll")
 	public EmpActiveResponseVO activeAll(@RequestBody EmpActiveAllRequestVO request) {
 		
-		System.out.println("상태변경 요청 정보 : "+ request);
+//		System.out.println("상태변경 요청 정보 : "+ request);
 		EmpActiveResponseVO result = new EmpActiveResponseVO();
 		
 		boolean valid = empDao.activeAllRequest(request);
@@ -180,7 +182,7 @@ public class AdminRestController {
 	//회원 부서/직급 수정
 	@PutMapping("/memberEdit/")
 	public EmpEditResponseVO memberEdit(@RequestBody EmpEditRequestVO request) {
-		System.out.println("수정할 회원 정보 : "+ request);
+//		System.out.println("수정할 회원 정보 : "+ request);
 		
 		EmpEditResponseVO result = new EmpEditResponseVO();
 		
@@ -195,6 +197,40 @@ public class AdminRestController {
 		result.setResult(valid);
 		
 		return result;
+	}
+	
+	//회원 부서 일괄 수정
+	@PatchMapping("/changeDeptAll")
+	public EmpEditResponseVO changeDeptAll(@RequestBody EmpChangeDeptAllRequestVO request) {
+		System.out.println("상태변경 요청 정보 : "+ request);
+		EmpEditResponseVO result = new EmpEditResponseVO();
+		
+		if((request.getEmpDeptNo() == null || request.getEmpDeptNo() == 0)) {
+			return result;
+		}
+		
+		boolean valid = empDao.changeDeptAll(request);
+		result.setResult(valid);
+		
+		return result;
+		
+	}
+	
+	//회원 직급 일괄 수정
+	@PatchMapping("/changePositionAll")
+	public EmpEditResponseVO changePositionAll(@RequestBody EmpChangePositionAllRequestVO request) {
+//		System.out.println("상태변경 요청 정보 : "+ request);
+		EmpEditResponseVO result = new EmpEditResponseVO();
+		
+		if((request.getEmpPositionNo() == null || request.getEmpPositionNo() == 0)) {
+			return result;
+		}
+		
+		boolean valid = empDao.changePositionAll(request);
+		result.setResult(valid);
+		
+		return result;
+		
 	}
 	
 	//검색 키워드로 사용자 목록 조회(페이지네이션 없음)

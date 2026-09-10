@@ -15,6 +15,8 @@ import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.admin.EmpActiveAllRequestVO;
+import com.kh.finalprj.vo.admin.EmpChangeDeptAllRequestVO;
+import com.kh.finalprj.vo.admin.EmpChangePositionAllRequestVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
@@ -163,6 +165,16 @@ public class EmpDaoMybatis implements EmpDao {
 	@Override
 	public boolean activeAllRequest(EmpActiveAllRequestVO vo) {
 		return sqlSession.update("mapper.emp.activeAll", vo)>0;
+	}
+
+	@Override
+	public boolean changeDeptAll(EmpChangeDeptAllRequestVO vo) {
+		return sqlSession.update("mapper.emp.changeDeptAll", vo)>0;
+	}
+
+	@Override
+	public boolean changePositionAll(EmpChangePositionAllRequestVO vo) {
+		return sqlSession.update("mapper.emp.changePositionAll", vo)>0;
 	}
 
 	
