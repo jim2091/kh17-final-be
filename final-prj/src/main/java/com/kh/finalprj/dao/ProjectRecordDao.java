@@ -26,4 +26,11 @@ public interface ProjectRecordDao {
 	void insertAttach(int projectRecordNo, int attachNo);
 	
 	List<ProjectRecordRelatedResponseVO> selectRelatedList(int projectRecordNo);
+	
+	boolean edit(ProjectRecordDto projectRecordDto);
+	
+	//record 수정시 기존 원본 연결 삭제
+	void deleteTaskList(int projectRecordNo);
+	void deleteNoteList(int projectRecordNo);
+	void deleteAttachList(int projectRecordNo);
 }

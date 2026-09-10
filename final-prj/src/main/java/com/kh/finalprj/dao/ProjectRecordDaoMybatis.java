@@ -89,4 +89,24 @@ public class ProjectRecordDaoMybatis implements ProjectRecordDao{
 	public List<ProjectRecordRelatedResponseVO> selectRelatedList(int projectRecordNo) {
 		return sqlSession.selectList("mapper.projectRecord.selectRelatedList", projectRecordNo);
 	}
+	
+	@Override
+	public boolean edit(ProjectRecordDto projectRecordDto) {
+		return sqlSession.update("mapper.projectRecord.edit", projectRecordDto) > 0;
+	}
+	
+	@Override
+	public void deleteTaskList(int projectRecordNo) {
+		sqlSession.delete("mapper.projectRecord.deleteTaskList", projectRecordNo);
+	}
+	
+	@Override
+	public void deleteNoteList(int projectRecordNo) {
+		sqlSession.delete("mapper.projectRecord.deleteNoteList", projectRecordNo);
+	}
+	
+	@Override
+	public void deleteAttachList(int projectRecordNo) {
+		sqlSession.delete("mapper.projectRecord.deleteAttachList", projectRecordNo);
+	}
 }

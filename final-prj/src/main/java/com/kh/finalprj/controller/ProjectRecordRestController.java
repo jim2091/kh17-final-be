@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,7 @@ import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,5 +65,16 @@ public class ProjectRecordRestController {
 			@CurrentUser TokenParseResponseVO parseVO) {
 		
 		return projectRecordService.detail(projectRecordNo, parseVO.getEmpNo());
+	}
+	
+	@Operation(summary = "프로젝트 record 수정")
+	@ApiResponse(responseCode = "200", description = "record 수정 성공")
+	@PutMapping("/{projectRecordNo}")
+	public void edit(
+			@PathVariable int projectRecordNo,
+			@RequestBody @Valid ProjectRecordEditRequestVO request,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		projectRecordService.edit(projectRecordNo, parseVO.getEmpNo(), request);
 	}
 }
