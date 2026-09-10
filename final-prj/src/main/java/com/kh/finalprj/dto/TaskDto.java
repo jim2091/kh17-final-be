@@ -34,6 +34,8 @@ public class TaskDto {
     private int taskOrder;
     private int taskWriterNo; 
     private String taskWriterName;
+    
+    private String taskDeleted;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private Timestamp taskCtime;

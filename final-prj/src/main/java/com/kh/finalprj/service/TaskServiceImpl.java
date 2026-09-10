@@ -123,4 +123,14 @@ public class TaskServiceImpl implements TaskService {
 	public boolean delete(int taskNo) {
 		return taskDao.delete(taskNo);
 	}
+
+	@Override
+	public boolean restore(int taskNo) {
+		return taskDao.restore(taskNo);
+	}
+
+	@Override
+	public List<TaskDto> selectDeletedByProjectNo(int projectNo) {
+		return taskDao.selectDeletedByProjectNo(projectNo);
+	}
 }

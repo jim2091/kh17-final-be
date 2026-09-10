@@ -17,4 +17,8 @@ public interface TaskDao {
     
     //프로젝트에 task가 있는지 확인(프로젝트 삭제할때 사용)
     int countByProjectNo(int projectNo);
+    
+    boolean restore(int taskNo);
+    
+    List<TaskDto> selectDeletedByProjectNo(int projectNo);
 }
