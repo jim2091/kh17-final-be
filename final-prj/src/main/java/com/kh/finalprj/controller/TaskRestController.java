@@ -101,32 +101,32 @@ public class TaskRestController {
 		return taskService.selectDeletedByProjectNo(projectNo);
 	}
 	
-	//삭제 된 업무 복구 (휴지통에서 꺼내오기)
-	@ApiResponse(responseCode = "200", description = "업무 복구 성공")
-	@PatchMapping(value = "/{taskNo}/restore", produces = "application/json")
-	public boolean restore(@PathVariable int taskNo,
-							@RequestParam(required=false, defaultValue = "0")int projectNo,
-							@CurrentUser TokenParseResponseVO parseVO
-			) {
-		int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
-		boolean result = taskService.restore(taskNo);
-		
-		//복구 성공 시 다른 팀원 화면에서도 웹소켓을 통해 다시 나타내도록
-		if(result && projectNo > 0) {
-			simpMessagingTemplate.convertAndSend(
-				"/public/projects/" + projectNo + "/kanban",
-				Map.of(
-					"eventType", "TASK_RESTORED",
-					"projectNo", projectNo,
-					"taskNo", taskNo,
-					"senderEmpNo", senderEmpNo
-				)
-			);
+	// 삭제된 업무 복구 (휴지통에서 꺼내오기)
+		@ApiResponse(responseCode = "200", description = "업무 복구 성공")
+		@PatchMapping(value = "/{taskNo}/restore", produces = "application/json")
+		public boolean restore(
+				@PathVariable int taskNo,
+				@RequestParam(required = false, defaultValue = "0") int projectNo,
+				@CurrentUser TokenParseResponseVO parseVO) {
+
+			int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
+			boolean result = taskService.restore(taskNo);
+
+			// 복구 성공 시 실시간 칸반 전파
+			if (result && projectNo > 0) {
+				simpMessagingTemplate.convertAndSend(
+					"/public/projects/" + projectNo + "/kanban",
+					Map.of(
+						"eventType", "TASK_RESTORED",
+						"projectNo", projectNo,
+						"taskNo", taskNo,
+						"senderEmpNo", senderEmpNo
+					)
+				);
+			}
+
+			return result;
 		}
-		return result;
-	}
-	
-	
 	
 	@ApiResponse(responseCode = "200", description = "업무 수정 성공")
 	@PutMapping(value = "/", produces = "application/json")
