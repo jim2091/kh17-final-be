@@ -3,6 +3,7 @@ package com.kh.finalprj.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -76,5 +77,15 @@ public class ProjectRecordRestController {
 			@CurrentUser TokenParseResponseVO parseVO) {
 		
 		projectRecordService.edit(projectRecordNo, parseVO.getEmpNo(), request);
+	}
+	
+	@Operation(summary = "프로젝트 record 삭제")
+	@ApiResponse(responseCode = "200", description = "record 삭제 성공")
+	@DeleteMapping("/{projectRecordNo}")
+	public void delete(
+			@PathVariable int projectRecordNo,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		projectRecordService.delete(projectRecordNo, parseVO.getEmpNo());
 	}
 }

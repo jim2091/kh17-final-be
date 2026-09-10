@@ -253,5 +253,11 @@
 		where project_record_no = #{projectRecordNo}
 	</delete>
 	
+	<!-- 삭제 -->
+	<delete id="delete">
+		delete from project_record
+		where project_record_no = #{projectRecordNo}
+	</delete>
+	
 	
 </mapper>

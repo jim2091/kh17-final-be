@@ -33,4 +33,6 @@ public interface ProjectRecordDao {
 	void deleteTaskList(int projectRecordNo);
 	void deleteNoteList(int projectRecordNo);
 	void deleteAttachList(int projectRecordNo);
+	
+	boolean delete(int projectRecordNo);
 }

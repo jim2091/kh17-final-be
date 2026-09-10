@@ -21,5 +21,7 @@ public interface ProjectRecordService {
 	ProjectRecordDetailResponseVO detail(int projectRecordNo, int empNo);
 	
 	void edit(int projectRecordNo, int empNo, ProjectRecordEditRequestVO request);
+	
+	void delete(int projectRecordNo, int empNo);
 
 }
