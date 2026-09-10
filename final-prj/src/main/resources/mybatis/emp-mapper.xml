@@ -350,6 +350,23 @@ select count(*) from emp_initial_view E
 	where emp_no = #{empNo}
 </update>
 
+<!-- 일괄 활성화/비활성화 변경 -->
+<update id="activeAll">
+	update emp
+	set emp_state = #{empState}
+	where emp_no in
+	
+	<foreach 	collection="empNos"
+				item="empNo"
+				open="("
+				separator=","
+				close=")"
+	>
+		#{empNo}
+	</foreach>
+	and emp_state != 'invited'
+</update>
+
 <!-- 회원 부서/직급 수정  -->
 <update id="memberEdit">
 	update emp

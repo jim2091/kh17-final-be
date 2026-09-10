@@ -24,6 +24,7 @@ import com.kh.finalprj.vo.admin.AdminComplexSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
+import com.kh.finalprj.vo.admin.EmpActiveAllRequestVO;
 import com.kh.finalprj.vo.admin.EmpActiveResponseVO;
 import com.kh.finalprj.vo.admin.EmpAddRequestVO;
 import com.kh.finalprj.vo.admin.EmpAddResponseVO;
@@ -157,11 +158,23 @@ public class AdminRestController {
 		
 		boolean valid = empDao.activeRequest(empNo);
 		
-		BeanUtils.copyProperties(valid, result);
+		result.setResult(valid);
 		
 		return result;
 	}
 	
+	//회원 일괄 상태 변경 
+	@PatchMapping("/activeAll")
+	public EmpActiveResponseVO activeAll(@RequestBody EmpActiveAllRequestVO request) {
+		
+		System.out.println("상태변경 요청 정보 : "+ request);
+		EmpActiveResponseVO result = new EmpActiveResponseVO();
+		
+		boolean valid = empDao.activeAllRequest(request);
+		
+		result.setResult(valid);
+		return result;
+	}
 	
 	
 	//회원 부서/직급 수정
@@ -179,7 +192,7 @@ public class AdminRestController {
 		
 		boolean valid = empDao.memberEdit(request);
 		
-		BeanUtils.copyProperties(valid, result);
+		result.setResult(valid);
 		
 		return result;
 	}
