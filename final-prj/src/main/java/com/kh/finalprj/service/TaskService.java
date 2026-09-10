@@ -16,4 +16,6 @@ public interface TaskService {
     boolean update(TaskDto taskDto);
     boolean moveTask(TaskMoveRequestVO moveVO);
     boolean delete(int taskNo);
+    boolean restore(int taskNo);
+    List<TaskDto>selectDeletedByProjectNo(int projectNo);
 }

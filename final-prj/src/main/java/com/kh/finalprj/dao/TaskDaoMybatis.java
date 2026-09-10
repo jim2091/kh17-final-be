@@ -58,12 +58,22 @@ public class TaskDaoMybatis implements TaskDao {
 
     @Override
     public boolean delete(int taskNo) {
-        return sqlSession.delete("mapper.task.delete", taskNo) > 0;
+        return sqlSession.update("mapper.task.delete", taskNo) > 0;
     }
 
     
 	@Override
 	public int countByProjectNo(int projectNo) {
 		return sqlSession.selectOne("mapper.task.countByProjectNo", projectNo);
+	}
+
+	@Override
+	public boolean restore(int taskNo) {
+		return sqlSession.update("mapper.task.restore", taskNo) > 0;
+	}
+
+	@Override
+	public List<TaskDto> selectDeletedByProjectNo(int projectNo) {
+		return sqlSession.selectList("mapper.task.selectDeletedByProjectNo", projectNo);
 	}
 }
