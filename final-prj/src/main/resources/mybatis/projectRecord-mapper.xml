@@ -224,4 +224,34 @@
 				
 		
 	</select>
+	
+	<!-- 수정 -->
+	<update id="edit">
+		update project_record
+		set 
+			project_record_title = #{projectRecordTitle},
+			project_record_content = #{projectRecordContent},
+			project_record_modifier_no = #{projectRecordModifierNo},
+			project_record_utime = systimestamp
+		where project_record_no = #{projectRecordNo}
+		
+	</update>
+	
+	<!-- record에 연결된 task 삭제 -->
+	<delete id="deleteTaskList">
+		delete from project_record_task
+		where project_record_no = #{projectRecordNo}
+	</delete>
+	
+	<delete id="deleteNoteList">
+		delete from project_record_note
+		where project_record_no = #{projectRecordNo}
+	</delete>
+	
+	<delete id="deleteAttachList">
+		delete from project_record_attach
+		where project_record_no = #{projectRecordNo}
+	</delete>
+	
+	
 </mapper>

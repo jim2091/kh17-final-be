@@ -12,6 +12,7 @@ import com.kh.finalprj.dao.NoteDao;
 import com.kh.finalprj.dao.ProjectRecordDao;
 import com.kh.finalprj.dao.TaskDao;
 import com.kh.finalprj.dto.AttachDto;
+import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.dto.ProjectRecordDto;
 import com.kh.finalprj.dto.ProjectRecordIssueDto;
 import com.kh.finalprj.dto.TaskDto;
@@ -22,6 +23,7 @@ import com.kh.finalprj.vo.note.NoteDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.task.TaskDetailResponseVO;
 
@@ -157,5 +159,99 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		response.setRelatedList(projectRecordDao.selectRelatedList(projectRecordNo));
 		
 		return response;
+	}
+	
+	@Override
+	@Transactional
+	public void edit(int projectRecordNo, int empNo, ProjectRecordEditRequestVO request) {
+		
+		//수정 대상 record 조회
+		ProjectRecordDetailResponseVO target = projectRecordDao.detail(projectRecordNo);
+		
+		if(target == null)
+			throw new TargetNotfoundException();
+		
+		int projectNo = target.getProjectNo();
+		
+		//현재 로그인 사용자의 프로젝트 멤버 정보 조회
+		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
+		
+		//권한 확인
+		boolean writer = target.getProjectRecordWriterNo() == projectMemberDto.getProjectMemberNo();
+		
+		String role = projectMemberDto.getProjectMemberRole();
+		
+		boolean ownerOrManager = "owner".equals(role) || "manager".equals(role);
+		
+		if(!writer || !ownerOrManager)
+			throw new GetOutException();
+		
+		//원본 task 연결 수정
+		if(request.getTaskNoList() != null) {
+			//새로 연결할 task 검증
+			for(int taskNo : request.getTaskNoList()) {
+				TaskDetailResponseVO task = taskDao.selectOne(taskNo);
+				
+				if(task == null) throw new TargetNotfoundException();
+				if(task.getProjectNo() != projectNo) throw new GetOutException();
+			}
+			
+			//기존 연결 삭제 / 새 연결 등록
+			projectRecordDao.deleteTaskList(projectRecordNo);
+			
+			for(int taskNo : request.getTaskNoList()) {
+				projectRecordDao.insertTask(projectRecordNo, taskNo);
+			}
+		}
+		
+		//원본 note 연결 수정
+		if(request.getNoteNoList() != null) {
+			for(int noteNo : request.getNoteNoList()) {
+				NoteDetailResponseVO note = noteDao.selectOne(noteNo);
+				
+				if(note == null) throw new TargetNotfoundException();
+				if(note.getProjectNo() != projectNo) throw new GetOutException();
+			}
+			
+			projectRecordDao.deleteNoteList(projectRecordNo);
+			for(int noteNo : request.getNoteNoList()) {
+				projectRecordDao.insertNote(projectRecordNo, noteNo);
+			}
+		}
+		
+		//원본 attach 연결 수정
+		if(request.getAttachNoList() != null) {
+			List<AttachDto> projectFileList = attachDao.selectListByProject(projectNo);
+			
+			for(int attachNo : request.getAttachNoList()) {
+				boolean exists = 
+						projectFileList.stream()
+							.anyMatch(attach -> attach.getAttachNo() == attachNo);
+				
+				if(!exists) throw new TargetNotfoundException();
+			}
+			
+			projectRecordDao.deleteAttachList(projectRecordNo);
+			for(int attachNo : request.getAttachNoList()) {
+				projectRecordDao.insertAttach(projectRecordNo, attachNo);
+			}
+		}
+		
+		
+		
+		//수정할 데이터 생성
+		ProjectRecordDto projectRecordDto = ProjectRecordDto.builder()
+					.projectRecordNo(projectRecordNo)
+					.projectRecordTitle(request.getProjectRecordTitle())
+					.projectRecordContent(request.getProjectRecordContent())
+					.projectRecordModifierNo(projectMemberDto.getProjectMemberNo())
+				.build();
+		
+		//수정
+		boolean result = projectRecordDao.edit(projectRecordDto);
+		
+		if(!result)
+			throw new TargetNotfoundException();
+		
 	}
 }
