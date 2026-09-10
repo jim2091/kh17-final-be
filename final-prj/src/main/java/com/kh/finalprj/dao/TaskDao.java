@@ -21,4 +21,5 @@ public interface TaskDao {
     boolean restore(int taskNo);
     
     List<TaskDto> selectDeletedByProjectNo(int projectNo);
+    
 }

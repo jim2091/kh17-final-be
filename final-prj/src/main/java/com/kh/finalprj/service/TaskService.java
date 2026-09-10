@@ -18,4 +18,5 @@ public interface TaskService {
     boolean delete(int taskNo);
     boolean restore(int taskNo);
     List<TaskDto>selectDeletedByProjectNo(int projectNo);
+    
 }

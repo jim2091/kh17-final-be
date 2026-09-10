@@ -11,10 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dao.TaskCollaboDao;
 import com.kh.finalprj.dao.TaskDao;
+import com.kh.finalprj.dao.TaskFileDao;
 import com.kh.finalprj.dto.TaskDto;
 import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.vo.task.TaskAddRequestVO;
 import com.kh.finalprj.vo.task.TaskDetailResponseVO;
+import com.kh.finalprj.vo.task.TaskFileResponseVO;
 import com.kh.finalprj.vo.task.TaskMoveRequestVO;
 import com.kh.finalprj.vo.task.TaskMoveResponseVO;
 
@@ -23,6 +25,12 @@ public class TaskServiceImpl implements TaskService {
 
 	@Autowired
 	private TaskDao taskDao;
+	
+	@Autowired
+	private TaskFileDao taskFileDao;
+	
+	@Autowired
+	private AttachService attachService;
 
 	@Autowired
 	private TaskCollaboDao taskCollaboDao;
@@ -133,4 +141,6 @@ public class TaskServiceImpl implements TaskService {
 	public List<TaskDto> selectDeletedByProjectNo(int projectNo) {
 		return taskDao.selectDeletedByProjectNo(projectNo);
 	}
+	
+	
 }

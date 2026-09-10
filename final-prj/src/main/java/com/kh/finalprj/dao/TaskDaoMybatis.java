@@ -76,4 +76,5 @@ public class TaskDaoMybatis implements TaskDao {
 	public List<TaskDto> selectDeletedByProjectNo(int projectNo) {
 		return sqlSession.selectList("mapper.task.selectDeletedByProjectNo", projectNo);
 	}
+
 }
