@@ -18,12 +18,14 @@ import com.kh.finalprj.dto.ProjectRecordIssueDto;
 import com.kh.finalprj.dto.TaskDto;
 import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
+import com.kh.finalprj.error.WrongDataException;
 import com.kh.finalprj.vo.message.MessageTargetVO;
 import com.kh.finalprj.vo.note.NoteDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.task.TaskDetailResponseVO;
 
@@ -283,6 +285,89 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		
 		if(!result)
 			throw new TargetNotfoundException();
+		
+	}
+	
+	@Override
+	@Transactional
+	public void resolveIssue(int projectRecordNo, int empNo, ProjectRecordIssueResolveRequestVO request) {
+		
+		//record 조회
+		ProjectRecordDetailResponseVO target = projectRecordDao.detail(projectRecordNo);
+		
+		if(target == null)
+			throw new TargetNotfoundException();
+		
+		//issue인지 확인
+		if(!"ISSUE".equals(target.getProjectRecordType()))
+			throw new WrongDataException();
+		
+		//로그인 사용자 프로젝트 멤버 정보 조회
+		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
+		
+		//권한
+		boolean writer = target.getProjectRecordWriterNo() == projectMemberDto.getProjectMemberNo();
+		
+		String role = projectMemberDto.getProjectMemberRole();
+		
+		boolean ownerOrManager = "owner".equals(role) || "manager".equals(role);
+		
+		if(!writer && !ownerOrManager)
+			throw new GetOutException();
+		
+		//이슈 해결
+		ProjectRecordIssueDto issueDto = ProjectRecordIssueDto.builder()
+					.projectRecordNo(projectRecordNo)
+					.issueResolution(request.getProjectRecordIssueResolution())
+				.build();
+		
+		boolean result = projectRecordDao.resolveIssue(issueDto);
+		
+		if(!result)
+			throw new WrongDataException();
+		
+		//최종 수정자/수정시간 갱신
+		ProjectRecordDto recordDto = ProjectRecordDto.builder()
+					.projectRecordNo(projectRecordNo)
+					.projectRecordModifierNo(projectMemberDto.getProjectMemberNo())
+				.build();
+		
+		projectRecordDao.updateModifier(recordDto);
+	}
+	
+	@Override
+	@Transactional
+	public void reopenIssue(int projectRecordNo, int empNo) {
+		ProjectRecordDetailResponseVO target = projectRecordDao.detail(projectRecordNo);
+		
+		if(target == null)
+			throw new TargetNotfoundException();
+		
+		if(!"ISSUE".equals(target.getProjectRecordType()))
+			throw new WrongDataException();
+		
+		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
+		
+		boolean writer = target.getProjectRecordWriterNo() == projectMemberDto.getProjectMemberNo();
+		
+		String role = projectMemberDto.getProjectMemberRole();
+		
+		boolean ownerOrManager = "owner".equals(role) || "manager".equals(role);
+		
+		if(!writer && !ownerOrManager)
+			throw new GetOutException();
+		
+		boolean result = projectRecordDao.reopenIssue(projectRecordNo);
+		
+		if(!result)
+			throw new WrongDataException();
+		
+		ProjectRecordDto recordDto = ProjectRecordDto.builder()
+					.projectRecordNo(projectRecordNo)
+					.projectRecordModifierNo(projectMemberDto.getProjectMemberNo())
+				.build();
+		
+		projectRecordDao.updateModifier(recordDto);
 		
 	}
 }

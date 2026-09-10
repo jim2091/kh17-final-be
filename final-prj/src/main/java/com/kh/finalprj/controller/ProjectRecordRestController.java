@@ -20,6 +20,7 @@ import com.kh.finalprj.vo.record.ProjectRecordAddRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -87,5 +88,26 @@ public class ProjectRecordRestController {
 			@CurrentUser TokenParseResponseVO parseVO) {
 		
 		projectRecordService.delete(projectRecordNo, parseVO.getEmpNo());
+	}
+	
+	@Operation(summary = "프로젝트 record 이슈 해결")
+	@ApiResponse(responseCode = "200", description = "이슈 해결 성공")
+	@PutMapping("/{projectRecordNo}/resolve")
+	public void resolveIssue(
+			@PathVariable int projectRecordNo,
+			@RequestBody @Valid ProjectRecordIssueResolveRequestVO request,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		projectRecordService.resolveIssue(projectRecordNo, parseVO.getEmpNo(), request);
+	}
+	
+	@Operation(summary = "프로젝트 record 이슈 다시 열기")
+	@ApiResponse(responseCode = "200", description = "이슈 다시 열기 성공")
+	@PutMapping("/{projectRecordNo}/reopen")
+	public void reopenIssue(
+			@PathVariable int projectRecordNo,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		projectRecordService.reopenIssue(projectRecordNo, parseVO.getEmpNo());
 	}
 }

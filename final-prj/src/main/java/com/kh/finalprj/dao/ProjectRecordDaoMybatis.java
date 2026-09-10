@@ -120,4 +120,20 @@ public class ProjectRecordDaoMybatis implements ProjectRecordDao{
 	public boolean delete(int projectRecordNo) {
 		return sqlSession.delete("mapper.projectRecord.delete", projectRecordNo) > 0;
 	}
+	
+	@Override
+	public boolean resolveIssue(ProjectRecordIssueDto projectRecordIssueDto) {
+		return sqlSession.update("mapper.projectRecord.resolveIssue", projectRecordIssueDto) > 0;
+	}
+	
+	@Override
+	public boolean reopenIssue(int projectRecordNo) {
+		return sqlSession.update("mapper.projectRecord.reopenIssue", projectRecordNo) > 0;
+	}
+	
+	@Override
+	public boolean updateModifier(ProjectRecordDto projectRecordDto) {
+		return sqlSession.update("mapper.projectRecord.updateModifier", projectRecordDto) > 0;
+	}
+	
 }

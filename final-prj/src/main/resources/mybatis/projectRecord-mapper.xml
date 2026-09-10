@@ -259,5 +259,35 @@
 		where project_record_no = #{projectRecordNo}
 	</delete>
 	
+	<!-- 이슈 해결 -->
+	<update id="resolveIssue">
+		update project_record_issue
+		set
+			issue_status = 'RESOLVED',
+			issue_resolution = #{issueResolution},
+			issue_resolved_at = systimestamp
+		where project_record_no = #{projectRecordNo}
+			and issue_status = 'OPEN'
+	</update>
+	
+	<!-- 이슈 다시 열기 -->
+	<update id="reopenIssue">
+		update project_record_issue
+			set
+				issue_status = 'OPEN',
+				issue_resolution = null,
+				issue_resolved_at = null
+			where project_record_no = #{projectRecordNo}
+				and issue_status = 'RESOLVED'
+	</update>
+	
+	<!-- record 최종 수정자 / 수정 시간 갱신 -->
+	<update id="updateModifier">
+		update project_record
+		set
+			project_record_modifier_no = #{projectRecordModifierNo},
+			project_record_utime = systimestamp
+		where project_record_no = #{projectRecordNo}
+	</update>
 	
 </mapper>
