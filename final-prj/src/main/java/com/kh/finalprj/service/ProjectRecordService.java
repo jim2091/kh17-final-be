@@ -8,6 +8,7 @@ import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
 
 public interface ProjectRecordService {
 	
@@ -28,5 +29,8 @@ public interface ProjectRecordService {
 	void resolveIssue(int projectRecordNo, int empNo, ProjectRecordIssueResolveRequestVO request);
 	
 	void reopenIssue(int projectRecordNo, int empNo);
+	
+	//기존 record에 원본 연결
+//	void addRelated(int projectRecordNo, int empNo, ProjectRecordRelatedAddRequestVO request);
 
 }
