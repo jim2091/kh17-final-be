@@ -8,6 +8,8 @@ import com.kh.finalprj.vo.admin.AdminComplexSearchResponseVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchRequestVO;
 import com.kh.finalprj.vo.admin.AdminInitialSearchResponseVO;
 import com.kh.finalprj.vo.admin.EmpActiveAllRequestVO;
+import com.kh.finalprj.vo.admin.EmpChangeDeptAllRequestVO;
+import com.kh.finalprj.vo.admin.EmpChangePositionAllRequestVO;
 import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
@@ -56,6 +58,12 @@ public interface EmpDao {
 	boolean becomeAdmin(int empNo);
 	
 	boolean memberEdit(EmpEditRequestVO vo);
+	
+	//회원 부서 일괄 변경
+	boolean changeDeptAll(EmpChangeDeptAllRequestVO vo);
+	
+	//회원 직급 일괄 변경 
+	boolean changePositionAll(EmpChangePositionAllRequestVO vo);
 
 	
 	//페이지네이션

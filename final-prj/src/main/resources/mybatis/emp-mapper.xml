@@ -159,10 +159,10 @@ where emp_no = #{empNo} -->
 				<when test="sort == 'positionName'">
 					<choose>
 						<when test="direction == 'desc'">
-							order by p.position_name desc, e.emp_no asc
+							order by p.position_order desc, e.emp_no asc
 						</when>
 						<otherwise>
-							order by p.position_name asc, e.emp_no asc
+							order by p.position_order asc, e.emp_no asc
 						</otherwise>
 					</choose>
 				</when>
@@ -379,6 +379,37 @@ select count(*) from emp_initial_view E
 		</if>
 	</set>
 	where emp_no = #{empNo}
+</update>
+
+<!-- 회원 부서 일괄 수정  -->
+<update id="changeDeptAll">
+	update 	emp
+	set		emp_dept_no = #{empDeptNo}
+	where emp_no in
+	<foreach 	collection="empNos"
+				item="empNo"
+				open="("
+				separator=","
+				close=")"
+	>
+		#{empNo}
+	</foreach>
+	and emp_level != 'admin'
+</update>
+<!-- 회원 직급 일괄 수정  -->
+<update id="changePositionAll">
+	update 	emp
+	set		emp_position_no = #{empPositionNo}
+	where emp_no in
+	<foreach 	collection="empNos"
+				item="empNo"
+				open="("
+				separator=","
+				close=")"
+	>
+		#{empNo}
+	</foreach>
+	and emp_level != 'admin'
 </update>
 
 <!-- 키워드로 회원 목록 검색하기 -->
