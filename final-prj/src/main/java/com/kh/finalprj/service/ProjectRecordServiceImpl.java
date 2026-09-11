@@ -27,6 +27,8 @@ import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordRelatedResponseVO;
 import com.kh.finalprj.vo.task.TaskDetailResponseVO;
 
 @Service
@@ -368,6 +370,94 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 				.build();
 		
 		projectRecordDao.updateModifier(recordDto);
+		
+	}
+	
+	
+	@Override
+	@Transactional
+	public void addRelated(int projectRecordNo, int empNo, ProjectRecordRelatedAddRequestVO request) {
+		
+		//존재 하는 record인지 확인
+		ProjectRecordDetailResponseVO target = projectRecordDao.detail(projectRecordNo);
+		
+		if(target == null)
+			throw new TargetNotfoundException();
+		
+		int projectNo = target.getProjectNo();
+		
+		//로그인 사용자가 프로젝트 멤버인지 확인
+		projectPermissionService.checkMember(projectNo, empNo);
+		
+		//이미 연결된 원본인지 확인
+		List<ProjectRecordRelatedResponseVO> relatedList = projectRecordDao.selectRelatedList(projectRecordNo);
+		
+		boolean alreadyConnected = relatedList.stream()
+									.anyMatch(related ->
+										related.getRelatedType().equals(request.getRelatedType())
+										&& related.getRelatedNo() == request.getRelatedNo()
+									);
+		
+		if(alreadyConnected)
+			throw new WrongDataException();
+		
+		//유형별 검증 및 연결
+		switch(request.getRelatedType()) {
+			case "TASK": {
+				TaskDetailResponseVO task = taskDao.selectOne(request.getRelatedNo());
+				
+				if(task == null) throw new TargetNotfoundException();
+				
+				if(task.getProjectNo() != projectNo) throw new GetOutException();
+				
+				projectRecordDao.insertTask(projectRecordNo, request.getRelatedNo());
+				
+				break;
+			}
+			
+			case "MESSAGE": {
+				MessageTargetVO message = messageDao.selectTarget(request.getRelatedNo());
+				
+				if(message == null) throw new TargetNotfoundException();
+				
+				if(message.getProjectNo() != projectNo) throw new GetOutException();
+				
+				projectRecordDao.insertMessage(projectRecordNo, request.getRelatedNo());
+				
+				break;
+			}
+			
+			case"NOTE": {
+				NoteDetailResponseVO note = noteDao.selectOne(request.getRelatedNo());
+				
+				if(note == null) throw new TargetNotfoundException();
+				
+				if(note.getProjectNo() != projectNo) throw new GetOutException();
+				
+				projectRecordDao.insertNote(projectRecordNo, request.getRelatedNo());
+				
+				break;
+			}
+			
+			case "ATTACH": {
+				List<AttachDto> projectFileList = attachDao.selectListByProject(projectNo);
+				
+				boolean exists = projectFileList.stream()
+									.anyMatch(attach -> 
+										attach.getAttachNo() == request.getRelatedNo()
+									);
+				
+				if(!exists) throw new TargetNotfoundException();
+				
+				projectRecordDao.insertAttach(projectRecordNo, request.getRelatedNo());
+				
+				
+				break;
+			}
+			
+			default:
+				throw new WrongDataException();
+		}
 		
 	}
 	

@@ -22,6 +22,7 @@ import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -109,5 +110,16 @@ public class ProjectRecordRestController {
 			@CurrentUser TokenParseResponseVO parseVO) {
 		
 		projectRecordService.reopenIssue(projectRecordNo, parseVO.getEmpNo());
+	}
+	
+	@Operation(summary = "기존 record에 원본 데이터 연결")
+	@ApiResponse(responseCode = "200", description = "원본 데이터 연결 성공")
+	@PostMapping("/{projectRecordNo}/related")
+	public void addRelated(
+			@PathVariable int projectRecordNo,
+			@RequestBody @Valid ProjectRecordRelatedAddRequestVO request,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		projectRecordService.addRelated(projectRecordNo, parseVO.getEmpNo(), request);
 	}
 }
