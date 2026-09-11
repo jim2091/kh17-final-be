@@ -14,4 +14,6 @@ public interface ProjectPermissionService {
 	
 	void checkOwnerOrManager(int projectNo, int empNo);
 	
+	void checkActive(int projectNo);
+	
 }

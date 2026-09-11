@@ -53,6 +53,9 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 	@Transactional
 	public ProjectRecordAddResponseVO add(int projectNo, int empNo, ProjectRecordAddRequestVO requestVO) {
 		
+		//종료된 프로젝트 변경 차단
+	    projectPermissionService.checkActive(projectNo);
+		
 		int projectMemberNo = projectPermissionService.findProjectMemberNo(projectNo, empNo);
 		
 		int projectRecordNo = projectRecordDao.sequence();
@@ -177,6 +180,9 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		
 		int projectNo = target.getProjectNo();
 		
+		//종료된 프로젝트 변경 차단
+	    projectPermissionService.checkActive(projectNo);
+		
 		//현재 로그인 사용자의 프로젝트 멤버 정보 조회
 		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
 		
@@ -269,6 +275,9 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		if(target == null)
 			throw new TargetNotfoundException();
 		
+		//종료된 프로젝트 변경 차단
+	    projectPermissionService.checkActive(target.getProjectNo());
+		
 		//로그인 사용자 프로젝트 멤버 정보 조회
 		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
 		
@@ -303,6 +312,9 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		//issue인지 확인
 		if(!"ISSUE".equals(target.getProjectRecordType()))
 			throw new WrongDataException();
+		
+		//종료된 프로젝트 변경 차단
+	    projectPermissionService.checkActive(target.getProjectNo());
 		
 		//로그인 사용자 프로젝트 멤버 정보 조회
 		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
@@ -348,6 +360,9 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		if(!"ISSUE".equals(target.getProjectRecordType()))
 			throw new WrongDataException();
 		
+		//종료된 프로젝트 변경 차단
+	    projectPermissionService.checkActive(target.getProjectNo());
+		
 		ProjectMemberDto projectMemberDto = projectPermissionService.findMember(target.getProjectNo(), empNo);
 		
 		boolean writer = target.getProjectRecordWriterNo() == projectMemberDto.getProjectMemberNo();
@@ -385,6 +400,9 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 			throw new TargetNotfoundException();
 		
 		int projectNo = target.getProjectNo();
+		
+		//종료된 프로젝트 변경 차단
+	    projectPermissionService.checkActive(projectNo);
 		
 		//로그인 사용자가 프로젝트 멤버인지 확인
 		projectPermissionService.checkMember(projectNo, empNo);
