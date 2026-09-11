@@ -14,6 +14,7 @@ public class PositionDto {
 	private String positionName;
 	private String positionBlock;
 	private String positionInfo;
+	private int positionOrder;
 	private Timestamp positionCtime;
 	private Timestamp positionUtime;
 	

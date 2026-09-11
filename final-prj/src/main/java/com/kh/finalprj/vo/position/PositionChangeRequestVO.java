@@ -13,6 +13,7 @@ public class PositionChangeRequestVO {
 	private int PositionNo;
 	private String PositionName;
 	private String positionInfo;
+	private int positionOrder;
 	private String positionBlock;
 
 }
