@@ -22,6 +22,7 @@ public interface AttachService {
             Integer sourceNo
     ) throws IllegalStateException, IOException;
 
+
     // ==================================================
     // 파일 삭제
     // ==================================================
@@ -31,6 +32,7 @@ public interface AttachService {
             String uploader
     );
 
+
     // ==================================================
     // 파일 하나 조회
     // ==================================================
@@ -39,6 +41,7 @@ public interface AttachService {
             int attachNo
     ) throws IOException;
 
+
     // ==================================================
     // 프로젝트 파일 전체 조회
     // ==================================================
@@ -46,6 +49,7 @@ public interface AttachService {
     List<AttachDto> list(
             int projectNo
     );
+
 
     // ==================================================
     // 프로젝트 파일 검색
@@ -61,6 +65,7 @@ public interface AttachService {
             String keyword,
             String searchType
     );
+
 
     // ==================================================
     // 프로필 사진 저장
