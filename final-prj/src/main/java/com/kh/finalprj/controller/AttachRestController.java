@@ -31,7 +31,6 @@ import com.kh.finalprj.service.AttachService;
 import com.kh.finalprj.vo.attach.AttachInfoVO;
 
 import lombok.extern.slf4j.Slf4j;
-
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -60,9 +59,9 @@ public class AttachRestController {
     private StorageProperties storageProperties;
 
 
-    // =========================================================
-    // 1. 파일 업로드
-    // =========================================================
+    // ==================================================
+    // 파일 업로드
+    // ==================================================
 
     @PostMapping("/upload")
     public int upload(
@@ -70,8 +69,8 @@ public class AttachRestController {
             @RequestParam MultipartFile attach,
             @RequestParam(required = false) String source,
             @RequestParam(required = false) Integer sourceNo,
-            Authentication authentication
-    ) throws IllegalStateException, IOException {
+            Authentication authentication)
+            throws IllegalStateException, IOException {
 
         String uploader = null;
 
@@ -84,10 +83,7 @@ public class AttachRestController {
         log.debug("source = {}", source);
         log.debug("sourceNo = {}", sourceNo);
 
-        if (
-                uploader == null ||
-                uploader.trim().isEmpty()
-        ) {
+        if (uploader == null || uploader.trim().isEmpty()) {
             throw new IllegalStateException(
                     "로그인 사용자 정보가 없습니다."
             );
@@ -103,90 +99,116 @@ public class AttachRestController {
     }
 
 
-    // =========================================================
-    // 2. 파일 다운로드
-    // =========================================================
+    // ==================================================
+    // 파일 다운로드
+    // ==================================================
 
     @GetMapping("/{attachNo}")
     public ResponseEntity<?> download(
-            @PathVariable int attachNo
-    ) throws IOException {
+            @PathVariable int attachNo)
+            throws IOException {
 
-        if (
-                environment.matchesProfiles("cloud")
-        ) {
+        log.debug("파일 다운로드 요청");
+        log.debug("attachNo = {}", attachNo);
+        log.debug(
+                "현재 profile = {}",
+                environment.getActiveProfiles()
+        );
+
+        if (environment.matchesProfiles("cloud")) {
 
             return ResponseEntity
                     .status(302)
                     .location(
-                            URI.create(
-                                    "./p/" + attachNo
-                            )
+                            URI.create("./p/" + attachNo)
                     )
                     .build();
         }
 
         AttachInfoVO vo =
-                attachService.load(
-                        attachNo
-                );
+                attachService.load(attachNo);
 
-        return ResponseEntity.ok()
+        if (
+                vo == null ||
+                vo.getAttachDto() == null
+        ) {
+
+            log.warn(
+                    "첨부파일 정보를 찾을 수 없습니다. attachNo = {}",
+                    attachNo
+            );
+
+            throw new TargetNotfoundException(
+                    "첨부파일을 찾을 수 없습니다."
+            );
+        }
+
+        return ResponseEntity
+                .ok()
                 .header(
                         HttpHeaders.CONTENT_TYPE,
-                        vo.getAttachDto()
-                                .getAttachType()
+                        vo.getAttachDto().getAttachType()
                 )
                 .contentLength(
-                        vo.getAttachDto()
-                                .getAttachSize()
+                        vo.getAttachDto().getAttachSize()
                 )
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.attachment()
+                        ContentDisposition
+                                .attachment()
                                 .filename(
-                                        vo.getAttachDto()
-                                                .getAttachName(),
+                                        vo.getAttachDto().getAttachName(),
                                         StandardCharsets.UTF_8
                                 )
                                 .build()
                                 .toString()
                 )
-                .body(
-                        vo.getResource()
-                );
+                .body(vo.getResource());
     }
 
 
-    // =========================================================
-    // 3. AWS S3 Presigned URL
-    // =========================================================
+    // ==================================================
+    // Cloud 파일 다운로드
+    // ==================================================
 
     @GetMapping("/p/{attachNo}")
     public ResponseEntity<?> presigned(
-            @PathVariable int attachNo
-    ) {
+            @PathVariable int attachNo) {
+
+        log.debug("Cloud 파일 다운로드 요청");
+        log.debug("attachNo = {}", attachNo);
 
         AttachDto attachDto =
                 attachDao.selectOne(attachNo);
 
         if (attachDto == null) {
-            throw new TargetNotfoundException();
+
+            log.warn(
+                    "첨부파일 DB 정보를 찾을 수 없습니다. attachNo = {}",
+                    attachNo
+            );
+
+            throw new TargetNotfoundException(
+                    "첨부파일을 찾을 수 없습니다. attachNo = "
+                            + attachNo
+            );
         }
 
         String objectKey =
                 storageProperties.getAwsRoot()
-                + "/"
-                + attachNo;
+                        + "/"
+                        + attachNo;
 
         GetObjectRequest request =
-                GetObjectRequest.builder()
+                GetObjectRequest
+                        .builder()
                         .bucket(
                                 storageProperties.getAwsBucket()
                         )
                         .key(objectKey)
                         .responseContentDisposition(
-                                ContentDisposition.attachment()
+                                ContentDisposition
+                                        .attachment()
                                         .filename(
                                                 attachDto.getAttachName(),
                                                 StandardCharsets.UTF_8
@@ -197,7 +219,8 @@ public class AttachRestController {
                         .build();
 
         GetObjectPresignRequest presignRequest =
-                GetObjectPresignRequest.builder()
+                GetObjectPresignRequest
+                        .builder()
                         .signatureDuration(
                                 Duration.ofMinutes(
                                         storageProperties
@@ -224,17 +247,17 @@ public class AttachRestController {
     }
 
 
-    // =========================================================
-    // 4. 파일 삭제
-    // =========================================================
+    // ==================================================
+    // 파일 삭제
+    // ==================================================
 
     @DeleteMapping("/{attachNo}")
     public void delete(
             @PathVariable int attachNo,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
 
         if (authentication == null) {
+
             throw new IllegalStateException(
                     "로그인 사용자 정보가 없습니다."
             );
@@ -260,18 +283,26 @@ public class AttachRestController {
     }
 
 
-    // =========================================================
-    // 5. 프로젝트별 파일 목록 조회
-    // =========================================================
+    // ==================================================
+    // 프로젝트 파일 목록 조회 / 검색
+    //
+    // searchType
+    //
+    // name     = 파일명
+    // source   = 출처
+    // uploader = 업로더
+    // type     = 파일 형태
+    // ==================================================
 
     @GetMapping("/list/{projectNo}")
     public ResponseEntity<?> list(
             @PathVariable int projectNo,
             @RequestParam(required = false) String keyword,
-            Authentication authentication
-    ) {
+            @RequestParam(defaultValue = "name") String searchType,
+            Authentication authentication) {
 
         if (authentication == null) {
+
             throw new IllegalStateException(
                     "로그인 사용자 정보가 없습니다."
             );
@@ -280,11 +311,42 @@ public class AttachRestController {
         String loginUser =
                 authentication.getName();
 
-        List<AttachDto> files;
+
+        // ==================================================
+        // 검색 타입 검증
+        // ==================================================
 
         if (
-                keyword == null ||
-                keyword.trim().isEmpty()
+                !"name".equals(searchType)
+                        && !"source".equals(searchType)
+                        && !"uploader".equals(searchType)
+                        && !"type".equals(searchType)
+        ) {
+
+            searchType = "name";
+        }
+
+
+        // ==================================================
+        // 프로젝트 상태 조회
+        // ==================================================
+
+        String projectStatus =
+                attachDao.selectProjectStatus(
+                        projectNo
+                );
+
+
+        // ==================================================
+        // 파일 목록 조회
+        // ==================================================
+
+        List<AttachDto> files;
+
+
+        if (
+                keyword == null
+                        || keyword.trim().isEmpty()
         ) {
 
             files =
@@ -292,19 +354,21 @@ public class AttachRestController {
                             projectNo
                     );
 
-        } else {
+        }
+        else {
 
             files =
                     attachService.list(
                             projectNo,
-                            keyword
+                            keyword.trim(),
+                            searchType
                     );
         }
 
 
-        // =====================================================
-        // 현재 사용자의 프로젝트 역할 조회
-        // =====================================================
+        // ==================================================
+        // 로그인 사용자 역할
+        // ==================================================
 
         String loginRole = null;
 
@@ -321,7 +385,8 @@ public class AttachRestController {
                             empNo
                     );
 
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
 
             log.warn(
                     "로그인 사용자 번호 변환 실패: {}",
@@ -329,6 +394,10 @@ public class AttachRestController {
             );
         }
 
+
+        // ==================================================
+        // 로그
+        // ==================================================
 
         log.debug(
                 "프로젝트 파일 목록 조회"
@@ -349,17 +418,45 @@ public class AttachRestController {
                 loginRole
         );
 
+        log.debug(
+                "프로젝트 상태 = {}",
+                projectStatus
+        );
+
+        log.debug(
+                "검색어 = {}",
+                keyword
+        );
+
+        log.debug(
+                "검색 종류 = {}",
+                searchType
+        );
+
+
+        // ==================================================
+        // 응답
+        // ==================================================
 
         return ResponseEntity.ok(
+
                 Map.of(
+
                         "files",
                         files,
+
                         "loginUser",
                         loginUser,
+
                         "loginRole",
                         loginRole == null
                                 ? ""
-                                : loginRole
+                                : loginRole,
+
+                        "projectStatus",
+                        projectStatus == null
+                                ? ""
+                                : projectStatus
                 )
         );
     }

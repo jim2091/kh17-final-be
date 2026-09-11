@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="mapper.attach">
 
-    <!-- =========================================================
-         파일 번호 생성
-    ========================================================== -->
+
+    <!-- ==================================================
+         첨부파일 번호 생성
+         ================================================== -->
 
     <select id="sequence" resultType="int">
 
@@ -18,12 +19,9 @@
     </select>
 
 
-    <!-- =========================================================
-         회원 프로필 사진 등록
-         
-         기존 코드 유지
-         AttachProfileVO 전용
-    ========================================================== -->
+    <!-- ==================================================
+         프로필 파일 등록
+         ================================================== -->
 
     <insert id="add">
 
@@ -35,6 +33,7 @@
             attach_uploader,
             attach_source
         )
+
         values(
             #{attachNo},
             #{attachName},
@@ -47,12 +46,9 @@
     </insert>
 
 
-    <!-- =========================================================
+    <!-- ==================================================
          프로젝트 파일 등록
-         
-         AttachDto 전용
-         sourceNo까지 저장
-    ========================================================== -->
+         ================================================== -->
 
     <insert id="addProjectFile">
 
@@ -65,6 +61,7 @@
             attach_source,
             attach_source_no
         )
+
         values(
             #{attachNo},
             #{attachName},
@@ -78,9 +75,9 @@
     </insert>
 
 
-    <!-- =========================================================
-         파일 단건 조회
-    ========================================================== -->
+    <!-- ==================================================
+         파일 하나 조회
+         ================================================== -->
 
     <select id="find" resultType="AttachDto">
 
@@ -93,27 +90,31 @@
             attach_source,
             attach_source_no,
             attach_ctime
+
         from attach
+
         where attach_no = #{attachNo}
 
     </select>
 
 
-    <!-- =========================================================
+    <!-- ==================================================
          파일 삭제
-    ========================================================== -->
+         ================================================== -->
 
     <delete id="delete">
 
-        delete from attach
+        delete
+        from attach
+
         where attach_no = #{attachNo}
 
     </delete>
 
 
-    <!-- =========================================================
+    <!-- ==================================================
          파일 여러 개 조회
-    ========================================================== -->
+         ================================================== -->
 
     <select id="findList" resultType="AttachDto">
 
@@ -126,31 +127,34 @@
             attach_source,
             attach_source_no,
             attach_ctime
+
         from attach
+
         where attach_no in(
 
             <foreach
                 item="attachNo"
                 collection="list"
-                separator=","
-            >
+                separator=",">
+
                 #{attachNo}
+
             </foreach>
 
         )
+
         order by attach_no asc
 
     </select>
 
 
-    <!-- =========================================================
-         프로젝트별 파일 조회
-    ========================================================== -->
+    <!-- ==================================================
+         프로젝트 전체 파일 조회
+         ================================================== -->
 
     <select
         id="selectListByProject"
-        resultType="AttachDto"
-    >
+        resultType="AttachDto">
 
         select
             a.attach_no,
@@ -162,27 +166,40 @@
             a.attach_source_no,
             a.attach_ctime,
             e.emp_name as empName
+
         from project_file pf
+
         join attach a
             on pf.attach_no = a.attach_no
+
         left join emp e
             on a.attach_uploader = e.emp_no
+
         where pf.project_no = #{projectNo}
+
         order by a.attach_ctime desc
 
     </select>
 
 
-    <!-- =========================================================
-         프로젝트별 파일 검색
-    ========================================================== -->
+    <!-- ==================================================
+         프로젝트 파일 검색
+
+         searchType
+
+         name     = 파일명
+         source   = 출처
+         uploader = 업로더
+         type     = 파일 형태
+
+         모든 검색어는 띄어쓰기 무시
+         ================================================== -->
 
     <select
         id="selectListByProjectAndKeyword"
-        resultType="AttachDto"
-    >
+        resultType="AttachDto">
 
-        select
+        SELECT
             a.attach_no,
             a.attach_name,
             a.attach_type,
@@ -191,38 +208,294 @@
             a.attach_source,
             a.attach_source_no,
             a.attach_ctime,
-            e.emp_name as empName
-        from project_file pf
-        join attach a
-            on pf.attach_no = a.attach_no
-        left join emp e
-            on a.attach_uploader = e.emp_no
-        where pf.project_no = #{projectNo}
-          and a.attach_name like '%' || #{keyword} || '%'
-        order by a.attach_ctime desc
+            e.emp_name AS empName
+
+        FROM project_file pf
+
+        JOIN attach a
+            ON pf.attach_no = a.attach_no
+
+        LEFT JOIN emp e
+            ON a.attach_uploader = e.emp_no
+
+        WHERE pf.project_no = #{projectNo}
+
+        <choose>
+
+            <!-- ==============================
+                 파일 이름 검색
+                 ============================== -->
+
+            <when test="searchType == 'name'">
+
+                AND REPLACE(
+                        LOWER(a.attach_name),
+                        ' ',
+                        ''
+                    )
+
+                    LIKE '%' ||
+
+                    REPLACE(
+                        LOWER(#{keyword}),
+                        ' ',
+                        ''
+                    ) ||
+
+                    '%'
+
+            </when>
+
+
+            <!-- ==============================
+                 파일 출처 검색
+                 ============================== -->
+
+            <when test="searchType == 'source'">
+
+                AND (
+
+                    REPLACE(
+                        LOWER(a.attach_source),
+                        ' ',
+                        ''
+                    )
+
+                    LIKE '%' ||
+
+                    REPLACE(
+                        LOWER(#{keyword}),
+                        ' ',
+                        ''
+                    ) ||
+
+                    '%'
+
+                    OR
+
+                    (
+                        REPLACE(
+                            LOWER(#{keyword}),
+                            ' ',
+                            ''
+                        ) = '파일함'
+
+                        AND LOWER(a.attach_source) = 'file'
+                    )
+
+                    OR
+
+                    (
+                        REPLACE(
+                            LOWER(#{keyword}),
+                            ' ',
+                            ''
+                        ) = '노트'
+
+                        AND LOWER(a.attach_source) = 'note'
+                    )
+
+                    OR
+
+                    (
+                        REPLACE(
+                            LOWER(#{keyword}),
+                            ' ',
+                            ''
+                        ) = '노트댓글'
+
+                        AND LOWER(a.attach_source) = 'note_comment'
+                    )
+
+                    OR
+
+                    (
+                        REPLACE(
+                            LOWER(#{keyword}),
+                            ' ',
+                            ''
+                        ) = '업무'
+
+                        AND LOWER(a.attach_source) = 'task'
+                    )
+
+                    OR
+
+                    (
+                        REPLACE(
+                            LOWER(#{keyword}),
+                            ' ',
+                            ''
+                        ) = '업무댓글'
+
+                        AND LOWER(a.attach_source) = 'task_comment'
+                    )
+
+                )
+
+            </when>
+
+
+            <!-- ==============================
+                 업로더 검색
+                 이름 또는 사번
+                 ============================== -->
+
+            <when test="searchType == 'uploader'">
+
+                AND (
+
+                    REPLACE(
+                        LOWER(NVL(e.emp_name, '')),
+                        ' ',
+                        ''
+                    )
+
+                    LIKE '%' ||
+
+                    REPLACE(
+                        LOWER(#{keyword}),
+                        ' ',
+                        ''
+                    ) ||
+
+                    '%'
+
+                    OR
+
+                    REPLACE(
+                        LOWER(TO_CHAR(a.attach_uploader)),
+                        ' ',
+                        ''
+                    )
+
+                    LIKE '%' ||
+
+                    REPLACE(
+                        LOWER(#{keyword}),
+                        ' ',
+                        ''
+                    ) ||
+
+                    '%'
+
+                )
+
+            </when>
+
+
+            <!-- ==============================
+                 파일 형식 검색
+                 확장자 / MIME 타입 / 파일 이름
+                 ============================== -->
+
+            <when test="searchType == 'type'">
+
+                AND (
+
+                    REPLACE(
+                        LOWER(NVL(a.attach_type, '')),
+                        ' ',
+                        ''
+                    )
+
+                    LIKE '%' ||
+
+                    REPLACE(
+                        LOWER(#{keyword}),
+                        ' ',
+                        ''
+                    ) ||
+
+                    '%'
+
+                    OR
+
+                    REPLACE(
+                        LOWER(NVL(a.attach_name, '')),
+                        ' ',
+                        ''
+                    )
+
+                    LIKE '%' ||
+
+                    REPLACE(
+                        LOWER(#{keyword}),
+                        ' ',
+                        ''
+                    ) ||
+
+                    '%'
+
+                )
+
+            </when>
+
+
+            <!-- ==============================
+                 잘못된 searchType이면
+                 파일 이름 검색
+                 ============================== -->
+
+            <otherwise>
+
+                AND REPLACE(
+                        LOWER(a.attach_name),
+                        ' ',
+                        ''
+                    )
+
+                    LIKE '%' ||
+
+                    REPLACE(
+                        LOWER(#{keyword}),
+                        ' ',
+                        ''
+                    ) ||
+
+                    '%'
+
+            </otherwise>
+
+        </choose>
+
+        ORDER BY a.attach_ctime DESC
 
     </select>
 
 
-    <!-- =========================================================
-         첨부파일이 연결된 프로젝트 번호 조회
-         
-         attach에는 project_no가 없기 때문에
-         project_file을 통해 조회
-         
-         프로필 파일은 project_file 연결이 없으므로
-         null이 반환됨
-    ========================================================== -->
+    <!-- ==================================================
+         첨부파일이 속한 프로젝트 번호
+         ================================================== -->
 
     <select
         id="selectProjectNo"
-        resultType="int"
-    >
+        resultType="int">
 
         select project_no
+
         from project_file
+
         where attach_no = #{attachNo}
 
     </select>
+
+
+    <!-- ==================================================
+         프로젝트 상태 조회
+         ================================================== -->
+
+    <select
+        id="selectProjectStatus"
+        resultType="string">
+
+        select project_status
+
+        from project
+
+        where project_no = #{projectNo}
+
+    </select>
+
 
 </mapper>
