@@ -17,5 +17,5 @@ public class ProjectRecordRelatedAddRequestVO {
 	private String relatedType;
 	
 	@NotNull
-	private int relateNo;
+	private int relatedNo;
 }

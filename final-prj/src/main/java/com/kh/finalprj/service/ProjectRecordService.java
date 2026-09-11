@@ -31,6 +31,6 @@ public interface ProjectRecordService {
 	void reopenIssue(int projectRecordNo, int empNo);
 	
 	//기존 record에 원본 연결
-//	void addRelated(int projectRecordNo, int empNo, ProjectRecordRelatedAddRequestVO request);
+	void addRelated(int projectRecordNo, int empNo, ProjectRecordRelatedAddRequestVO request);
 
 }
