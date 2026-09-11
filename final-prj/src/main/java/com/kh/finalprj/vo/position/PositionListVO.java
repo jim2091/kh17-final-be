@@ -13,6 +13,7 @@ public class PositionListVO {
 	private int positionNo;
 	private String positionName;
 	private String positionInfo;
+	private int positionOrder;
 	private String positionBlock;
 
 }

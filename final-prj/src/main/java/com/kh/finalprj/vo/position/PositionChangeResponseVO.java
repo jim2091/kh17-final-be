@@ -13,6 +13,7 @@ public class PositionChangeResponseVO {
 	private int poritionNo;
 	private String positionName;
 	private String positionInfo;
+	private int positionOrder;
 	private String positionBlock;
 
 }

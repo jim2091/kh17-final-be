@@ -39,7 +39,43 @@
 select * from(
 	select rownum rn, TMP.* from
 	(
-		select * from dept order by dept_block asc, dept_no asc
+		select * from dept 
+		
+	<choose>
+		<when test="sort == 'deptNo'">
+			<choose>
+				<when test="direction == 'desc'">
+					order by dept_no desc
+				</when>
+				<otherwise>
+					order by dept_no asc
+				</otherwise>
+			</choose>
+		</when>
+		<when test="sort == 'deptName'">
+			<choose>
+				<when test="direction == 'desc'">
+					order by dept_name desc, dept_no asc
+				</when>
+				<otherwise>
+					order by dept_name asc, dept_no asc
+				</otherwise>
+			</choose>
+		</when>
+		<when test="sort == 'deptBlock'">
+			<choose>
+				<when test="direction == 'desc'">
+					order by dept_block desc, dept_no asc
+				</when>
+				<otherwise>
+					order by dept_block asc, dept_no asc
+				</otherwise>
+			</choose>
+		</when>
+		<otherwise>
+			order by dept_no asc
+		</otherwise>
+	</choose>
 	)TMP
 )
 where rn between #{beginRownum} and #{endRownum}

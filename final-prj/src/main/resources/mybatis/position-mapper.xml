@@ -39,7 +39,52 @@
 select * from(
 	select rownum rn, TMP.* from
 	(
-		select * from position order by position_block asc, position_no asc
+		select * from position 
+		<choose>
+			<when test="sort == 'positionNo'">
+				<choose>
+					<when test="direction == 'desc'">
+						order by position_no desc
+					</when>
+					<otherwise>
+						order by position_no asc
+					</otherwise>
+				</choose>
+			</when>
+			<when test="sort == 'positionName'">
+				<choose>
+					<when test="direction == 'desc'">
+						order by position_name desc, position_no asc
+					</when>
+					<otherwise>
+						order by position_name asc, position_no asc
+					</otherwise>
+				</choose>
+			</when>
+			<when test="sort == 'positionOrder'">
+				<choose>
+					<when test="direction == 'desc'">
+						order by position_order desc, position_no asc
+					</when>
+					<otherwise>
+						order by position_order asc, position_no asc
+					</otherwise>
+				</choose>
+			</when>
+			<when test="sort == 'positionBlock'">
+				<choose>
+					<when test="direction == 'desc'">
+						order by position_block desc, position_no asc
+					</when>
+					<otherwise>
+						order by position_block asc, position_no asc
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				order by position_no asc
+			</otherwise>
+		</choose>
 	)TMP
 )
 where rn between #{beginRownum} and #{endRownum}
@@ -50,6 +95,7 @@ where rn between #{beginRownum} and #{endRownum}
 	update position
 	set position_name = #{positionName},
 		position_info = #{positionInfo},
+		position_order = #{positionOrder},
 		position_block = #{positionBlock}
 	where position_no = #{positionNo}
 </update>
