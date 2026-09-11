@@ -69,8 +69,8 @@ public class AttachRestController {
             @RequestParam MultipartFile attach,
             @RequestParam(required = false) String source,
             @RequestParam(required = false) Integer sourceNo,
-            Authentication authentication)
-            throws IllegalStateException, IOException {
+            Authentication authentication
+    ) throws IllegalStateException, IOException {
 
         String uploader = null;
 
@@ -83,11 +83,51 @@ public class AttachRestController {
         log.debug("source = {}", source);
         log.debug("sourceNo = {}", sourceNo);
 
-        if (uploader == null || uploader.trim().isEmpty()) {
+
+        // ==================================================
+        // 로그인 검사
+        // ==================================================
+
+        if (
+            uploader == null
+            || uploader.trim().isEmpty()
+        ) {
+
             throw new IllegalStateException(
                     "로그인 사용자 정보가 없습니다."
             );
         }
+
+
+        // ==================================================
+        // 프로젝트 상태 검사
+        //
+        // closed이면 업로드 금지
+        // ==================================================
+
+        String projectStatus =
+                attachDao.selectProjectStatus(projectNo);
+
+        log.debug(
+                "업로드 프로젝트 상태 = {}",
+                projectStatus
+        );
+
+        if (
+            "closed".equalsIgnoreCase(
+                    projectStatus
+            )
+        ) {
+
+            throw new IllegalStateException(
+                    "종료된 프로젝트에는 파일을 업로드할 수 없습니다."
+            );
+        }
+
+
+        // ==================================================
+        // 파일 저장
+        // ==================================================
 
         return attachService.save(
                 projectNo,
@@ -105,8 +145,8 @@ public class AttachRestController {
 
     @GetMapping("/{attachNo}")
     public ResponseEntity<?> download(
-            @PathVariable int attachNo)
-            throws IOException {
+            @PathVariable int attachNo
+    ) throws IOException {
 
         log.debug("파일 다운로드 요청");
         log.debug("attachNo = {}", attachNo);
@@ -115,22 +155,27 @@ public class AttachRestController {
                 environment.getActiveProfiles()
         );
 
+
         if (environment.matchesProfiles("cloud")) {
 
             return ResponseEntity
                     .status(302)
                     .location(
-                            URI.create("./p/" + attachNo)
+                            URI.create(
+                                    "./p/" + attachNo
+                            )
                     )
                     .build();
         }
 
+
         AttachInfoVO vo =
                 attachService.load(attachNo);
 
+
         if (
-                vo == null ||
-                vo.getAttachDto() == null
+            vo == null
+            || vo.getAttachDto() == null
         ) {
 
             log.warn(
@@ -142,6 +187,7 @@ public class AttachRestController {
                     "첨부파일을 찾을 수 없습니다."
             );
         }
+
 
         return ResponseEntity
                 .ok()
@@ -163,7 +209,9 @@ public class AttachRestController {
                                 .build()
                                 .toString()
                 )
-                .body(vo.getResource());
+                .body(
+                        vo.getResource()
+                );
     }
 
 
@@ -173,13 +221,16 @@ public class AttachRestController {
 
     @GetMapping("/p/{attachNo}")
     public ResponseEntity<?> presigned(
-            @PathVariable int attachNo) {
+            @PathVariable int attachNo
+    ) {
 
         log.debug("Cloud 파일 다운로드 요청");
         log.debug("attachNo = {}", attachNo);
 
+
         AttachDto attachDto =
                 attachDao.selectOne(attachNo);
+
 
         if (attachDto == null) {
 
@@ -190,20 +241,23 @@ public class AttachRestController {
 
             throw new TargetNotfoundException(
                     "첨부파일을 찾을 수 없습니다. attachNo = "
-                            + attachNo
+                    + attachNo
             );
         }
+
 
         String objectKey =
                 storageProperties.getAwsRoot()
                         + "/"
                         + attachNo;
 
+
         GetObjectRequest request =
                 GetObjectRequest
                         .builder()
                         .bucket(
-                                storageProperties.getAwsBucket()
+                                storageProperties
+                                        .getAwsBucket()
                         )
                         .key(objectKey)
                         .responseContentDisposition(
@@ -218,6 +272,7 @@ public class AttachRestController {
                         )
                         .build();
 
+
         GetObjectPresignRequest presignRequest =
                 GetObjectPresignRequest
                         .builder()
@@ -230,6 +285,7 @@ public class AttachRestController {
                         .getObjectRequest(request)
                         .build();
 
+
         String url =
                 s3Presigner
                         .presignGetObject(
@@ -237,6 +293,7 @@ public class AttachRestController {
                         )
                         .url()
                         .toString();
+
 
         return ResponseEntity
                 .status(302)
@@ -249,12 +306,19 @@ public class AttachRestController {
 
     // ==================================================
     // 파일 삭제
+    //
+    // 권한
+    //
+    // owner   → 모든 파일 삭제 가능
+    // manager → 모든 파일 삭제 가능
+    // member  → 본인이 올린 파일만 삭제 가능
     // ==================================================
 
     @DeleteMapping("/{attachNo}")
     public void delete(
             @PathVariable int attachNo,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
 
         if (authentication == null) {
 
@@ -263,8 +327,10 @@ public class AttachRestController {
             );
         }
 
+
         String uploader =
                 authentication.getName();
+
 
         log.debug(
                 "삭제 요청 파일 번호 = {}",
@@ -275,6 +341,7 @@ public class AttachRestController {
                 "삭제 요청 사용자 = {}",
                 uploader
         );
+
 
         attachService.delete(
                 attachNo,
@@ -299,7 +366,8 @@ public class AttachRestController {
             @PathVariable int projectNo,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "name") String searchType,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
 
         if (authentication == null) {
 
@@ -307,6 +375,7 @@ public class AttachRestController {
                     "로그인 사용자 정보가 없습니다."
             );
         }
+
 
         String loginUser =
                 authentication.getName();
@@ -317,10 +386,10 @@ public class AttachRestController {
         // ==================================================
 
         if (
-                !"name".equals(searchType)
-                        && !"source".equals(searchType)
-                        && !"uploader".equals(searchType)
-                        && !"type".equals(searchType)
+            !"name".equals(searchType)
+            && !"source".equals(searchType)
+            && !"uploader".equals(searchType)
+            && !"type".equals(searchType)
         ) {
 
             searchType = "name";
@@ -345,8 +414,8 @@ public class AttachRestController {
 
 
         if (
-                keyword == null
-                        || keyword.trim().isEmpty()
+            keyword == null
+            || keyword.trim().isEmpty()
         ) {
 
             files =
@@ -354,8 +423,7 @@ public class AttachRestController {
                             projectNo
                     );
 
-        }
-        else {
+        } else {
 
             files =
                     attachService.list(
@@ -372,6 +440,7 @@ public class AttachRestController {
 
         String loginRole = null;
 
+
         try {
 
             int empNo =
@@ -379,14 +448,14 @@ public class AttachRestController {
                             loginUser
                     );
 
+
             loginRole =
                     projectMemberDao.selectRole(
                             projectNo,
                             empNo
                     );
 
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
 
             log.warn(
                     "로그인 사용자 번호 변환 실패: {}",
@@ -439,9 +508,7 @@ public class AttachRestController {
         // ==================================================
 
         return ResponseEntity.ok(
-
                 Map.of(
-
                         "files",
                         files,
 

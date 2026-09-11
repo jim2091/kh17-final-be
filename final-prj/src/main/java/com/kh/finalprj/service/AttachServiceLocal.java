@@ -38,6 +38,7 @@ public class AttachServiceLocal implements AttachService {
     @Autowired
     private StorageProperties storageProperties;
 
+
     // =========================================================
     // 1. 프로젝트 파일 저장
     // =========================================================
@@ -49,28 +50,41 @@ public class AttachServiceLocal implements AttachService {
             MultipartFile attach,
             String uploader,
             String source,
-            Integer sourceNo)
-            throws IllegalStateException, IOException {
+            Integer sourceNo
+    ) throws IllegalStateException, IOException {
 
-        if (attach == null || attach.isEmpty()) {
+        if (
+            attach == null
+            || attach.isEmpty()
+        ) {
+
             return 0;
         }
 
-        if (uploader == null
-                || uploader.trim().isEmpty()) {
+
+        if (
+            uploader == null
+            || uploader.trim().isEmpty()
+        ) {
 
             throw new IllegalStateException(
                     "파일 업로더 정보가 없습니다."
             );
         }
 
-        if (source == null
-                || source.trim().isEmpty()) {
+
+        if (
+            source == null
+            || source.trim().isEmpty()
+        ) {
 
             source = "FILE";
         }
 
-        int attachNo = attachDao.sequence();
+
+        int attachNo =
+                attachDao.sequence();
+
 
         AttachDto dto =
                 AttachDto
@@ -96,11 +110,13 @@ public class AttachServiceLocal implements AttachService {
                         )
                         .build();
 
+
         // =====================================================
         // ATTACH 저장
         // =====================================================
 
         attachDao.insert(dto);
+
 
         // =====================================================
         // PROJECT_FILE 연결
@@ -111,6 +127,7 @@ public class AttachServiceLocal implements AttachService {
                 attachNo
         );
 
+
         // =====================================================
         // 실제 파일 저장
         // =====================================================
@@ -118,20 +135,27 @@ public class AttachServiceLocal implements AttachService {
         File dir =
                 storageProperties.getLocalRoot();
 
+
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
+
         File target =
                 new File(
                         dir,
-                        String.valueOf(attachNo)
+                        String.valueOf(
+                                attachNo
+                        )
                 );
+
 
         attach.transferTo(target);
 
+
         return attachNo;
     }
+
 
     // =========================================================
     // 2. 파일 로드
@@ -139,22 +163,28 @@ public class AttachServiceLocal implements AttachService {
 
     @Override
     public AttachInfoVO load(
-            int attachNo)
-            throws IOException {
+            int attachNo
+    ) throws IOException {
 
         AttachDto attachDto =
-                attachDao.selectOne(attachNo);
+                attachDao.selectOne(
+                        attachNo
+                );
+
 
         if (attachDto == null) {
             throw new TargetNotfoundException();
         }
 
+
         File dir =
                 storageProperties.getLocalRoot();
+
 
         if (!dir.exists()) {
             throw new TargetNotfoundException();
         }
+
 
         File target =
                 new File(
@@ -164,17 +194,21 @@ public class AttachServiceLocal implements AttachService {
                         )
                 );
 
+
         if (!target.exists()) {
             throw new TargetNotfoundException();
         }
+
 
         byte[] data =
                 FileCopyUtils.copyToByteArray(
                         target
                 );
 
+
         Resource resource =
                 new ByteArrayResource(data);
+
 
         return AttachInfoVO
                 .builder()
@@ -183,34 +217,50 @@ public class AttachServiceLocal implements AttachService {
                 .build();
     }
 
+
     // =========================================================
     // 3. 파일 삭제
+    //
+    // owner / manager
+    // → 다른 사람이 올린 파일도 삭제 가능
+    //
+    // member
+    // → 본인이 올린 파일만 삭제 가능
     // =========================================================
 
     @Transactional
     @Override
     public void delete(
             Integer attachNo,
-            String uploader) {
+            String uploader
+    ) {
 
         if (attachNo == null) {
             return;
         }
 
-        if (uploader == null
-                || uploader.trim().isEmpty()) {
+
+        if (
+            uploader == null
+            || uploader.trim().isEmpty()
+        ) {
 
             throw new IllegalStateException(
                     "로그인 사용자 정보가 없습니다."
             );
         }
 
+
         AttachDto attachDto =
-                attachDao.selectOne(attachNo);
+                attachDao.selectOne(
+                        attachNo
+                );
+
 
         if (attachDto == null) {
             throw new TargetNotfoundException();
         }
+
 
         // =====================================================
         // 프로젝트 번호 조회
@@ -221,6 +271,7 @@ public class AttachServiceLocal implements AttachService {
                         attachNo
                 );
 
+
         // =====================================================
         // 업로더 본인 여부
         // =====================================================
@@ -230,18 +281,24 @@ public class AttachServiceLocal implements AttachService {
                         attachDto.getAttachUploader()
                 );
 
+
         // =====================================================
         // OWNER / MANAGER 여부
         // =====================================================
 
-        boolean isOwnerOrManager = false;
+        boolean isOwnerOrManager =
+                false;
+
 
         if (projectNo != null) {
 
             try {
 
                 int empNo =
-                        Integer.parseInt(uploader);
+                        Integer.parseInt(
+                                uploader
+                        );
+
 
                 String role =
                         projectMemberDao.selectRole(
@@ -249,27 +306,33 @@ public class AttachServiceLocal implements AttachService {
                                 empNo
                         );
 
+
                 isOwnerOrManager =
                         "owner".equalsIgnoreCase(role)
                         || "manager".equalsIgnoreCase(role);
 
             } catch (NumberFormatException e) {
 
-                // 숫자가 아니면 권한 인정하지 않음
+                // 사번이 숫자가 아니면
+                // owner / manager 권한을 인정하지 않음
             }
         }
+
 
         // =====================================================
         // 최종 권한 검사
         // =====================================================
 
-        if (!isUploader
-                && !isOwnerOrManager) {
+        if (
+            !isUploader
+            && !isOwnerOrManager
+        ) {
 
             throw new IllegalStateException(
                     "파일을 삭제할 권한이 없습니다."
             );
         }
+
 
         // =====================================================
         // ATTACH 삭제
@@ -277,7 +340,10 @@ public class AttachServiceLocal implements AttachService {
         // PROJECT_FILE은 FK ON DELETE CASCADE
         // =====================================================
 
-        attachDao.delete(attachNo);
+        attachDao.delete(
+                attachNo
+        );
+
 
         // =====================================================
         // 실제 파일 삭제
@@ -286,13 +352,17 @@ public class AttachServiceLocal implements AttachService {
         File dir =
                 storageProperties.getLocalRoot();
 
+
         if (dir.exists()) {
 
             File target =
                     new File(
                             dir,
-                            String.valueOf(attachNo)
+                            String.valueOf(
+                                    attachNo
+                            )
                     );
+
 
             if (target.exists()) {
                 target.delete();
@@ -300,18 +370,21 @@ public class AttachServiceLocal implements AttachService {
         }
     }
 
+
     // =========================================================
     // 4. 프로젝트 파일 목록
     // =========================================================
 
     @Override
     public List<AttachDto> list(
-            int projectNo) {
+            int projectNo
+    ) {
 
         return attachDao.selectListByProject(
                 projectNo
         );
     }
+
 
     // =========================================================
     // 5. 프로젝트 파일 검색
@@ -321,7 +394,8 @@ public class AttachServiceLocal implements AttachService {
     public List<AttachDto> list(
             int projectNo,
             String keyword,
-            String searchType) {
+            String searchType
+    ) {
 
         return attachDao.selectListByProjectAndKeyword(
                 projectNo,
@@ -329,6 +403,7 @@ public class AttachServiceLocal implements AttachService {
                 searchType
         );
     }
+
 
     // =========================================================
     // 6. 회원 프로필 사진 저장
@@ -339,17 +414,21 @@ public class AttachServiceLocal implements AttachService {
     public int save(
             MultipartFile attach,
             String empName,
-            String source)
-            throws IllegalStateException, IOException {
+            String source
+    ) throws IllegalStateException, IOException {
 
-        if (attach == null
-                || attach.isEmpty()) {
+        if (
+            attach == null
+            || attach.isEmpty()
+        ) {
 
             return 0;
         }
 
+
         int attachNo =
                 attachDao.sequence();
+
 
         attachDao.insert(
                 AttachProfileVO
@@ -373,24 +452,27 @@ public class AttachServiceLocal implements AttachService {
                         .build()
         );
 
-        // =====================================================
-        // 실제 파일 저장
-        // =====================================================
 
         File dir =
                 storageProperties.getLocalRoot();
+
 
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
+
         File target =
                 new File(
                         dir,
-                        String.valueOf(attachNo)
+                        String.valueOf(
+                                attachNo
+                        )
                 );
 
+
         attach.transferTo(target);
+
 
         return attachNo;
     }

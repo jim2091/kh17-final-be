@@ -253,87 +253,39 @@
 
             <when test="searchType == 'source'">
 
-                AND (
+    AND REPLACE(
+        LOWER(
+            CASE
+                WHEN UPPER(a.attach_source) = 'FILE'
+                    THEN '파일함'
 
-                    REPLACE(
-                        LOWER(a.attach_source),
-                        ' ',
-                        ''
-                    )
+                WHEN UPPER(a.attach_source) = 'NOTE'
+                    THEN '노트'
 
-                    LIKE '%' ||
+                WHEN UPPER(a.attach_source) = 'NOTE_COMMENT'
+                    THEN '노트 댓글'
 
-                    REPLACE(
-                        LOWER(#{keyword}),
-                        ' ',
-                        ''
-                    ) ||
+                WHEN UPPER(a.attach_source) = 'TASK'
+                    THEN '업무'
 
-                    '%'
+                WHEN UPPER(a.attach_source) = 'TASK_COMMENT'
+                    THEN '업무 댓글'
 
-                    OR
+                ELSE NVL(a.attach_source, '')
+            END
+        ),
+        ' ',
+        ''
+    )
+    LIKE '%' ||
+    REPLACE(
+        LOWER(#{keyword}),
+        ' ',
+        ''
+    ) ||
+    '%'
 
-                    (
-                        REPLACE(
-                            LOWER(#{keyword}),
-                            ' ',
-                            ''
-                        ) = '파일함'
-
-                        AND LOWER(a.attach_source) = 'file'
-                    )
-
-                    OR
-
-                    (
-                        REPLACE(
-                            LOWER(#{keyword}),
-                            ' ',
-                            ''
-                        ) = '노트'
-
-                        AND LOWER(a.attach_source) = 'note'
-                    )
-
-                    OR
-
-                    (
-                        REPLACE(
-                            LOWER(#{keyword}),
-                            ' ',
-                            ''
-                        ) = '노트댓글'
-
-                        AND LOWER(a.attach_source) = 'note_comment'
-                    )
-
-                    OR
-
-                    (
-                        REPLACE(
-                            LOWER(#{keyword}),
-                            ' ',
-                            ''
-                        ) = '업무'
-
-                        AND LOWER(a.attach_source) = 'task'
-                    )
-
-                    OR
-
-                    (
-                        REPLACE(
-                            LOWER(#{keyword}),
-                            ' ',
-                            ''
-                        ) = '업무댓글'
-
-                        AND LOWER(a.attach_source) = 'task_comment'
-                    )
-
-                )
-
-            </when>
+</when>
 
 
             <!-- ==============================
