@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.notification">
+	<!-- 시퀀스 -->
+	<select id="sequence" resultType="int">
+		select seq_notification_no.nextval from dual
+	</select>
+	
+	<!-- 알람 생성 -->
+	<insert id="insert" parameterType="NotificationDto">
+		insert into notification(
+			notification_no,
+			notification_receiver,
+			project_no,
+			notification_type,
+			notification_target,
+			notification_url,
+			notification_content,
+			notification_read,
+			notification_ctime,
+			notification_rtime
+		) values(
+			#{notificationNo},
+			#{notificationReceiver},
+			#{projectNo},
+			#{notificationType},
+			#{notificationTarget},
+			#{notificationUrl},
+			#{notificationContent},
+			'N',
+			systimestamp,
+			null
+		)
+	</insert>
+</mapper>
