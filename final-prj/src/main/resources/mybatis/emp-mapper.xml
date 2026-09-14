@@ -615,7 +615,11 @@ order by e.emp_no asc
 
 
 
-
+<!-- 회원 번호와 카카오 id 연결 -->
+<insert id="kakao">
+	insert into emp_kakao(emp_no, kakao_id)
+	values(#{empNo}, #{id})
+</insert>
 
 
 

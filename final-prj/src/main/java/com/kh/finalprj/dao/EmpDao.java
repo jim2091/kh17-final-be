@@ -17,6 +17,7 @@ import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.emp.MemberInitialSearchRequestVO;
 import com.kh.finalprj.vo.emp.MemberInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.MemberListVO;
+import com.kh.finalprj.vo.kakao.KakaoLoginRequestVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
 
@@ -86,6 +87,8 @@ public interface EmpDao {
 	//키워드로 목록 검색
 	List<EmpSearchResponseVO> empSearch(EmpSearchRequestVO vo);
 	
+	//emp_kakao에 insert
+	void kakao(KakaoLoginRequestVO vo);
 	
 	
 	

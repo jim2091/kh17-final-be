@@ -24,6 +24,7 @@ import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.emp.MemberInitialSearchRequestVO;
 import com.kh.finalprj.vo.emp.MemberInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.MemberListVO;
+import com.kh.finalprj.vo.kakao.KakaoLoginRequestVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
 @Repository
@@ -186,6 +187,12 @@ public class EmpDaoMybatis implements EmpDao {
 	@Override
 	public List<MemberInitialSearchResponseVO> memberInitialSearch(MemberInitialSearchRequestVO vo) {
 		return sqlSession.selectList("mapper.emp.memberInitialSearch", vo);
+	}
+
+	@Override
+	public void kakao(KakaoLoginRequestVO vo) {
+
+		sqlSession.insert("mapper.emp.kakao", vo);
 	}
 
 	
