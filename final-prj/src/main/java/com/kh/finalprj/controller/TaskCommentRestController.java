@@ -17,16 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CommonsApiResponse;
 import com.kh.finalprj.annotation.CurrentUser;
-import com.kh.finalprj.dao.ProjectMemberDao;
-import com.kh.finalprj.dto.NotificationDto;
-import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.dto.TaskCommentDto;
-import com.kh.finalprj.service.NotificationService;
 import com.kh.finalprj.service.TaskCommentService;
-import com.kh.finalprj.service.TaskService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.task.TaskCommentDetailResponseVO;
-import com.kh.finalprj.vo.task.TaskDetailResponseVO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -43,15 +37,6 @@ public class TaskCommentRestController {
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private TaskService taskService;
-
-    @Autowired
-    private ProjectMemberDao projectMemberDao;
 
     @Operation(summary = "댓글 목록 조회")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
@@ -76,10 +61,12 @@ public class TaskCommentRestController {
             @CurrentUser TokenParseResponseVO parseVO) {
 
         int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 1;
+        
+        // 서비스 계층에서 댓글 등록 및 중복 제거된 개인 알림 발송을 모두 처리합니다.
         int generatedCommentNo = taskCommentService.add(taskCommentDto, loginEmpNo);
 
         if (generatedCommentNo > 0 && projectNo > 0) {
-            // 기존 칸반 댓글창 동기화 브로드캐스트 전송
+            // 기존 칸반 댓글창 실시간 동기화 브로드캐스트 전송
             simpMessagingTemplate.convertAndSend(
                 "/public/projects/" + projectNo + "/kanban",
                 Map.of(
@@ -90,48 +77,6 @@ public class TaskCommentRestController {
                     "senderEmpNo", loginEmpNo
                 )
             );
-
-            // 업무 정보를 조회하여 주 담당자 및 업무 작성자에게 개인 알림 발송
-            TaskDetailResponseVO task = taskService.selectOne(taskCommentDto.getTaskNo());
-            if (task != null) {
-                Integer assigneeEmpNo = null;
-
-                // 주 담당자 사번 조회
-                if (task.getAssignedMemberNo() > 0) {
-                    ProjectMemberDto assigneeMember = projectMemberDao.findMember(task.getAssignedMemberNo());
-                    if (assigneeMember != null) {
-                        assigneeEmpNo = assigneeMember.getEmpNo();
-                    }
-                }
-
-                // 주 담당자가 본인이 아닐 때 주 담당자에게 알림 전송
-                if (assigneeEmpNo != null && assigneeEmpNo != loginEmpNo) {
-                    notificationService.send(NotificationDto.builder()
-                        .notificationReceiver(assigneeEmpNo)
-                        .projectNo(projectNo)
-                        .notificationType("TASK_COMMENT")
-                        .notificationTarget(taskCommentDto.getTaskNo())
-                        .notificationUrl("/projects/" + projectNo + "/kanban?taskNo=" + taskCommentDto.getTaskNo())
-                        .notificationContent("'" + task.getTaskTitle() + "' 업무에 새 댓글이 등록되었습니다.")
-                        .build());
-                }
-
-                // 업무 작성자가 본인이 아니고 주 담당자와도 다를 때 작성자에게 알림 전송
-                ProjectMemberDto writerMember = projectMemberDao.findMember(task.getTaskWriterNo());
-                if (writerMember != null) {
-                    int writerEmpNo = writerMember.getEmpNo();
-                    if (writerEmpNo != loginEmpNo && (assigneeEmpNo == null || writerEmpNo != assigneeEmpNo)) {
-                        notificationService.send(NotificationDto.builder()
-                            .notificationReceiver(writerEmpNo)
-                            .projectNo(projectNo)
-                            .notificationType("TASK_COMMENT")
-                            .notificationTarget(taskCommentDto.getTaskNo())
-                            .notificationUrl("/projects/" + projectNo + "/kanban?taskNo=" + taskCommentDto.getTaskNo())
-                            .notificationContent("작성하신 '" + task.getTaskTitle() + "' 업무에 새 댓글이 등록되었습니다.")
-                            .build());
-                    }
-                }
-            }
         }
 
         return generatedCommentNo;

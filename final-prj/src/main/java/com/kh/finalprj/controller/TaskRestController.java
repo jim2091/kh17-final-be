@@ -23,7 +23,6 @@ import com.kh.finalprj.dto.NotificationDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
 import com.kh.finalprj.dto.TaskDto;
 import com.kh.finalprj.service.NotificationService;
-import com.kh.finalprj.service.TaskCollaboService;
 import com.kh.finalprj.service.TaskService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.task.TaskAddRequestVO;
@@ -48,7 +47,6 @@ public class TaskRestController {
 	@Autowired
 	private SimpMessagingTemplate simpMessagingTemplate;
 
-	// 알림 발송 및 멤버 번호(projectMemberNo -> empNo) 조회를 위한 의존성 주입
 	@Autowired
 	private NotificationService notificationService;
 
@@ -107,7 +105,6 @@ public class TaskRestController {
 		int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
 		boolean result = taskService.delete(taskNo);
 
-		// 삭제 성공 시 실시간 전파
 		if (result && projectNo > 0) {
 			simpMessagingTemplate.convertAndSend("/public/projects/" + projectNo + "/kanban", Map.of("eventType",
 					"TASK_DELETED", "projectNo", projectNo, "taskNo", taskNo, "senderEmpNo", senderEmpNo));
@@ -134,7 +131,6 @@ public class TaskRestController {
 		int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
 		boolean result = taskService.restore(taskNo);
 
-		// 복구 성공 시 실시간 칸반 전파
 		if (result && projectNo > 0) {
 			simpMessagingTemplate.convertAndSend("/public/projects/" + projectNo + "/kanban", Map.of("eventType",
 					"TASK_RESTORED", "projectNo", projectNo, "taskNo", taskNo, "senderEmpNo", senderEmpNo));
@@ -143,53 +139,45 @@ public class TaskRestController {
 		return result;
 	}
 
-	// 8. 업무 내용 수정 (주 담당자 변경 감지 및 알림 발송)
-	// 상단에 협업자 서비스 의존성 주입 추가
-    @Autowired
-    private TaskCollaboService taskCollaboService;
+	// 8. 업무 내용 및 협업자 수정 (중복 호출 제거 완료)
+	@Operation(summary = "업무 수정")
+	@ApiResponse(responseCode = "200", description = "업무 수정 성공")
+	@PutMapping(value = "/", produces = "application/json")
+	public boolean update(@RequestBody TaskUpdateRequestVO updateVO, @CurrentUser TokenParseResponseVO parseVO) {
 
-    // 8. 업무 내용 및 협업자 수정
-    @Operation(summary = "업무 수정")
-    @ApiResponse(responseCode = "200", description = "업무 수정 성공")
-    @PutMapping(value = "/", produces = "application/json")
-    public boolean update(@RequestBody TaskUpdateRequestVO updateVO, @CurrentUser TokenParseResponseVO parseVO) {
+		int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
+		TaskDetailResponseVO beforeTask = taskService.selectOne(updateVO.getTaskNo());
 
-        int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
-        TaskDetailResponseVO beforeTask = taskService.selectOne(updateVO.getTaskNo());
+		// 서비스 계층에서 기본 정보 및 협업자 교체를 단일 트랜잭션으로 안전하게 처리
+		boolean result = taskService.update(updateVO);
 
-        boolean result = taskService.update(updateVO);
+		if (result && updateVO.getProjectNo() > 0) {
+			// 칸반 실시간 브로드캐스트
+			simpMessagingTemplate.convertAndSend("/public/projects/" + updateVO.getProjectNo() + "/kanban",
+					Map.of("eventType", "TASK_UPDATED", "projectNo", updateVO.getProjectNo(), "taskNo",
+							updateVO.getTaskNo(), "senderEmpNo", senderEmpNo));
 
-        if (result && updateVO.getCollaboratorMemberNos() != null) {
-            taskCollaboService.replaceCollaborators(updateVO.getTaskNo(), updateVO.getCollaboratorMemberNos());
-        }
+			// 담당자 변경 알림 발송
+			Integer currentAssignee = updateVO.getAssignedMemberNo();
+			Integer beforeAssignee = (beforeTask != null) ? beforeTask.getAssignedMemberNo() : null;
 
-        if (result && updateVO.getProjectNo() > 0) {
-            // 칸반 실시간 브로드캐스트
-            simpMessagingTemplate.convertAndSend("/public/projects/" + updateVO.getProjectNo() + "/kanban",
-                    Map.of("eventType", "TASK_UPDATED", "projectNo", updateVO.getProjectNo(), "taskNo",
-                            updateVO.getTaskNo(), "senderEmpNo", senderEmpNo));
+			if (currentAssignee != null && currentAssignee > 0 && !currentAssignee.equals(beforeAssignee)) {
+				ProjectMemberDto assignedMember = projectMemberDao.findMember(currentAssignee);
+				if (assignedMember != null && assignedMember.getEmpNo() != senderEmpNo) {
+					notificationService.send(NotificationDto.builder()
+							.notificationReceiver(assignedMember.getEmpNo())
+							.projectNo(updateVO.getProjectNo())
+							.notificationType("TASK_ASSIGNED")
+							.notificationTarget(updateVO.getTaskNo())
+							.notificationUrl("/projects/" + updateVO.getProjectNo() + "/kanban?taskNo=" + updateVO.getTaskNo())
+							.notificationContent("'" + updateVO.getTaskTitle() + "' 업무의 담당자로 배정되었습니다.")
+							.build());
+				}
+			}
+		}
 
-            // 담당자 변경 알림 발송
-            Integer currentAssignee = updateVO.getAssignedMemberNo();
-            Integer beforeAssignee = (beforeTask != null) ? beforeTask.getAssignedMemberNo() : null;
-
-            if (currentAssignee != null && currentAssignee > 0 && !currentAssignee.equals(beforeAssignee)) {
-                ProjectMemberDto assignedMember = projectMemberDao.findMember(currentAssignee);
-                if (assignedMember != null && assignedMember.getEmpNo() != senderEmpNo) {
-                    notificationService.send(NotificationDto.builder()
-                            .notificationReceiver(assignedMember.getEmpNo())
-                            .projectNo(updateVO.getProjectNo())
-                            .notificationType("TASK_ASSIGNED")
-                            .notificationTarget(updateVO.getTaskNo())
-                            .notificationUrl("/projects/" + updateVO.getProjectNo() + "/kanban?taskNo=" + updateVO.getTaskNo())
-                            .notificationContent("'" + updateVO.getTaskTitle() + "' 업무의 담당자로 배정되었습니다.")
-                            .build());
-                }
-            }
-        }
-
-        return result;
-    }
+		return result;
+	}
 
 	// 9. 칸반 카드 드래그 이동 (DONE 완료 시 최초 작성자에게 완료 알림 발송)
 	@Operation(summary = "칸반 이동")
@@ -201,12 +189,10 @@ public class TaskRestController {
 		boolean result = taskService.moveTask(moveVO);
 
 		if (result) {
-			// 칸반 화면 실시간 동기화 브로드캐스트
 			simpMessagingTemplate.convertAndSend("/public/projects/" + moveVO.getProjectNo() + "/kanban",
 					Map.of("eventType", "TASK_MOVED", "taskNo", moveVO.getTaskNo(), "nextStatus",
 							moveVO.getTargetStatus(), "newOrder", moveVO.getNewOrder(), "senderEmpNo", senderEmpNo));
 
-			// DONE 컬럼으로 이동 완료된 경우 최초 업무 작성자에게 완료 알림 발송
 			if ("DONE".equalsIgnoreCase(moveVO.getTargetStatus())) {
 				TaskDetailResponseVO currentTask = taskService.selectOne(moveVO.getTaskNo());
 
