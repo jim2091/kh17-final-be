@@ -5,9 +5,11 @@ import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.ProjectInviteDto;
 
+@Repository
 public class ProjectInviteDaoMybatis implements ProjectInviteDao{
 	@Autowired
 	private SqlSession sqlSession;

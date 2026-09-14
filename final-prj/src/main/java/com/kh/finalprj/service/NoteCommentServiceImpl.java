@@ -89,7 +89,7 @@ public class NoteCommentServiceImpl implements NoteCommentService {
             // 2) 중복 방지 개인 알림 전송 (Set 활용)
             Set<Integer> receiverEmpNos = new HashSet<>();
             if (note.getNoteWriterNo() > 0) {
-                ProjectMemberDto writerMember = projectMemberDao.findMember(note.getNoteWriterNo());
+                ProjectMemberDto writerMember = projectMemberDao.findMember2(note.getNoteWriterNo());
                 if (writerMember != null && writerMember.getEmpNo() != loginEmpNo) {
                     receiverEmpNos.add(writerMember.getEmpNo());
                 }

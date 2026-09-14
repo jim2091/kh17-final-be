@@ -33,7 +33,7 @@ public class TaskCollaboServiceImpl implements TaskCollaboService {
 	private void sendCollabNotification(TaskDetailResponseVO task, int projectMemberNo) {
 		if (task == null || projectMemberNo <= 0) return;
 
-		ProjectMemberDto collabMember = projectMemberDao.findMember(projectMemberNo);
+		ProjectMemberDto collabMember = projectMemberDao.findMember2(projectMemberNo);
 		if (collabMember != null && collabMember.getEmpNo() > 0) {
 			notificationService.send(NotificationDto.builder()
 					.notificationReceiver(collabMember.getEmpNo())
