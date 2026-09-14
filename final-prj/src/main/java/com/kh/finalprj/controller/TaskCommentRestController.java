@@ -38,21 +38,18 @@ public class TaskCommentRestController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @Operation(summary = "댓글 목록 조회")
     @ApiResponse(responseCode = "200", description = "댓글 목록 조회 성공")
     @GetMapping(value = "/list/{taskNo}", produces = "application/json")
     public List<TaskCommentDto> list(@PathVariable int taskNo) {
         return taskCommentService.findComments(taskNo);
     }
 
-    @Operation(summary = "댓글 단건 상세 조회")
     @ApiResponse(responseCode = "200", description = "댓글 상세 조회 성공")
     @GetMapping(value = "/{taskCommentNo}", produces = "application/json")
     public TaskCommentDetailResponseVO detail(@PathVariable int taskCommentNo) {
         return taskCommentService.selectOne(taskCommentNo);
     }
 
-    @Operation(summary = "댓글 등록")
     @ApiResponse(responseCode = "200", description = "댓글 등록 성공")
     @PostMapping(value = "/", produces = "application/json")
     public int add(
@@ -82,7 +79,6 @@ public class TaskCommentRestController {
         return generatedCommentNo;
     }
 
-    @Operation(summary = "댓글 수정")
     @ApiResponse(responseCode = "200", description = "댓글 수정 성공")
     @PutMapping(value = "/", produces = "application/json")
     public boolean update(
@@ -109,7 +105,6 @@ public class TaskCommentRestController {
         return result;
     }
 
-    @Operation(summary = "댓글 삭제")
     @ApiResponse(responseCode = "200", description = "댓글 삭제 성공")
     @DeleteMapping(value = "/{taskCommentNo}", produces = "application/json")
     public boolean delete(

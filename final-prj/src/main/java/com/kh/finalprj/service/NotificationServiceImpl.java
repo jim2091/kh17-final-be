@@ -12,7 +12,7 @@ import com.kh.finalprj.dao.NotificationDao;
 import com.kh.finalprj.dto.NotificationDto;
 
 @Service
-public class NotificationServiceImpl implements NotificationService{
+public class NotificationServiceImpl implements NotificationService {
 	
 	@Autowired
 	private NotificationDao notificationDao;
@@ -28,6 +28,7 @@ public class NotificationServiceImpl implements NotificationService{
 		notificationDto.setNotificationRead("N");
 		notificationDao.insert(notificationDto);
 		
+		// 실시간 웹소켓 푸시 전송 (수신자 사번 기준 채널)
 		simpMessagingTemplate.convertAndSend(
 			"/public/user/" + notificationDto.getNotificationReceiver() + "/notify", 
 			notificationDto

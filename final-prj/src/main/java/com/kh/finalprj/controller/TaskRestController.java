@@ -53,8 +53,7 @@ public class TaskRestController {
 	@Autowired
 	private ProjectMemberDao projectMemberDao;
 
-	// 1. 업무 생성 (내부 TaskServiceImpl.add에서 주 담당자 및 협업자 알림 처리 완료됨)
-	@Operation(summary = "신규 업무 등록")
+	//업무 생성
 	@ApiResponse(responseCode = "200", description = "업무 생성 성공")
 	@PostMapping(value = "/", produces = "application/json")
 	public int add(@RequestBody TaskAddRequestVO requestVO, @CurrentUser TokenParseResponseVO parseVO) {
@@ -71,32 +70,28 @@ public class TaskRestController {
 		return generatedTaskNo;
 	}
 
-	// 2. 전체 업무 리스트 조회
-	@Operation(summary = "프로젝트 전체 업무 리스트 조회")
+	//전체 업무 리스트 조회
 	@ApiResponse(responseCode = "200", description = "전체 리스트 조회 성공")
 	@GetMapping(value = "/list/{projectNo}", produces = "application/json")
 	public List<TaskDto> listByProject(@PathVariable int projectNo) {
 		return taskService.selectByProjectNo(projectNo);
 	}
 
-	// 3. 업무 단건 상세 조회
-	@Operation(summary = "업무 단건 상세 조회")
+	//업무 단건 상세 조회
 	@ApiResponse(responseCode = "200", description = "업무 조회 성공")
 	@GetMapping(value = "/{taskNo}", produces = "application/json")
 	public TaskDetailResponseVO find(@PathVariable int taskNo) {
 		return taskService.selectOne(taskNo);
 	}
 
-	// 4. 칸반 보드 3단 분류 조회
-	@Operation(summary = "칸반 보드 3단 분류 조회")
+	//칸반 보드 3단 분류 조회
 	@ApiResponse(responseCode = "200", description = "칸반 보드 조회 성공")
 	@GetMapping(value = "/kanban/{projectNo}", produces = "application/json")
 	public TaskMoveResponseVO findKanbanBoard(@PathVariable int projectNo) {
 		return taskService.selectKanbanBoard(projectNo);
 	}
 
-	// 5. 업무 삭제 (Soft Delete)
-	@Operation(summary = "업무 삭제")
+	//업무 삭제 (Soft Delete)
 	@ApiResponse(responseCode = "200", description = "업무 삭제 성공")
 	@DeleteMapping(value = "/{taskNo}", produces = "application/json")
 	public boolean delete(@PathVariable int taskNo, @RequestParam(required = false, defaultValue = "0") int projectNo,
@@ -113,16 +108,14 @@ public class TaskRestController {
 		return result;
 	}
 
-	// 6. 삭제된 업무 목록 조회 (휴지통)
-	@Operation(summary = "휴지통 업무 목록 조회")
+	//삭제된 업무 목록 조회 (휴지통)
 	@ApiResponse(responseCode = "200", description = "휴지통 목록 조회 성공")
 	@GetMapping(value = "/deleted/{projectNo}", produces = "application/json")
 	public List<TaskDto> getDeletedTasks(@PathVariable int projectNo) {
 		return taskService.selectDeletedByProjectNo(projectNo);
 	}
 
-	// 7. 삭제된 업무 복구 (휴지통에서 꺼내오기)
-	@Operation(summary = "삭제된 업무 복구")
+	//삭제된 업무 복구 (휴지통에서 꺼내오기)
 	@ApiResponse(responseCode = "200", description = "업무 복구 성공")
 	@PatchMapping(value = "/{taskNo}/restore", produces = "application/json")
 	public boolean restore(@PathVariable int taskNo, @RequestParam(required = false, defaultValue = "0") int projectNo,
@@ -139,8 +132,7 @@ public class TaskRestController {
 		return result;
 	}
 
-	// 8. 업무 내용 및 협업자 수정 (중복 호출 제거 완료)
-	@Operation(summary = "업무 수정")
+	// 업무 내용 및 협업자 수정
 	@ApiResponse(responseCode = "200", description = "업무 수정 성공")
 	@PutMapping(value = "/", produces = "application/json")
 	public boolean update(@RequestBody TaskUpdateRequestVO updateVO, @CurrentUser TokenParseResponseVO parseVO) {
@@ -179,8 +171,7 @@ public class TaskRestController {
 		return result;
 	}
 
-	// 9. 칸반 카드 드래그 이동 (DONE 완료 시 최초 작성자에게 완료 알림 발송)
-	@Operation(summary = "칸반 이동")
+	//칸반 카드 드래그 이동
 	@ApiResponse(responseCode = "200", description = "칸반 이동 성공")
 	@PatchMapping(value = "/move", produces = "application/json")
 	public boolean moveTask(@RequestBody TaskMoveRequestVO moveVO, @CurrentUser TokenParseResponseVO parseVO) {
