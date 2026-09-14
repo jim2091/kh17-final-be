@@ -25,9 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
-
 import software.amazon.awssdk.services.s3.S3Client;
-
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -42,17 +40,22 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 public class AttachServiceCloud
         implements AttachService {
 
+
     @Autowired
     private AttachDao attachDao;
+
 
     @Autowired
     private ProjectFileDao projectFileDao;
 
+
     @Autowired
     private ProjectMemberDao projectMemberDao;
 
+
     @Autowired
     private S3Client s3Client;
+
 
     @Autowired
     private StorageProperties storageProperties;
@@ -76,7 +79,6 @@ public class AttachServiceCloud
             attach == null
             || attach.isEmpty()
         ) {
-
             return 0;
         }
 
@@ -217,6 +219,10 @@ public class AttachServiceCloud
     //
     // member
     // → 본인이 올린 파일만 삭제 가능
+    //
+    // 중요:
+    // Note / Note Comment 등에서 attachService.delete()
+    // 를 호출해도 project_file 연결까지 같이 삭제한다.
     // =========================================================
 
     @Transactional
@@ -254,7 +260,10 @@ public class AttachServiceCloud
 
 
         // =====================================================
-        // 파일이 어느 프로젝트에 연결되어 있는지 확인
+        // 프로젝트 번호 조회
+        //
+        // 권한 확인을 먼저 해야 하므로
+        // project_file을 삭제하기 전에 조회한다.
         // =====================================================
 
         Integer projectNo =
@@ -328,10 +337,25 @@ public class AttachServiceCloud
 
 
         // =====================================================
-        // DB 삭제
+        // PROJECT_FILE 연결 삭제
         //
-        // PROJECT_FILE
-        // → ATTACH FK ON DELETE CASCADE
+        // 기존에는 ATTACH만 삭제해서
+        // project_file에 연결이 남아 있었습니다.
+        //
+        // Note에서 삭제한 경우에도
+        // 파일함에서 사라지도록 연결을 먼저 제거한다.
+        // =====================================================
+
+        attachDao.deleteProjectFile(
+                attachNo
+        );
+
+
+        // =====================================================
+        // ATTACH 삭제
+        //
+        // NOTE_FILE은 NoteService에서 이미 삭제된 상태이므로
+        // 여기서 ATTACH를 삭제한다.
         // =====================================================
 
         attachDao.delete(
