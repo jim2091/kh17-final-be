@@ -19,7 +19,7 @@ public interface ProjectDao {
 	boolean update(ProjectDto projectDto);
 	
 	//공개 프로젝트 개수
-	int countPublicProject(PageVO pageVO);
+	int countPublicProject(PageVO pageVO,int empNo);
 	//공개 프로젝트 목록
 	List<ProjectListResponseVO> selectPublicProjectList(PageVO pageVO, int empNo);
 	//프로젝트 자체 조회(참여하기에 사용)

@@ -90,9 +90,17 @@
 	<!-- 공개 프로젝트 개수(검색어 포함) -->
 	<select id="countPublicProject" resultType="int">
 		select count(*)
-		from project
+		from project p
+		
+		left outer join project_member pm
+			on p.project_no = pm.project_no
+			and pm.emp_no = #{empNo}
+			and pm.project_member_status = 'active'
+			
 		where project_visibility = 'public'
 			and project_status = 'active'
+			
+			and pm.project_member_no is null
 			
 		 <if test="keyword != null and keyword != ''">
         and (
@@ -140,6 +148,7 @@
 			
 		where p.project_visibility = 'public'
 			and p.project_status = 'active'
+			and pm.project_member_no is null
 			
 		<if test="pageVO.isSearch()">
 			and(

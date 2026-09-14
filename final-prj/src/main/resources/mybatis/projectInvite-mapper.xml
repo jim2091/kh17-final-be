@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.projectInvite">
+	<!-- 프로젝트 초대 등록 -->
+	<select id="sequence" resultType="int">
+		select project_invite_seq.nextval from dual
+	</select>
+	
+	<insert id="add">
+		insert into project_invite(
+			project_invite_no,
+			project_no,
+			project_invite_sender,
+			project_invite_receiver,
+			project_invite_status,
+			project_invite_ctime
+		)
+		valuse(
+			#{projectInviteNo},
+			#{projectNo},
+			#{projectInviteSender},
+			#{projectInviteReceiver},
+			#{projectInviteStatus},
+			systimestmp
+		)
+	</insert>
+	
+	<!-- 초대 상세 조회 -->
+	<select id="find" resultType="ProjectInviteDto">
+		select * from project_invite
+		where project_invite_no = #{projectInviteNo}
+	</select>
+	
+	<!-- 대기중인 초대 확인 -->
+	<select id="countPening" resultType="int">
+		select count(*) from project_invite
+		
+		where proejct_no = #{projectNo}
+		
+		and project_invite_receiver = #{projectInviteReceiver}
+		and project_invite_status = '대기'
+	</select>
+
+	<!-- 초대 수락 -->
+	<update id="accept">
+		update project_invite
+		set	project_invite_status = '수락',
+			project_invite_rtime = systimestamp
+		
+		where project_invite_no
+			= #{projectInviteNo}
+		and project_invite_status
+			= '대기'
+	</update>
+	
+	<!-- 초대 거절 -->
+	<update id="reject">
+		update project_invite
+		set	project_invite_status = '거절',
+			project_invite_rtime = systimestamp
+			
+		where project_invite_no
+			= #{projectInviteNo}
+		and project_invite_status
+			= '대기'
+	</update>
+</mapper>
