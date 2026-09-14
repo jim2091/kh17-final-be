@@ -96,7 +96,7 @@ public class TaskServiceImpl implements TaskService {
 
 		// 주 담당자 사번 추가
 		if (assignedMemberNo != null && assignedMemberNo > 0) {
-			ProjectMemberDto assignedMember = projectMemberDao.findMember(assignedMemberNo);
+			ProjectMemberDto assignedMember = projectMemberDao.findMember2(assignedMemberNo);
 			if (assignedMember != null && assignedMember.getEmpNo() != empNo) {
 				receiverEmpNos.add(assignedMember.getEmpNo());
 			}
@@ -107,7 +107,7 @@ public class TaskServiceImpl implements TaskService {
 			for (Integer memberNo : collaboratorMemberNos) {
 				if (memberNo != null && memberNo > 0) {
 					if (assignedMemberNo == null || !assignedMemberNo.equals(memberNo)) {
-						ProjectMemberDto collabMember = projectMemberDao.findMember(memberNo);
+						ProjectMemberDto collabMember = projectMemberDao.findMember2(memberNo);
 						if (collabMember != null && collabMember.getEmpNo() != empNo) {
 							receiverEmpNos.add(collabMember.getEmpNo());
 						}

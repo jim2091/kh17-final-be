@@ -154,7 +154,7 @@ public class TaskRestController {
 			Integer beforeAssignee = (beforeTask != null) ? beforeTask.getAssignedMemberNo() : null;
 
 			if (currentAssignee != null && currentAssignee > 0 && !currentAssignee.equals(beforeAssignee)) {
-				ProjectMemberDto assignedMember = projectMemberDao.findMember(currentAssignee);
+				ProjectMemberDto assignedMember = projectMemberDao.findMember2(currentAssignee);
 				if (assignedMember != null && assignedMember.getEmpNo() != senderEmpNo) {
 					notificationService.send(NotificationDto.builder()
 							.notificationReceiver(assignedMember.getEmpNo())
@@ -188,7 +188,7 @@ public class TaskRestController {
 				TaskDetailResponseVO currentTask = taskService.selectOne(moveVO.getTaskNo());
 
 				if (currentTask != null && currentTask.getTaskWriterNo() > 0) {
-					ProjectMemberDto writerMember = projectMemberDao.findMember(currentTask.getTaskWriterNo());
+					ProjectMemberDto writerMember = projectMemberDao.findMember2(currentTask.getTaskWriterNo());
 					if (writerMember != null && writerMember.getEmpNo() != senderEmpNo) {
 						notificationService.send(NotificationDto.builder()
 								.notificationReceiver(writerMember.getEmpNo())

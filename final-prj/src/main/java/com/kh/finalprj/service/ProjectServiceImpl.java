@@ -276,7 +276,7 @@ public class ProjectServiceImpl implements ProjectService{
 		}
 		
 		//3.새 owner 대상 조회
-		ProjectMemberDto targetMember = projectMemberDao.findMember(projectMemberNo);
+		ProjectMemberDto targetMember = projectMemberDao.findMember2(projectMemberNo);
 		
 		if(targetMember == null) {
 			throw new TargetNotfoundException("변경할 프로젝트 멤버가 존재하지 않습니다.");
@@ -562,7 +562,7 @@ public class ProjectServiceImpl implements ProjectService{
 		
 		//5.강제퇴장 대상 조회
 		ProjectMemberDto targetMember = 
-				projectMemberDao.findMember(projectMemberNo);
+				projectMemberDao.findMember2(projectMemberNo);
 	
 		if(targetMember == null) {
 			throw new TargetNotfoundException("프로젝트 멤버 정보를 찾을 수 없습니다.");

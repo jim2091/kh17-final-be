@@ -77,7 +77,7 @@ public class TaskCommentServiceImpl implements TaskCommentService {
 
             // 1. 주 담당자 사번 수집
             if (task.getAssignedMemberNo() != null && task.getAssignedMemberNo() > 0) {
-                ProjectMemberDto assigneeMember = projectMemberDao.findMember(task.getAssignedMemberNo());
+                ProjectMemberDto assigneeMember = projectMemberDao.findMember2(task.getAssignedMemberNo());
                 if (assigneeMember != null && assigneeMember.getEmpNo() != loginEmpNo) {
                     receiverEmpNos.add(assigneeMember.getEmpNo());
                 }
@@ -85,7 +85,7 @@ public class TaskCommentServiceImpl implements TaskCommentService {
 
             // 2. 업무 최초 작성자 사번 수집
             if (task.getTaskWriterNo() > 0) {
-                ProjectMemberDto writerMember = projectMemberDao.findMember(task.getTaskWriterNo());
+                ProjectMemberDto writerMember = projectMemberDao.findMember2(task.getTaskWriterNo());
                 if (writerMember != null && writerMember.getEmpNo() != loginEmpNo) {
                     receiverEmpNos.add(writerMember.getEmpNo());
                 }
@@ -95,7 +95,7 @@ public class TaskCommentServiceImpl implements TaskCommentService {
             List<TaskCollaboDto> collabs = taskCollaboDao.selectByTaskNo(task.getTaskNo());
             if (collabs != null) {
                 for (TaskCollaboDto c : collabs) {
-                    ProjectMemberDto collabMember = projectMemberDao.findMember(c.getProjectMemberNo());
+                    ProjectMemberDto collabMember = projectMemberDao.findMember2(c.getProjectMemberNo());
                     if (collabMember != null && collabMember.getEmpNo() != loginEmpNo) {
                         receiverEmpNos.add(collabMember.getEmpNo());
                     }

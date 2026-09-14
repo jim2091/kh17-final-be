@@ -32,5 +32,7 @@ public interface ProjectDao {
 	List<ProjectListResponseVO> selectArchiveProjectList(int empNo);
 	//재 활성화
 	boolean activate(int projectNo);
+
+
 	
 }

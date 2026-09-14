@@ -46,7 +46,7 @@ public class ProjectMemberDaoMybatis implements ProjectMemberDao{
 	}
 
 	@Override
-	public ProjectMemberDto findMember(int projectMemberNo) {
+	public ProjectMemberDto findMember2(int projectMemberNo) {
 		return sqlSession.selectOne("mapper.projectMember.findMember2", projectMemberNo);
 	}
 	
