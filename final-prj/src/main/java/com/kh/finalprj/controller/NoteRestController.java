@@ -3,6 +3,7 @@ package com.kh.finalprj.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kh.finalprj.annotation.CommonsApiResponse;
 import com.kh.finalprj.annotation.CurrentUser;
 import com.kh.finalprj.dao.NoteDao;
+import com.kh.finalprj.dto.NoteCommentDto;
 import com.kh.finalprj.dto.NoteDto;
 import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
+import com.kh.finalprj.service.NoteCommentService;
+import com.kh.finalprj.service.NoteFileService;
 import com.kh.finalprj.service.ProjectPermissionService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.note.NoteAddRequestVO;
@@ -26,6 +30,7 @@ import com.kh.finalprj.vo.note.NoteDeleteResponseVO;
 import com.kh.finalprj.vo.note.NoteDetailResponseVO;
 import com.kh.finalprj.vo.note.NoteEditRequestVO;
 import com.kh.finalprj.vo.note.NoteEditResponseVO;
+import com.kh.finalprj.vo.note.NoteFileResponseVO;
 import com.kh.finalprj.vo.note.NoteListRequestVO;
 import com.kh.finalprj.vo.note.NoteListResponseVO;
 
@@ -40,149 +45,305 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/note")
 public class NoteRestController {
 
-	@Autowired
-	private NoteDao noteDao;
+    @Autowired
+    private NoteDao noteDao;
 
-	@Autowired
-	private ProjectPermissionService projectPermissionService;
+    @Autowired
+    private ProjectPermissionService projectPermissionService;
 
-	// 1. 프로젝트별 노트 목록 조회 (무한 스크롤 / 검색)
-	@Operation(summary = "프로젝트별 노트 목록 조회")
-	@ApiResponse(responseCode = "200", description = "노트 목록 조회 성공")
-	@PostMapping("/project/{projectNo}/list")
-	public NoteListResponseVO list(
-			@PathVariable int projectNo,
-			@Valid @RequestBody NoteListRequestVO request,
-			@CurrentUser TokenParseResponseVO parseVO) {
+    /*
+     * 노트 본체 첨부파일 처리
+     */
+    @Autowired
+    private NoteFileService noteFileService;
 
-		int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
-		projectPermissionService.checkMember(projectNo, loginEmpNo);
+    /*
+     * 노트 댓글 및 댓글 첨부파일 처리
+     */
+    @Autowired
+    private NoteCommentService noteCommentService;
 
-		request.setProjectNo(projectNo);
 
-		List<NoteDto> noteList = noteDao.selectList(request);
-		int count = noteDao.count(request);
+    // 1. 프로젝트별 노트 목록 조회 (무한 스크롤 / 검색)
+    @Operation(summary = "프로젝트별 노트 목록 조회")
+    @ApiResponse(responseCode = "200", description = "노트 목록 조회 성공")
+    @PostMapping("/project/{projectNo}/list")
+    public NoteListResponseVO list(
+            @PathVariable int projectNo,
+            @Valid @RequestBody NoteListRequestVO request,
+            @CurrentUser TokenParseResponseVO parseVO) {
 
-		boolean last = noteList.isEmpty() || noteList.size() >= count;
+        int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
 
-		return NoteListResponseVO.builder()
-				.noteList(noteList)
-				.last(last)
-				.build();
-	}
+        projectPermissionService.checkMember(
+                projectNo,
+                loginEmpNo
+        );
 
-	// 2. 신규 노트 등록
-	@Operation(summary = "신규 노트 등록")
-	@ApiResponse(responseCode = "200", description = "노트 등록 성공")
-	@PostMapping("/project/{projectNo}")
-	public NoteAddResponseVO add(
-			@PathVariable int projectNo,
-			@Valid @RequestBody NoteAddRequestVO request,
-			@CurrentUser TokenParseResponseVO parseVO) {
+        request.setProjectNo(projectNo);
 
-		int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
-		int memberNo = projectPermissionService.findProjectMemberNo(projectNo, loginEmpNo);
+        List<NoteDto> noteList =
+                noteDao.selectList(request);
 
-		int noteNo = noteDao.sequence();
+        int count =
+                noteDao.count(request);
 
-		noteDao.insert(NoteDto.builder()
-				.noteNo(noteNo)
-				.projectNo(projectNo)
-				.noteTitle(request.getNoteTitle())
-				.noteContent(request.getNoteContent())
-				.noteWriterNo(memberNo)
-				.build());
+        boolean last =
+                noteList.isEmpty()
+                || noteList.size() >= count;
 
-		return NoteAddResponseVO.builder()
-				.noteNo(noteNo)
-				.build();
-	}
+        return NoteListResponseVO.builder()
+                .noteList(noteList)
+                .last(last)
+                .build();
+    }
 
-	// 3. 노트 단건 상세 조회
-	@Operation(summary = "노트 단건 상세 조회")
-	@ApiResponse(responseCode = "200", description = "노트 상세 조회 성공")
-	@GetMapping("/{noteNo}")
-	public NoteDetailResponseVO detail(
-			@PathVariable int noteNo,
-			@CurrentUser TokenParseResponseVO parseVO) {
 
-		int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
+    // 2. 신규 노트 등록
+    @Operation(summary = "신규 노트 등록")
+    @ApiResponse(responseCode = "200", description = "노트 등록 성공")
+    @PostMapping("/project/{projectNo}")
+    public NoteAddResponseVO add(
+            @PathVariable int projectNo,
+            @Valid @RequestBody NoteAddRequestVO request,
+            @CurrentUser TokenParseResponseVO parseVO) {
 
-		NoteDetailResponseVO noteDetail = noteDao.selectOne(noteNo);
-		if (noteDetail == null) {
-			throw new TargetNotfoundException();
-		}
+        int loginEmpNo =
+                (parseVO != null)
+                ? parseVO.getEmpNo()
+                : 0;
 
-		projectPermissionService.checkMember(noteDetail.getProjectNo(), loginEmpNo);
+        int memberNo =
+                projectPermissionService.findProjectMemberNo(
+                        projectNo,
+                        loginEmpNo
+                );
 
-		return noteDetail;
-	}
+        int noteNo =
+                noteDao.sequence();
 
-	// 4. 노트 내용 수정 (작성자 본인 검증)
-	@Operation(summary = "노트 수정")
-	@ApiResponse(responseCode = "200", description = "노트 수정 성공")
-	@PutMapping("/{noteNo}")
-	public NoteEditResponseVO edit(
-			@PathVariable int noteNo,
-			@Valid @RequestBody NoteEditRequestVO request,
-			@CurrentUser TokenParseResponseVO parseVO) {
+        noteDao.insert(
+                NoteDto.builder()
+                        .noteNo(noteNo)
+                        .projectNo(projectNo)
+                        .noteTitle(request.getNoteTitle())
+                        .noteContent(request.getNoteContent())
+                        .noteWriterNo(memberNo)
+                        .build()
+        );
 
-		int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
+        return NoteAddResponseVO.builder()
+                .noteNo(noteNo)
+                .build();
+    }
 
-		NoteDetailResponseVO noteDetail = noteDao.selectOne(noteNo);
-		if (noteDetail == null) {
-			throw new TargetNotfoundException();
-		}
 
-		int memberNo = projectPermissionService.findProjectMemberNo(noteDetail.getProjectNo(), loginEmpNo);
+    // 3. 노트 단건 상세 조회
+    @Operation(summary = "노트 단건 상세 조회")
+    @ApiResponse(responseCode = "200", description = "노트 상세 조회 성공")
+    @GetMapping("/{noteNo}")
+    public NoteDetailResponseVO detail(
+            @PathVariable int noteNo,
+            @CurrentUser TokenParseResponseVO parseVO) {
 
-		if (memberNo != noteDetail.getNoteWriterNo()) {
-			throw new GetOutException();
-		}
+        int loginEmpNo =
+                (parseVO != null)
+                ? parseVO.getEmpNo()
+                : 0;
 
-		boolean result = noteDao.update(NoteDto.builder()
-				.noteNo(noteNo)
-				.noteTitle(request.getNoteTitle())
-				.noteContent(request.getNoteContent())
-				.build());
+        NoteDetailResponseVO noteDetail =
+                noteDao.selectOne(noteNo);
 
-		if (!result) {
-			throw new TargetNotfoundException();
-		}
+        if (noteDetail == null) {
+            throw new TargetNotfoundException();
+        }
 
-		return NoteEditResponseVO.builder()
-				.noteNo(noteNo)
-				.build();
-	}
+        projectPermissionService.checkMember(
+                noteDetail.getProjectNo(),
+                loginEmpNo
+        );
 
-	// 5. 노트 삭제 (작성자 본인 또는 프로젝트 관리자/소유자 권한)
-	@Operation(summary = "노트 삭제")
-	@ApiResponse(responseCode = "200", description = "노트 삭제 성공")
-	@DeleteMapping("/{noteNo}")
-	public NoteDeleteResponseVO delete(
-			@PathVariable int noteNo,
-			@CurrentUser TokenParseResponseVO parseVO) {
+        return noteDetail;
+    }
 
-		int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
 
-		NoteDetailResponseVO noteDetail = noteDao.selectOne(noteNo);
-		if (noteDetail == null) {
-			throw new TargetNotfoundException();
-		}
+    // 4. 노트 내용 수정 (작성자 본인 검증)
+    @Operation(summary = "노트 수정")
+    @ApiResponse(responseCode = "200", description = "노트 수정 성공")
+    @PutMapping("/{noteNo}")
+    public NoteEditResponseVO edit(
+            @PathVariable int noteNo,
+            @Valid @RequestBody NoteEditRequestVO request,
+            @CurrentUser TokenParseResponseVO parseVO) {
 
-		int memberNo = projectPermissionService.findProjectMemberNo(noteDetail.getProjectNo(), loginEmpNo);
+        int loginEmpNo =
+                (parseVO != null)
+                ? parseVO.getEmpNo()
+                : 0;
 
-		if (memberNo != noteDetail.getNoteWriterNo()) {
-			projectPermissionService.checkOwnerOrManager(noteDetail.getProjectNo(), loginEmpNo);
-		}
+        NoteDetailResponseVO noteDetail =
+                noteDao.selectOne(noteNo);
 
-		boolean result = noteDao.delete(noteNo);
-		if (!result) {
-			throw new TargetNotfoundException();
-		}
+        if (noteDetail == null) {
+            throw new TargetNotfoundException();
+        }
 
-		return NoteDeleteResponseVO.builder()
-				.noteNo(noteNo)
-				.build();
-	}
+        int memberNo =
+                projectPermissionService.findProjectMemberNo(
+                        noteDetail.getProjectNo(),
+                        loginEmpNo
+                );
+
+        if (memberNo != noteDetail.getNoteWriterNo()) {
+            throw new GetOutException();
+        }
+
+        boolean result =
+                noteDao.update(
+                        NoteDto.builder()
+                                .noteNo(noteNo)
+                                .noteTitle(request.getNoteTitle())
+                                .noteContent(request.getNoteContent())
+                                .build()
+                );
+
+        if (!result) {
+            throw new TargetNotfoundException();
+        }
+
+        return NoteEditResponseVO.builder()
+                .noteNo(noteNo)
+                .build();
+    }
+
+
+    // 5. 노트 삭제
+    //
+    // 노트를 삭제하면
+    // ① 노트 본체 첨부파일 삭제
+    // ② 노트 댓글 삭제
+    // ③ 댓글 첨부파일 삭제
+    // ④ 노트 본체 삭제
+    //
+    // 순서로 처리한다.
+    @Operation(summary = "노트 삭제")
+    @ApiResponse(responseCode = "200", description = "노트 삭제 성공")
+    @DeleteMapping("/{noteNo}")
+    @Transactional
+    public NoteDeleteResponseVO delete(
+            @PathVariable int noteNo,
+            @CurrentUser TokenParseResponseVO parseVO) {
+
+        int loginEmpNo =
+                (parseVO != null)
+                ? parseVO.getEmpNo()
+                : 0;
+
+
+        // ==========================================
+        // 1. 노트 존재 여부 확인
+        // ==========================================
+
+        NoteDetailResponseVO noteDetail =
+                noteDao.selectOne(noteNo);
+
+        if (noteDetail == null) {
+            throw new TargetNotfoundException();
+        }
+
+
+        // ==========================================
+        // 2. 삭제 권한 확인
+        // ==========================================
+
+        int memberNo =
+                projectPermissionService.findProjectMemberNo(
+                        noteDetail.getProjectNo(),
+                        loginEmpNo
+                );
+
+        /*
+         * 노트 작성자 본인이 아니면
+         * 프로젝트 관리자 또는 소유자인지 확인
+         */
+        if (memberNo != noteDetail.getNoteWriterNo()) {
+            projectPermissionService.checkOwnerOrManager(
+                    noteDetail.getProjectNo(),
+                    loginEmpNo
+            );
+        }
+
+
+        // ==========================================
+        // 3. 노트 본체 첨부파일 삭제
+        // ==========================================
+        //
+        // note_file
+        //      ↓
+        // attach
+        //      ↓
+        // project_file
+        //
+        // 연결된 파일을 먼저 정리한다.
+        // ==========================================
+
+        List<NoteFileResponseVO> noteFiles =
+                noteFileService.getNoteFies(noteNo);
+
+        if (noteFiles != null && !noteFiles.isEmpty()) {
+
+            for (NoteFileResponseVO file : noteFiles) {
+
+                noteFileService.removeNoteFile(
+                        noteNo,
+                        file.getAttachNo(),
+                        "SYSTEM"
+                );
+            }
+        }
+
+
+        // ==========================================
+        // 4. 노트의 댓글 삭제
+        // ==========================================
+        //
+        // NoteCommentServiceImpl.delete() 내부에서
+        // 댓글 첨부파일도 함께 처리하고 있기 때문에
+        // 기존 댓글 삭제 로직을 그대로 사용한다.
+        // ==========================================
+
+        List<NoteCommentDto> comments =
+                noteCommentService.findComments(noteNo);
+
+        if (comments != null && !comments.isEmpty()) {
+
+            for (NoteCommentDto comment : comments) {
+
+                noteCommentService.delete(
+                        comment.getNoteCommentNo()
+                );
+            }
+        }
+
+
+        // ==========================================
+        // 5. 마지막으로 노트 본체 삭제
+        // ==========================================
+
+        boolean result =
+                noteDao.delete(noteNo);
+
+        if (!result) {
+            throw new TargetNotfoundException();
+        }
+
+
+        // ==========================================
+        // 6. 삭제 결과 반환
+        // ==========================================
+
+        return NoteDeleteResponseVO.builder()
+                .noteNo(noteNo)
+                .build();
+    }
 }
