@@ -33,6 +33,8 @@ import com.kh.finalprj.vo.emp.ChangeEmpRequestVO;
 import com.kh.finalprj.vo.emp.ChangeEmpResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.emp.EmpMeResponseVO;
+import com.kh.finalprj.vo.emp.MemberInitialSearchRequestVO;
+import com.kh.finalprj.vo.emp.MemberInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.MemberListVO;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.page.PagenationVO;
@@ -186,6 +188,24 @@ public class MemberRestController {
 		result.put("count", count);
 		
 		return result;
+	}
+	//회원 초성 검색 결과 조회
+	@PostMapping("/initial")
+	public Map<String, Object> initial(@RequestBody MemberInitialSearchRequestVO request){
+		
+		String tab = request.getTab();
+//		System.out.println("tab : "+ tab);
+		int count = empDao.memberTabCount(tab);
+		List<MemberInitialSearchResponseVO> list = empDao.memberInitialSearch(request);
+		
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("list", list);
+		result.put("count", count);
+//		System.out.println("list : "+ list);
+		
+		return result;
+		
 	}
 	
 

@@ -21,6 +21,8 @@ import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
+import com.kh.finalprj.vo.emp.MemberInitialSearchRequestVO;
+import com.kh.finalprj.vo.emp.MemberInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.MemberListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
@@ -146,6 +148,10 @@ public class EmpDaoMybatis implements EmpDao {
 	public int tabCount(String tab) {
 		return sqlSession.selectOne("mapper.emp.tabCount", tab);
 	}
+	@Override
+	public int memberTabCount(String tab) {
+		return sqlSession.selectOne("mapper.emp.memberTabCount", tab);
+	}
 
 	@Override
 	public List<EmpSearchResponseVO> empSearch(EmpSearchRequestVO vo) {
@@ -177,10 +183,15 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.update("mapper.emp.changePositionAll", vo)>0;
 	}
 
+	@Override
+	public List<MemberInitialSearchResponseVO> memberInitialSearch(MemberInitialSearchRequestVO vo) {
+		return sqlSession.selectList("mapper.emp.memberInitialSearch", vo);
+	}
+
 	
 	
 	
-	
+
 	
 	
 	

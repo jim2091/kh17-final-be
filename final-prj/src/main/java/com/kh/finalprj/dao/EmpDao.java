@@ -14,6 +14,8 @@ import com.kh.finalprj.vo.admin.EmpEditRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchRequestVO;
 import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
+import com.kh.finalprj.vo.emp.MemberInitialSearchRequestVO;
+import com.kh.finalprj.vo.emp.MemberInitialSearchResponseVO;
 import com.kh.finalprj.vo.emp.MemberListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
@@ -37,7 +39,12 @@ public interface EmpDao {
 	List<AdminComplexSearchResponseVO> complexSearch(AdminComplexSearchRequestVO vo);
 
 	List<AdminInitialSearchResponseVO> initialSearch(AdminInitialSearchRequestVO vo);
+	//초성 검색 결과 수(관리자용)
+	int tabCount(String tab);
 	
+	List<MemberInitialSearchResponseVO> memberInitialSearch(MemberInitialSearchRequestVO vo);
+	//초성 검색 결과 수(사용자용)
+	int memberTabCount(String tab);
 	
 	
 	void connect(int empNo, int attachNo);
@@ -74,8 +81,7 @@ public interface EmpDao {
 	
 	//검색 결과 수
 	int searchCount(String keyword);
-	//초성 검색 결과 수
-	int tabCount(String tab);
+	
 	
 	//키워드로 목록 검색
 	List<EmpSearchResponseVO> empSearch(EmpSearchRequestVO vo);

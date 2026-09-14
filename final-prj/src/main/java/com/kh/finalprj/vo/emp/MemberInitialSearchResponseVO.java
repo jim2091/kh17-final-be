@@ -6,17 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(name="회원용 회원목록 응답VO")
+@Schema(name="사용자 초성검색(사용자용) 응답 데이터")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class MemberListVO {
-	
+public class MemberInitialSearchResponseVO {
 	private String empName;
-	private String empEmail;
 	private String deptName;
 	private String positionName;
+	private String empEmail;
 	private String empContact;
-	private String empBirth;
-	private String empAddress1;
-	private int attachNo;
+    private String empBirth;
+    private String empAddress1;
+    private int attachNo;
 
 }
