@@ -1,6 +1,9 @@
 package com.kh.finalprj.service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,9 +29,11 @@ import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordListRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordSummaryResponseVO;
 import com.kh.finalprj.vo.task.TaskDetailResponseVO;
 
 @Service
@@ -479,5 +484,61 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		
 	}
 	
+	@Override
+	public List<ProjectRecordListResponseVO> searchList(int projectNo, int empNo, ProjectRecordListRequestVO request) {
+		
+		//프로젝트 참여자인지 확인
+		projectPermissionService.checkMember(projectNo, empNo);
+		
+		//검색/필터/정렬 적용 목록 조회
+		List<ProjectRecordListResponseVO> recordList = 
+				projectRecordDao.searchList(projectNo, request);
+		
+		//조회 결과가 없으면 관련 원본 조회할 필요 없음
+		if(recordList.isEmpty()) {
+			return recordList;
+		}
+		
+		//조회된 record 번호만 추출
+		List<Integer> projectRecordNoList = 
+				recordList.stream()
+					.map(record -> record.getProjectRecordNo())
+					.toList();
+		
+		//관련 원본을 한 번에 조회
+		List<ProjectRecordRelatedResponseVO> relatedList = 
+				projectRecordDao.selectRelatedPreviewList(projectRecordNoList);
+		
+		//record 번호별로 관련 원본 묶기
+		Map<Integer, List<ProjectRecordRelatedResponseVO>> relatedMap = 
+				relatedList.stream()
+					.collect(
+						Collectors.groupingBy(
+								related -> related.getProjectRecordNo()
+						)
+					);
+		
+		//각 record에 관련 원본 목록 넣기
+		for(ProjectRecordListResponseVO record : recordList) {
+			
+			List<ProjectRecordRelatedResponseVO> recordRelatedList = 
+					relatedMap.getOrDefault(
+						record.getProjectRecordNo(), 
+						Collections.emptyList()
+					);
+			record.setRelatedList(recordRelatedList);
+		}
+		
+		return recordList;
+	}
+	
+	@Override
+	public ProjectRecordSummaryResponseVO summary(int projectNo, int empNo) {
+		
+		//프로젝트 참여자 확인
+		projectPermissionService.checkMember(projectNo, empNo);
+		
+		return projectRecordDao.summary(projectNo);
+	}
 	
 }

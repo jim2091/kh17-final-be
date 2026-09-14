@@ -21,8 +21,10 @@ import com.kh.finalprj.vo.record.ProjectRecordAddResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordEditRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordListRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordSummaryResponseVO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -58,6 +60,17 @@ public class ProjectRecordRestController {
 			@CurrentUser TokenParseResponseVO parseVO) {
 		
 		return projectRecordService.list(projectNo, parseVO.getEmpNo());
+	}
+	
+	@Operation(summary = "프로젝트 record 목록 조회 v2")
+	@ApiResponse(responseCode = "200", description = "record 목록 조회 성공")
+	@PostMapping("/project/{projectNo}/list")
+	public List<ProjectRecordListResponseVO> searchList(
+			@PathVariable int projectNo,
+			@Valid @RequestBody ProjectRecordListRequestVO request,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		return projectRecordService.searchList(projectNo, parseVO.getEmpNo(), request);
 	}
 	
 	@Operation(summary = "프로젝트 record 상세 조회")
@@ -121,5 +134,15 @@ public class ProjectRecordRestController {
 			@CurrentUser TokenParseResponseVO parseVO) {
 		
 		projectRecordService.addRelated(projectRecordNo, parseVO.getEmpNo(), request);
+	}
+	
+	@Operation(summary = "프로젝트 record 요약 조회")
+	@ApiResponse(responseCode = "200", description = "record 요약 조회 성공")
+	@GetMapping("/project/{projectNo}/summary")
+	public ProjectRecordSummaryResponseVO summary(
+			@PathVariable int projectNo,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		return projectRecordService.summary(projectNo, parseVO.getEmpNo());
 	}
 }

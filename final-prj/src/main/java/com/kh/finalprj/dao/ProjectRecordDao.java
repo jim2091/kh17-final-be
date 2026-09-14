@@ -5,8 +5,10 @@ import java.util.List;
 import com.kh.finalprj.dto.ProjectRecordDto;
 import com.kh.finalprj.dto.ProjectRecordIssueDto;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordListRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordSummaryResponseVO;
 
 public interface ProjectRecordDao {
 
@@ -40,4 +42,10 @@ public interface ProjectRecordDao {
 	boolean resolveIssue(ProjectRecordIssueDto projectRecordIssueDto);
 	boolean reopenIssue(int projectRecordNo);
 	boolean updateModifier(ProjectRecordDto projectRecordDto);
+	
+	//record 조회 v2
+	List<ProjectRecordListResponseVO> searchList(int projectNo, ProjectRecordListRequestVO requestVO);
+	List<ProjectRecordRelatedResponseVO> selectRelatedPreviewList(List<Integer> projectRecordNoList);
+	
+	ProjectRecordSummaryResponseVO summary(int projectNo);
 }

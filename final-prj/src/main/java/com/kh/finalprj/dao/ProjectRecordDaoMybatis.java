@@ -7,24 +7,20 @@ import java.util.Map;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import software.amazon.awssdk.services.s3.S3Client;
+
 import com.kh.finalprj.dto.ProjectRecordDto;
 import com.kh.finalprj.dto.ProjectRecordIssueDto;
 import com.kh.finalprj.vo.record.ProjectRecordDetailResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordListRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordSummaryResponseVO;
 
 @Repository
 public class ProjectRecordDaoMybatis implements ProjectRecordDao{
 
-    private final S3Client s3Client;
-	
 	@Autowired
 	private SqlSession sqlSession;
-
-    ProjectRecordDaoMybatis(S3Client s3Client) {
-        this.s3Client = s3Client;
-    }
 	
 	@Override
 	public int sequence() {
@@ -134,6 +130,29 @@ public class ProjectRecordDaoMybatis implements ProjectRecordDao{
 	@Override
 	public boolean updateModifier(ProjectRecordDto projectRecordDto) {
 		return sqlSession.update("mapper.projectRecord.updateModifier", projectRecordDto) > 0;
+	}
+	
+	@Override
+	public List<ProjectRecordListResponseVO> searchList(int projectNo, ProjectRecordListRequestVO requestVO) {
+
+		Map<String, Object> params = new HashMap<>();
+		
+		params.put("projectNo", projectNo);
+		params.put("request", requestVO);
+		
+		return sqlSession.selectList("mapper.projectRecord.searchList", params);
+	}
+	
+	@Override
+	public List<ProjectRecordRelatedResponseVO> selectRelatedPreviewList(List<Integer> projectRecordNoList) {
+		
+		return sqlSession.selectList("mapper.projectRecord.selectRelatedPreviewList", projectRecordNoList);
+		
+	}
+	
+	@Override
+	public ProjectRecordSummaryResponseVO summary(int projectNo) {
+		return sqlSession.selectOne("mapper.projectRecord.summary", projectNo);
 	}
 	
 }

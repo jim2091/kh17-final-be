@@ -290,4 +290,497 @@
 		where project_record_no = #{projectRecordNo}
 	</update>
 	
+	
+	<!-- 목록 조회 v2용 resultMap -->
+	<resultMap id="projectRecordListResultMap"
+		type="ProjectRecordListResponseVO"
+		autoMapping="true">
+	
+		<result
+			property="projectRecordContentPreview"
+			column="content_preview"/>	
+		
+		<result
+			property="projectRecordIssueResolutionPreview"
+			column="resolution_preview"/>
+			
+		<result
+			property="projectRecordIssueResolvedAt"
+			column="issue_resolved_at"/>
+	</resultMap>
+	
+	<!-- 조회 v2 -->
+	<select id="searchList" resultMap="projectRecordListResultMap">
+		select
+			pr.project_record_no,
+			pr.project_record_type,
+			pr.project_record_title,
+			
+			dbms_lob.substr(
+				pr.project_record_content,
+				90,
+				1
+			) content_preview,
+			
+			pr.project_record_writer_no,
+			writer.emp_name project_record_writer_name,
+			
+			pr.project_record_modifier_no,
+			modifier.emp_name project_record_modifier_name,
+			
+			pr.project_record_ctime,
+			pr.project_record_utime,
+			
+			pri.issue_status project_record_issue_status,
+			
+			dbms_lob.substr(
+				pri.issue_resolution,
+				90,
+				1
+			) resolution_preview,
+			
+			pri.issue_resolved_at,
+			
+			(
+				select count(*)
+				from project_record_task prt
+				where prt.project_record_no = pr.project_record_no
+			)
+			+
+			(
+				select count(*)
+				from project_record_message prm
+				where prm.project_record_no = pr.project_record_no
+			)
+			+
+			(
+				select count(*)
+				from project_record_note prn
+				where prn.project_record_no = pr.project_record_no
+			)
+			+
+			(
+				select count(*)
+				from project_record_attach pra
+				where pra.project_record_no = pr.project_record_no
+			) related_count
+			
+		from project_record pr
+		
+			join project_member writer_pm
+				on pr.project_record_writer_no
+					 = writer_pm.project_member_no
+					 
+			join emp writer
+				on writer_pm.emp_no = writer.emp_no
+				
+			left outer join project_member modifier_pm
+				on pr.project_record_modifier_no
+					= modifier_pm.project_member_no
+					
+			left outer join emp modifier
+				on modifier_pm.emp_no = modifier.emp_no
+				
+			left outer join project_record_issue pri
+				on pr.project_record_no
+					= pri.project_record_no
+					
+		where pr.project_no = #{projectNo}
+		
+		<!-- Record 유형 -->
+		<if test="request.type != null
+				and request.type != ''
+				and request.type != 'ALL'">
+			
+			and pr.project_record_type = #{request.type}
+				
+		</if>	
+		
+		<!-- Issue 상태 -->
+		<if test="request.issueStatus != null
+				and request.issueStatus != ''
+				and request.issueStatus != 'ALL'">
+		
+			and pr.project_record_type = 'ISSUE'
+			and pri.issue_status = #{request.issueStatus}
+					
+		</if>
+		
+		<!-- 작성자 -->
+		<if test="request.writerNo != null">
+			
+			and pr.project_record_writer_no = #{request.writerNo}
+			
+		</if>
+		
+		<!-- 시작일 -->
+		<if test="request.startDate != null">
+			
+			and pr.project_record_ctime >= #{request.startDate}
+			
+		</if>
+		
+		<!-- 종료일 -->
+		<if test="request.endDate != null">
+		
+			and pr.project_record_ctime
+				&lt; #{request.endDate} + 1
+				
+		</if>
+		
+		<!-- 관련 원본 유형 -->
+		<if test="request.relatedType != null
+				and request.relatedType != ''
+				and request.relatedType != 'ALL'">
+		
+			<choose>
+			
+				<when test="request.relatedType == 'TASK'">
+					and exists (
+						select 1
+						from project_record_task prt
+						where prt.project_record_no
+							 = pr.project_record_no
+					)
+				</when>
+				
+				<when test="request.relatedType == 'MESSAGE'">
+					and exists (
+						select 1
+						from project_record_message prm
+						where prm.project_record_no
+							 = pr.project_record_no
+					)
+				</when>
+				
+				<when test="request.relatedType == 'NOTE'">
+					and exists (
+						select 1
+						from project_record_note prn
+						where prn.project_record_no
+							 = pr.project_record_no
+					)
+				</when>
+				
+				<when test="request.relatedType == 'ATTACH'">
+					and exists (
+						select 1
+						from project_record_attach pra
+						where pra.project_record_no
+							 = pr.project_record_no
+					)
+				</when>
+				
+			</choose>		
+		</if>
+		
+		<!-- 검색 -->
+		<if test="request.keyword != null
+				and request.keyword.trim() != ''">
+				
+			and (
+				lower(pr.project_record_title)
+					like '%' || lower(#{request.keyword}) || '%'
+					
+				or dbms_lob.instr(
+					lower(pr.project_record_content),
+					lower(#{request.keyword})
+				) > 0
+				
+				or exists (
+					select 1 
+					from project_record_task prt
+						join task t
+							on prt.task_no = t.task_no
+					where prt.project_record_no
+							 = pr.project_record_no
+						and lower(t.task_title)
+							like '%' || lower(#{request.keyword}) || '%'
+				)
+				
+				or exists (
+					select 1 
+					from project_record_note prn
+						join note n
+							on prn.note_no = n.note_no
+					where prn.project_record_no
+							 = pr.project_record_no
+						and lower(n.note_title)
+							like '%' || lower(#{request.keyword}) || '%'
+				)
+				
+				or exists (
+					select 1 
+					from project_record_attach pra
+						join attach a
+							on pra.attach_no = a.attach_no
+					where pra.project_record_no
+							 = pr.project_record_no
+						and lower(a.attach_name)
+							like '%' || lower(#{request.keyword}) || '%'
+				)
+				
+				or exists (
+					select 1 
+					from project_record_message prm
+						join chat_message cm
+							on prm.chat_message_no = cm.chat_message_no
+					where prm.project_record_no
+							 = pr.project_record_no
+						and lower(cm.chat_message_content)
+							like '%' || lower(#{request.keyword}) || '%'
+				)
+			)
+				
+		</if>
+		
+		<choose>
+		
+			<!-- 오래된 작성순 -->
+			<when test="request.sort == 'OLDEST'">
+				order by pr.project_record_ctime asc
+			</when>
+			
+			<!-- 최근 수정순 -->
+			<when test="request.sort == 'UPDATED'">
+				order by
+					nvl(
+						pr.project_record_utime,
+						pr.project_record_ctime
+					) desc
+			</when>
+			
+			<!-- 기본: 최신 작성순 -->
+			<otherwise>
+				order by pr.project_record_ctime desc
+			</otherwise>
+		</choose>
+			
+	</select>
+	
+	
+	<!-- Record 목록용 관련 원본 미리보기 -->
+	<select id="selectRelatedPreviewList"
+	        resultType="ProjectRecordRelatedResponseVO">
+	
+	    select
+	        project_record_no,
+	        related_type,
+	        related_no,
+	        related_title,
+	        related_status
+	
+	    from (
+	
+	        select
+	            related_data.*,
+	
+	            row_number() over (
+	                partition by project_record_no
+	                order by related_order, related_no
+	            ) rn
+	
+	        from (
+	
+	            select
+	                prt.project_record_no,
+	                'TASK' related_type,
+	                t.task_no related_no,
+	                t.task_title related_title,
+	                t.task_status related_status,
+	                1 related_order
+	
+	            from project_record_task prt
+	
+	                join task t
+	                    on prt.task_no = t.task_no
+	
+	            where prt.project_record_no in
+	            <foreach
+	                collection="list"
+	                item="recordNo"
+	                open="("
+	                separator=","
+	                close=")">
+	                #{recordNo}
+	            </foreach>
+	
+	
+	            union all
+	
+	
+	            select
+	                prm.project_record_no,
+	                'MESSAGE' related_type,
+	                cm.chat_message_no related_no,
+	                cm.chat_message_content related_title,
+	                null related_status,
+	                2 related_order
+	
+	            from project_record_message prm
+	
+	                join chat_message cm
+	                    on prm.chat_message_no
+	                        = cm.chat_message_no
+	
+	            where prm.project_record_no in
+	            <foreach
+	                collection="list"
+	                item="recordNo"
+	                open="("
+	                separator=","
+	                close=")">
+	                #{recordNo}
+	            </foreach>
+	
+	
+	            union all
+	
+	
+	            select
+	                prn.project_record_no,
+	                'NOTE' related_type,
+	                n.note_no related_no,
+	                n.note_title related_title,
+	                null related_status,
+	                3 related_order
+	
+	            from project_record_note prn
+	
+	                join note n
+	                    on prn.note_no = n.note_no
+	
+	            where prn.project_record_no in
+	            <foreach
+	                collection="list"
+	                item="recordNo"
+	                open="("
+	                separator=","
+	                close=")">
+	                #{recordNo}
+	            </foreach>
+	
+	
+	            union all
+	
+	
+	            select
+	                pra.project_record_no,
+	                'ATTACH' related_type,
+	                a.attach_no related_no,
+	                a.attach_name related_title,
+	                null related_status,
+	                4 related_order
+	
+	            from project_record_attach pra
+	
+	                join attach a
+	                    on pra.attach_no = a.attach_no
+	
+	            where pra.project_record_no in
+	            <foreach
+	                collection="list"
+	                item="recordNo"
+	                open="("
+	                separator=","
+	                close=")">
+	                #{recordNo}
+	            </foreach>
+	
+	        ) related_data
+	
+	    )
+	
+	    where rn &lt;= 3
+	
+	    order by
+	        project_record_no desc,
+	        rn asc
+	
+	</select>
+	
+	<!-- 프로젝트 record 요약 -->
+	<select id="summary" resultType="ProjectRecordSummaryResponseVO">
+	
+		select
+			count(*) total_count,
+			
+			nvl(sum(
+				case
+					when pr.project_record_type = 'DECISION'
+					then 1
+					else 0
+				end
+			), 0) decision_count,
+			
+			nvl(sum(
+				case
+					when pr.project_record_type = 'ISSUE'
+					then 1
+					else 0
+				end
+			), 0) issue_count,
+			
+			nvl(sum(
+				case
+					when pr.project_record_type = 'DELIVERABLE'
+					then 1
+					else 0
+				end
+			), 0) deliverable_count,
+			
+			nvl(sum(
+				case
+					when pr.project_record_type = 'ETC'
+					then 1
+					else 0
+				end
+			), 0) etc_count,
+			
+			nvl(sum(
+				case
+					when pri.issue_status = 'OPEN'
+					then 1
+					else 0
+				end
+			), 0) open_issue_count,
+			
+			nvl(sum(
+				case
+					when pri.issue_status = 'RESOLVED'
+					then 1
+					else 0
+				end
+			), 0) resolved_issue_count,
+			
+			max(pr.project_record_no)
+				keep (
+					dense_rank last
+					order by
+						pr.project_record_ctime,
+						pr.project_record_no
+				) latest_record_no,
+				
+			max(pr.project_record_title)
+				keep (
+					dense_rank last
+					order by
+						pr.project_record_ctime,
+						pr.project_record_no
+				) latest_record_title,
+				
+			max(pr.project_record_ctime)
+				latest_record_at
+			
+		from project_record pr
+		
+			left outer join project_record_issue pri
+				on pr.project_record_no
+					= pri.project_record_no
+					
+		where pr.project_no = #{projectNo}
+		
+	</select>
+	
+	
 </mapper>
