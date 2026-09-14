@@ -112,6 +112,7 @@
 		    <scope>compile</scope>
 		</dependency>
 		
+		
 		<!-- 이메일 발송을 위한 의존성 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
