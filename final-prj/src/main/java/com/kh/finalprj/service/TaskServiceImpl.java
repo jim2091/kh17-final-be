@@ -1,9 +1,10 @@
 package com.kh.finalprj.service;
 
-import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,35 +45,7 @@ public class TaskServiceImpl implements TaskService {
 	@Autowired
 	private NotificationService notificationService;
 
-	// String/Object 날짜 값을 안전하게 Timestamp로 변환하는 내부 헬퍼 메서드
-	private Timestamp parseTimestamp(Object dateObj) {
-		if (dateObj == null) return null;
-		if (dateObj instanceof Timestamp) return (Timestamp) dateObj;
-
-		String str = String.valueOf(dateObj).trim();
-		if (str.isEmpty() || "null".equalsIgnoreCase(str)) return null;
-
-		// ISO-8601 (T 구분자) 처리
-		str = str.replace("T", " ");
-
-		// yyyy-MM-dd 형태(10자)인 경우 시분초 보정
-		if (str.length() == 10) {
-			str += " 00:00:00";
-		}
-
-		// yyyy-MM-dd HH:mm 형태(16자)인 경우 초 보정
-		if (str.length() == 16) {
-			str += ":00";
-		}
-
-		try {
-			return Timestamp.valueOf(str);
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	// 1. 신규 업무 등록 및 알림 발송
+	// 1. 신규 업무 등록 및 중복 제거된 알림 발송
 	@Override
 	@Transactional
 	public int add(TaskAddRequestVO requestVO, List<Integer> collaboratorMemberNos, int empNo) {
@@ -90,10 +63,6 @@ public class TaskServiceImpl implements TaskService {
 			assignedMemberNo = null;
 		}
 
-		// 날짜 안전 변환
-		Timestamp startTs = parseTimestamp(requestVO.getTaskStart());
-		Timestamp endTs = parseTimestamp(requestVO.getTaskEnd());
-
 		TaskDto taskDto = TaskDto.builder()
 				.taskNo(generatedTaskNo)
 				.projectNo(requestVO.getProjectNo())
@@ -103,50 +72,60 @@ public class TaskServiceImpl implements TaskService {
 				.assignedMemberNo(assignedMemberNo)
 				.taskStatus(requestVO.getTaskStatus() != null ? requestVO.getTaskStatus() : "TODO")
 				.taskOrder(1)
-				.taskStart(startTs)
-				.taskEnd(endTs)
+				.taskStart(requestVO.getTaskStart())
+				.taskEnd(requestVO.getTaskEnd())
 				.taskCategory(requestVO.getTaskCategory())
 				.taskPriority(requestVO.getTaskPriority() != null ? requestVO.getTaskPriority() : "보통")
 				.build();
 
 		taskDao.add(taskDto);
 
-		// 주 담당자 배정 알림 발송
-		if (assignedMemberNo != null && assignedMemberNo > 0) {
-			ProjectMemberDto assignedMember = projectMemberDao.findMember(assignedMemberNo);
-			if (assignedMember != null && assignedMember.getEmpNo() != empNo) {
-				notificationService.send(NotificationDto.builder()
-						.notificationReceiver(assignedMember.getEmpNo())
-						.projectNo(requestVO.getProjectNo())
-						.notificationType("TASK_ASSIGNED")
-						.notificationTarget(generatedTaskNo)
-						.notificationUrl("/projects/" + requestVO.getProjectNo() + "/kanban?taskNo=" + generatedTaskNo)
-						.notificationContent("'" + requestVO.getTaskTitle() + "' 업무의 담당자로 배정되었습니다.")
-						.build());
-			}
-		}
-
-		// 협업자 목록 등록 및 알림 발송
+		// 협업자 목록 등록 (주 담당자와 중복 제외)
 		if (collaboratorMemberNos != null && !collaboratorMemberNos.isEmpty()) {
 			for (Integer memberNo : collaboratorMemberNos) {
 				if (memberNo != null && memberNo > 0) {
 					if (assignedMemberNo == null || !assignedMemberNo.equals(memberNo)) {
 						taskCollaboDao.add(generatedTaskNo, memberNo);
+					}
+				}
+			}
+		}
 
+		// 💡 [중복 방지] Set을 이용해 알림 받을 사원 번호(empNo) 취합
+		Set<Integer> receiverEmpNos = new HashSet<>();
+
+		// 주 담당자 사번 추가
+		if (assignedMemberNo != null && assignedMemberNo > 0) {
+			ProjectMemberDto assignedMember = projectMemberDao.findMember(assignedMemberNo);
+			if (assignedMember != null && assignedMember.getEmpNo() != empNo) {
+				receiverEmpNos.add(assignedMember.getEmpNo());
+			}
+		}
+
+		// 협업자들 사번 추가 (Set 특성상 담당자와 겹치거나 서로 중복되어도 알아서 1개만 남음)
+		if (collaboratorMemberNos != null && !collaboratorMemberNos.isEmpty()) {
+			for (Integer memberNo : collaboratorMemberNos) {
+				if (memberNo != null && memberNo > 0) {
+					if (assignedMemberNo == null || !assignedMemberNo.equals(memberNo)) {
 						ProjectMemberDto collabMember = projectMemberDao.findMember(memberNo);
 						if (collabMember != null && collabMember.getEmpNo() != empNo) {
-							notificationService.send(NotificationDto.builder()
-									.notificationReceiver(collabMember.getEmpNo())
-									.projectNo(requestVO.getProjectNo())
-									.notificationType("TASK_COLLAB_ADDED")
-									.notificationTarget(generatedTaskNo)
-									.notificationUrl("/projects/" + requestVO.getProjectNo() + "/kanban?taskNo=" + generatedTaskNo)
-									.notificationContent("'" + requestVO.getTaskTitle() + "' 업무의 협업자로 등록되었습니다.")
-									.build());
+							receiverEmpNos.add(collabMember.getEmpNo());
 						}
 					}
 				}
 			}
+		}
+
+		// 취합된 고유 대상자들에게만 알림 1통씩 발송
+		for (int receiverEmpNo : receiverEmpNos) {
+			notificationService.send(NotificationDto.builder()
+					.notificationReceiver(receiverEmpNo)
+					.projectNo(requestVO.getProjectNo())
+					.notificationType("TASK_ASSIGNED")
+					.notificationTarget(generatedTaskNo)
+					.notificationUrl("/projects/" + requestVO.getProjectNo() + "/task?taskNo=" + generatedTaskNo)
+					.notificationContent("'" + requestVO.getTaskTitle() + "' 업무의 담당자 또는 협업자로 배정되었습니다.")
+					.build());
 		}
 
 		return generatedTaskNo;
@@ -196,31 +175,28 @@ public class TaskServiceImpl implements TaskService {
 		return taskDao.updatePosition(moveVO.getTaskNo(), moveVO.getTargetStatus(), moveVO.getNewOrder());
 	}
 
-	// 6. 업무 기본 정보 단독 수정
+	// 6. 업무 기본 정보 단독 수정 (호환용)
 	@Override
 	@Transactional
 	public boolean update(TaskDto taskDto) {
 		return taskDao.update(taskDto);
 	}
 
-	// 7. 업무 내용 및 협업자 목록 동시 수정 (드로어 편집 전용)
+	// 7. 업무 내용 및 협업자 목록 동시 수정 (드로어 수정 완료 전용)
 	@Override
 	@Transactional
 	public boolean update(TaskUpdateRequestVO updateVO) {
-		// 기존 업무 정보 조회 (taskOrder 유지)
+		// 기존 업무 정보 조회 (taskOrder 유지용)
 		TaskDetailResponseVO original = taskDao.selectOne(updateVO.getTaskNo());
 		int currentOrder = (original != null) ? original.getTaskOrder() : 1;
 
-		// 주 담당자 번호 null 방어
+		// 주 담당자 번호 null 방어 (0 이하 값은 null 처리)
 		Integer assignedMemberNo = updateVO.getAssignedMemberNo();
 		if (assignedMemberNo != null && assignedMemberNo <= 0) {
 			assignedMemberNo = null;
 		}
 
-		// String/Object 날짜를 Timestamp로 안전 변환
-		Timestamp startTs = parseTimestamp(updateVO.getTaskStart());
-		Timestamp endTs = parseTimestamp(updateVO.getTaskEnd());
-
+		// task 테이블 레코드 갱신
 		TaskDto taskDto = TaskDto.builder()
 				.taskNo(updateVO.getTaskNo())
 				.projectNo(updateVO.getProjectNo())
@@ -231,19 +207,21 @@ public class TaskServiceImpl implements TaskService {
 				.taskOrder(currentOrder)
 				.taskPriority(updateVO.getTaskPriority() != null ? updateVO.getTaskPriority() : "보통")
 				.taskCategory(updateVO.getTaskCategory())
-				.taskStart(startTs)
-				.taskEnd(endTs)
+				.taskStart(updateVO.getTaskStart())
+				.taskEnd(updateVO.getTaskEnd())
 				.build();
 
 		boolean result = taskDao.update(taskDto);
 
-		// 기존 협업자 전체 삭제 후 재등록
+		// 기존 협업자 전체 삭제 (task_collaborator 정리)
 		taskCollaboDao.deleteByTaskNo(updateVO.getTaskNo());
 
+		// 신규 전달받은 협업자 목록 순차 재등록
 		List<Integer> collabList = updateVO.getCollaboratorMemberNos();
 		if (collabList != null && !collabList.isEmpty()) {
 			for (Integer memberNo : collabList) {
 				if (memberNo != null && memberNo > 0) {
+					// 주 담당자와 동일 인물이 아닐 때만 협업자로 등록
 					if (assignedMemberNo == null || !assignedMemberNo.equals(memberNo)) {
 						taskCollaboDao.add(updateVO.getTaskNo(), memberNo);
 					}
