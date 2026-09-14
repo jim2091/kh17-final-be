@@ -61,4 +61,13 @@
 	    where project_no = #{projectNo}
 	    order by schedule_start asc
 	</select>
+	
+	<!-- 알림을 위한 데드라인 조회 -->
+	<select id="findTodayDeadlineSchedules" resultType="ScheduleDto">
+		select * from schedule
+		where schedule_end is not null
+			and trunc(schedule_end) =trunc(sysdate)
+	</select>
+	
+	
 </mapper>

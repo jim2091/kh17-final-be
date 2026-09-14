@@ -5,11 +5,14 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.finalprj.dao.NotificationDao;
+import com.kh.finalprj.dao.ScheduleDao;
 import com.kh.finalprj.dto.NotificationDto;
+import com.kh.finalprj.dto.ScheduleDto;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -19,6 +22,9 @@ public class NotificationServiceImpl implements NotificationService {
 	
 	@Autowired
 	private SimpMessagingTemplate simpMessagingTemplate;
+	
+	@Autowired
+	private ScheduleDao scheduleDao;
 
 	@Override
 	@Transactional
@@ -64,5 +70,31 @@ public class NotificationServiceImpl implements NotificationService {
 	public boolean markAllAsRead(int empNo) {
 		return notificationDao.markAllAsRead(empNo);
 	}
-
+	
+	@Scheduled(cron = "0 0 8 * * *")
+	@Transactional
+	@Override
+	public void sendDeadlineNotifications() {
+		List<ScheduleDto> urgentSchedules = scheduleDao.selectTodayDeadlineSchedules();
+		
+		if (urgentSchedules == null || urgentSchedules.isEmpty()) {
+			return;
+		}
+		
+		for (ScheduleDto schedule : urgentSchedules) {
+			String content = "오늘 마감인 일정 '" + schedule.getScheduleTitle() + "'이 있습니다.";
+			String url = "/projects/" + schedule.getProjectNo() + "/schedule";
+			
+			NotificationDto notificationDto = NotificationDto.builder()
+					.notificationReceiver(schedule.getScheduleWriterNo()) // 수신자 사번 (emp_no)
+					.projectNo(schedule.getProjectNo())
+					.notificationType("SCHEDULE_DEADLINE")
+					.notificationTarget(schedule.getScheduleNo())
+					.notificationUrl(url)
+					.notificationContent(content)
+					.build();
+					
+			send(notificationDto);
+		}
+	}
 }
