@@ -9,9 +9,11 @@ import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.dto.NoteSearchDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectHistoryDto;
 import com.kh.finalprj.dto.ProjectHistoryResponseDto;
+import com.kh.finalprj.dto.ProjectRecordSearchDto;
 import com.kh.finalprj.dto.TaskDto;
 
 import lombok.RequiredArgsConstructor;
@@ -20,65 +22,136 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SearchDaoMybatis implements SearchDao {
 
-	private final SqlSession sqlSession;
+    private final SqlSession sqlSession;
 
-	private static final String NAMESPACE = "mapper.search";
+    private static final String NAMESPACE = "mapper.search";
 
-	// ========================================
-	// 사용자 검색
-	// ========================================
 
-	@Override
-	public List<EmpDto> searchMembers(String keyword) {
+    // ========================================
+    // 사용자 검색
+    // ========================================
 
-		return sqlSession.selectList(NAMESPACE + ".searchMembers", keyword);
-	}
+    @Override
+    public List<EmpDto> searchMembers(String keyword) {
 
-	// ========================================
-	// 프로젝트 검색
-	// ========================================
+        return sqlSession.selectList(
+                NAMESPACE + ".searchMembers",
+                keyword
+        );
+    }
 
-	@Override
-	public List<ProjectDto> searchProjects(String keyword, int empNo) {
 
-		Map<String, Object> params = new HashMap<>();
+    // ========================================
+    // 프로젝트 검색
+    // ========================================
 
-		params.put("keyword", keyword);
-		params.put("empNo", empNo);
+    @Override
+    public List<ProjectDto> searchProjects(
+            String keyword,
+            int empNo
+    ) {
 
-		return sqlSession.selectList(NAMESPACE + ".searchProjects", params);
-	}
+        Map<String, Object> params = new HashMap<>();
 
-	// ========================================
-	// 업무 검색
-	// ========================================
+        params.put("keyword", keyword);
+        params.put("empNo", empNo);
 
-	@Override
-	public List<TaskDto> searchTasks(String keyword) {
+        return sqlSession.selectList(
+                NAMESPACE + ".searchProjects",
+                params
+        );
+    }
 
-		return sqlSession.selectList(NAMESPACE + ".searchTasks", keyword);
-	}
 
-	// ========================================
-	// 파일 검색
-	// ========================================
+    // ========================================
+    // 업무 검색
+    // ========================================
 
-	@Override
-	public List<AttachDto> searchFiles(String keyword) {
+    @Override
+    public List<TaskDto> searchTasks(String keyword) {
 
-		return sqlSession.selectList(NAMESPACE + ".searchFiles", keyword);
-	}
+        return sqlSession.selectList(
+                NAMESPACE + ".searchTasks",
+                keyword
+        );
+    }
 
-	@Override
-	public List<ProjectHistoryDto> searchProjectHistory(int empNo) {
 
-		return sqlSession.selectList(NAMESPACE + ".searchProjectHistory", empNo);
-	}
-	
-	@Override
-	public ProjectHistoryResponseDto searchUserInfo(int empNo) {
+    // ========================================
+    // 기록 검색
+    // ========================================
 
-		return sqlSession.selectOne(NAMESPACE + ".searchUserInfo", empNo);
-	}
+    @Override
+    public List<ProjectRecordSearchDto> searchRecords(
+            String keyword
+    ) {
+
+        return sqlSession.selectList(
+                NAMESPACE + ".searchRecords",
+                keyword
+        );
+    }
+
+
+    // ========================================
+    // 노트 검색
+    // ========================================
+
+    @Override
+    public List<NoteSearchDto> searchNotes(
+            String keyword
+    ) {
+
+        return sqlSession.selectList(
+                NAMESPACE + ".searchNotes",
+                keyword
+        );
+    }
+
+
+    // ========================================
+    // 파일 검색
+    // ========================================
+
+    @Override
+    public List<AttachDto> searchFiles(String keyword) {
+
+        return sqlSession.selectList(
+                NAMESPACE + ".searchFiles",
+                keyword
+        );
+    }
+
+
+    // ========================================
+    // 사용자 프로젝트 참여 이력
+    // ========================================
+
+    @Override
+    public List<ProjectHistoryDto> searchProjectHistory(
+            int empNo
+    ) {
+
+        return sqlSession.selectList(
+                NAMESPACE + ".searchProjectHistory",
+                empNo
+        );
+    }
+
+
+    // ========================================
+    // 사용자 정보 조회
+    // ========================================
+
+    @Override
+    public ProjectHistoryResponseDto searchUserInfo(
+            int empNo
+    ) {
+
+        return sqlSession.selectOne(
+                NAMESPACE + ".searchUserInfo",
+                empNo
+        );
+    }
 
 }

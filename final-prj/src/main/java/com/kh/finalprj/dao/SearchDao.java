@@ -4,29 +4,61 @@ import java.util.List;
 
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.dto.NoteSearchDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectHistoryDto;
 import com.kh.finalprj.dto.ProjectHistoryResponseDto;
+import com.kh.finalprj.dto.ProjectRecordSearchDto;
 import com.kh.finalprj.dto.TaskDto;
 
 public interface SearchDao {
 
-    // 사용자 검색
-    List<EmpDto> searchMembers(String keyword);
+	// ========================================
+	// 사용자 검색
+	// ========================================
 
-    // 프로젝트 검색
-    List<ProjectDto> searchProjects(String keyword, int empNo);
+	List<EmpDto> searchMembers(String keyword);
 
-    // 업무 검색
-    List<TaskDto> searchTasks(String keyword);
+	// ========================================
+	// 프로젝트 검색
+	// ========================================
 
-    // 파일 검색
-    List<AttachDto> searchFiles(String keyword);
-    
-    // 사용자의 프로젝트 참여 이력
-    List<ProjectHistoryDto> searchProjectHistory(int empNo);
-    
-    // 프로젝트 이력 조회용 사용자 정보
+	List<ProjectDto> searchProjects(String keyword, int empNo);
+
+	// ========================================
+	// 업무 검색
+	// ========================================
+
+	List<TaskDto> searchTasks(String keyword);
+
+	// ========================================
+	// 기록 검색
+	// ========================================
+
+	List<ProjectRecordSearchDto> searchRecords(String keyword);
+
+	// ========================================
+	// 노트 검색
+	// ========================================
+
+	List<NoteSearchDto> searchNotes(String keyword);
+
+	// ========================================
+	// 파일 검색
+	// ========================================
+
+	List<AttachDto> searchFiles(String keyword);
+
+	// ========================================
+	// 사용자의 프로젝트 참여 이력
+	// ========================================
+
+	List<ProjectHistoryDto> searchProjectHistory(int empNo);
+
+	// ========================================
+	// 프로젝트 이력 조회용 사용자 정보
+	// ========================================
+
 	ProjectHistoryResponseDto searchUserInfo(int empNo);
 
 }

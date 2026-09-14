@@ -13,24 +13,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AttachDto {
 
-	private int attachNo;
+    private int attachNo;
 
-	private String projectName;
+    // DB attach 컬럼이 아님
+    // project_file에서 조회한 프로젝트 번호를 담기 위한 DTO 필드
+    private int projectNo;
 
-	private String attachName;
-
-	private String attachType;
-
-	private long attachSize;
-
-	private String attachUploader;
-
-	private String attachSource;
-
-	private Integer attachSourceNo;
-
-	private Timestamp attachCtime;
-
-	private String empName;
-
+    private String projectName;
+    private String attachName;
+    private String attachType;
+    private long attachSize;
+    private String attachUploader;
+    private String attachSource;
+    private Integer attachSourceNo;
+    private Timestamp attachCtime;
+    private String empName;
 }

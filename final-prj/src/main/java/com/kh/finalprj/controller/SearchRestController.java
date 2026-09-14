@@ -19,27 +19,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SearchRestController {
 
-    private final SearchService searchService;
+	private final SearchService searchService;
 
-    @GetMapping
-    public SearchDto search(
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "all") String filter,
-            @CurrentUser TokenParseResponseVO parseVO
-    ) {
+	@GetMapping
+	public SearchDto search(@RequestParam(defaultValue = "") String keyword,
+			@RequestParam(defaultValue = "all") String filter, @CurrentUser TokenParseResponseVO parseVO) {
 
-        int empNo = parseVO.getEmpNo();
+		int empNo = parseVO.getEmpNo();
 
-        return searchService.search(keyword, filter, empNo);
-    }
+		return searchService.search(keyword, filter, empNo);
+	}
 
+	// 사용자 프로젝트 참여 이력 조회
+	@GetMapping("/user/{empNo}/projects")
+	public ProjectHistoryResponseDto searchProjectHistory(@PathVariable int empNo) {
 
-    // 사용자 프로젝트 참여 이력 조회
-    @GetMapping("/user/{empNo}/projects")
-    public ProjectHistoryResponseDto searchProjectHistory(
-            @PathVariable int empNo
-    ) {
-
-        return searchService.searchProjectHistory(empNo);
-    }
+		return searchService.searchProjectHistory(empNo);
+	}
 }
