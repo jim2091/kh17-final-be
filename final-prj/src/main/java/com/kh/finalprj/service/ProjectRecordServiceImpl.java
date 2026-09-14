@@ -33,6 +33,7 @@ import com.kh.finalprj.vo.record.ProjectRecordListRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedResponseVO;
+import com.kh.finalprj.vo.record.ProjectRecordSearchResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordSummaryResponseVO;
 import com.kh.finalprj.vo.task.TaskDetailResponseVO;
 
@@ -485,7 +486,7 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 	}
 	
 	@Override
-	public List<ProjectRecordListResponseVO> searchList(int projectNo, int empNo, ProjectRecordListRequestVO request) {
+	public ProjectRecordSearchResponseVO searchList(int projectNo, int empNo, ProjectRecordListRequestVO request) {
 		
 		//프로젝트 참여자인지 확인
 		projectPermissionService.checkMember(projectNo, empNo);
@@ -494,42 +495,50 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		List<ProjectRecordListResponseVO> recordList = 
 				projectRecordDao.searchList(projectNo, request);
 		
-		//조회 결과가 없으면 관련 원본 조회할 필요 없음
-		if(recordList.isEmpty()) {
-			return recordList;
-		}
+		//현재 검색 조건의 전체 Record 개수
+		int count = projectRecordDao.searchCount(projectNo, request);
 		
-		//조회된 record 번호만 추출
-		List<Integer> projectRecordNoList = 
-				recordList.stream()
+		//마지막 페이지 여부
+		boolean last = request.getEndRownum() >= count;
+		
+		
+		//조회된 record가 있을 경우 관련 원본 조회
+		if(!recordList.isEmpty()) {
+			//현재 페이지 Record 번호 목록
+			List<Integer> projectRecordNoList = 
+					recordList.stream()
 					.map(record -> record.getProjectRecordNo())
-					.toList();
-		
-		//관련 원본을 한 번에 조회
-		List<ProjectRecordRelatedResponseVO> relatedList = 
-				projectRecordDao.selectRelatedPreviewList(projectRecordNoList);
-		
-		//record 번호별로 관련 원본 묶기
-		Map<Integer, List<ProjectRecordRelatedResponseVO>> relatedMap = 
-				relatedList.stream()
-					.collect(
-						Collectors.groupingBy(
-								related -> related.getProjectRecordNo()
-						)
-					);
-		
-		//각 record에 관련 원본 목록 넣기
-		for(ProjectRecordListResponseVO record : recordList) {
+					.toList();			
+
+			//관련 원본을 한 번에 조회
+			List<ProjectRecordRelatedResponseVO> relatedList = 
+					projectRecordDao.selectRelatedPreviewList(projectRecordNoList);
 			
-			List<ProjectRecordRelatedResponseVO> recordRelatedList = 
-					relatedMap.getOrDefault(
-						record.getProjectRecordNo(), 
-						Collections.emptyList()
-					);
-			record.setRelatedList(recordRelatedList);
+			//record 번호별로 관련 원본 묶기
+			Map<Integer, List<ProjectRecordRelatedResponseVO>> relatedMap = 
+					relatedList.stream()
+					.collect(
+							Collectors.groupingBy(
+									related -> related.getProjectRecordNo()
+									)
+							);
+			
+			//각 record에 관련 원본 목록 넣기
+			for(ProjectRecordListResponseVO record : recordList) {
+				
+				List<ProjectRecordRelatedResponseVO> recordRelatedList = 
+						relatedMap.getOrDefault(
+								record.getProjectRecordNo(), 
+								Collections.emptyList()
+								);
+				record.setRelatedList(recordRelatedList);
+			}
 		}
 		
-		return recordList;
+		return ProjectRecordSearchResponseVO.builder()
+					.recordList(recordList)
+					.last(last)
+				.build();
 	}
 	
 	@Override

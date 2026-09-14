@@ -24,6 +24,7 @@ import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordSearchResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordSummaryResponseVO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,11 +66,11 @@ public class ProjectRecordRestController {
 	@Operation(summary = "프로젝트 record 목록 조회 v2")
 	@ApiResponse(responseCode = "200", description = "record 목록 조회 성공")
 	@PostMapping("/project/{projectNo}/list")
-	public List<ProjectRecordListResponseVO> searchList(
+	public ProjectRecordSearchResponseVO searchList(
 			@PathVariable int projectNo,
 			@Valid @RequestBody ProjectRecordListRequestVO request,
 			@CurrentUser TokenParseResponseVO parseVO) {
-		
+	
 		return projectRecordService.searchList(projectNo, parseVO.getEmpNo(), request);
 	}
 	

@@ -45,6 +45,7 @@ public interface ProjectRecordDao {
 	
 	//record 조회 v2
 	List<ProjectRecordListResponseVO> searchList(int projectNo, ProjectRecordListRequestVO requestVO);
+	int searchCount(int projectNo, ProjectRecordListRequestVO request);
 	List<ProjectRecordRelatedResponseVO> selectRelatedPreviewList(List<Integer> projectRecordNoList);
 	
 	ProjectRecordSummaryResponseVO summary(int projectNo);
