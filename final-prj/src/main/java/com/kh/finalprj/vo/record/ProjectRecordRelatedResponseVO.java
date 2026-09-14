@@ -13,4 +13,5 @@ public class ProjectRecordRelatedResponseVO {
 	private int relatedNo;
 	private String relatedTitle;
 	private String relatedStatus;
+	private int projectRecordNo;
 }
