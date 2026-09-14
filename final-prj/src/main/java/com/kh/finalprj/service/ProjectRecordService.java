@@ -10,6 +10,7 @@ import com.kh.finalprj.vo.record.ProjectRecordIssueResolveRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListRequestVO;
 import com.kh.finalprj.vo.record.ProjectRecordListResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordRelatedAddRequestVO;
+import com.kh.finalprj.vo.record.ProjectRecordSearchResponseVO;
 import com.kh.finalprj.vo.record.ProjectRecordSummaryResponseVO;
 
 public interface ProjectRecordService {
@@ -36,7 +37,7 @@ public interface ProjectRecordService {
 	void addRelated(int projectRecordNo, int empNo, ProjectRecordRelatedAddRequestVO request);
 	
 	//record 목록 조회 v2
-	List<ProjectRecordListResponseVO> searchList(int projectNo, int empNo, ProjectRecordListRequestVO request);
+	ProjectRecordSearchResponseVO searchList(int projectNo, int empNo, ProjectRecordListRequestVO request);
 	
 	ProjectRecordSummaryResponseVO summary(int projectNo, int empNo);
 }

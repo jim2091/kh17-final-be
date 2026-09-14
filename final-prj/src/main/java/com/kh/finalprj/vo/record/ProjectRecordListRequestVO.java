@@ -37,4 +37,16 @@ public class ProjectRecordListRequestVO {
 	//최신 작성순 / 오래된 작성순 / 최근 수정순
 	@Pattern(regexp = "^(LATEST|OLDEST|UPDATED)$")
 	private String sort = "LATEST";
+	
+	//더보기
+	private int page = 0;
+	private int size = 10;
+	
+	public int getBeginRownum() {
+		return page * size - (size - 1);
+	}
+	
+	public int getEndRownum() {
+		return page * size;
+	}
 }

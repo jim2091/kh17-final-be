@@ -151,8 +151,21 @@ public class ProjectRecordDaoMybatis implements ProjectRecordDao{
 	}
 	
 	@Override
+	public int searchCount(int projectNo, ProjectRecordListRequestVO request) {
+		
+		Map<String, Object> params = new HashMap<>();
+		
+		params.put("projectNo", projectNo);
+		params.put("request", request);
+		
+		return sqlSession.selectOne("mapper.projectRecord.searchCount", params);
+	}
+	
+	@Override
 	public ProjectRecordSummaryResponseVO summary(int projectNo) {
 		return sqlSession.selectOne("mapper.projectRecord.summary", projectNo);
 	}
+	
+	
 	
 }

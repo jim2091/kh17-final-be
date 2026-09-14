@@ -309,253 +309,321 @@
 			column="issue_resolved_at"/>
 	</resultMap>
 	
+	<!-- Record 목록 공통 검색 조건 -->
+	<!-- 조회와 count의 중복 코드를 따로 빼기 -->
+	<sql id="searchCondition">
+	
+	    where pr.project_no = #{projectNo}
+	
+	
+	    <!-- Record 유형 -->
+	    <if test="request.type != null
+	            and request.type != ''
+	            and request.type != 'ALL'">
+	
+	        and pr.project_record_type = #{request.type}
+	
+	    </if>
+	
+	
+	    <!-- ISSUE 상태 -->
+	    <if test="request.issueStatus != null
+	            and request.issueStatus != ''
+	            and request.issueStatus != 'ALL'">
+	
+	        and pr.project_record_type = 'ISSUE'
+	        and pri.issue_status = #{request.issueStatus}
+	
+	    </if>
+	
+	
+	    <!-- 작성자 -->
+	    <if test="request.writerNo != null">
+	
+	        and pr.project_record_writer_no
+	            = #{request.writerNo}
+	
+	    </if>
+	
+	
+	    <!-- 시작일 -->
+	    <if test="request.startDate != null">
+	
+	        and pr.project_record_ctime
+	            >= #{request.startDate}
+	
+	    </if>
+	
+	
+	    <!-- 종료일 -->
+	    <if test="request.endDate != null">
+	
+	        and pr.project_record_ctime
+	            &lt; #{request.endDate} + 1
+	
+	    </if>
+	
+	
+	    <!-- 관련 원본 유형 -->
+	    <if test="request.relatedType != null
+	            and request.relatedType != ''
+	            and request.relatedType != 'ALL'">
+	
+	        <choose>
+	
+	            <when test="request.relatedType == 'TASK'">
+	                and exists (
+	                    select 1
+	                    from project_record_task prt
+	                    where prt.project_record_no
+	                        = pr.project_record_no
+	                )
+	            </when>
+	
+	            <when test="request.relatedType == 'MESSAGE'">
+	                and exists (
+	                    select 1
+	                    from project_record_message prm
+	                    where prm.project_record_no
+	                        = pr.project_record_no
+	                )
+	            </when>
+	
+	            <when test="request.relatedType == 'NOTE'">
+	                and exists (
+	                    select 1
+	                    from project_record_note prn
+	                    where prn.project_record_no
+	                        = pr.project_record_no
+	                )
+	            </when>
+	
+	            <when test="request.relatedType == 'ATTACH'">
+	                and exists (
+	                    select 1
+	                    from project_record_attach pra
+	                    where pra.project_record_no
+	                        = pr.project_record_no
+	                )
+	            </when>
+	
+	        </choose>
+	
+	    </if>
+	
+	
+	    <!-- 검색 -->
+	    <if test="request.keyword != null
+	            and request.keyword.trim() != ''">
+	
+	        and (
+	
+	            lower(pr.project_record_title)
+	                like '%' || lower(#{request.keyword}) || '%'
+	
+	            or dbms_lob.instr(
+	                lower(pr.project_record_content),
+	                lower(#{request.keyword})
+	            ) > 0
+	
+	
+	            or exists (
+	                select 1
+	                from project_record_task prt
+	                    join task t
+	                        on prt.task_no = t.task_no
+	                where prt.project_record_no
+	                        = pr.project_record_no
+	                    and lower(t.task_title)
+	                        like '%' || lower(#{request.keyword}) || '%'
+	            )
+	
+	
+	            or exists (
+	                select 1
+	                from project_record_note prn
+	                    join note n
+	                        on prn.note_no = n.note_no
+	                where prn.project_record_no
+	                        = pr.project_record_no
+	                    and lower(n.note_title)
+	                        like '%' || lower(#{request.keyword}) || '%'
+	            )
+	
+	
+	            or exists (
+	                select 1
+	                from project_record_attach pra
+	                    join attach a
+	                        on pra.attach_no = a.attach_no
+	                where pra.project_record_no
+	                        = pr.project_record_no
+	                    and lower(a.attach_name)
+	                        like '%' || lower(#{request.keyword}) || '%'
+	            )
+	
+	
+	            or exists (
+	                select 1
+	                from project_record_message prm
+	                    join chat_message cm
+	                        on prm.chat_message_no
+	                            = cm.chat_message_no
+	                where prm.project_record_no
+	                        = pr.project_record_no
+	                    and lower(cm.chat_message_content)
+	                        like '%' || lower(#{request.keyword}) || '%'
+	            )
+	
+	        )
+	
+	    </if>
+	
+	</sql>
+	
 	<!-- 조회 v2 -->
 	<select id="searchList" resultMap="projectRecordListResultMap">
-		select
-			pr.project_record_no,
-			pr.project_record_type,
-			pr.project_record_title,
-			
-			dbms_lob.substr(
-				pr.project_record_content,
-				90,
-				1
-			) content_preview,
-			
-			pr.project_record_writer_no,
-			writer.emp_name project_record_writer_name,
-			
-			pr.project_record_modifier_no,
-			modifier.emp_name project_record_modifier_name,
-			
-			pr.project_record_ctime,
-			pr.project_record_utime,
-			
-			pri.issue_status project_record_issue_status,
-			
-			dbms_lob.substr(
-				pri.issue_resolution,
-				90,
-				1
-			) resolution_preview,
-			
-			pri.issue_resolved_at,
-			
-			(
-				select count(*)
-				from project_record_task prt
-				where prt.project_record_no = pr.project_record_no
-			)
-			+
-			(
-				select count(*)
-				from project_record_message prm
-				where prm.project_record_no = pr.project_record_no
-			)
-			+
-			(
-				select count(*)
-				from project_record_note prn
-				where prn.project_record_no = pr.project_record_no
-			)
-			+
-			(
-				select count(*)
-				from project_record_attach pra
-				where pra.project_record_no = pr.project_record_no
-			) related_count
-			
-		from project_record pr
-		
-			join project_member writer_pm
-				on pr.project_record_writer_no
-					 = writer_pm.project_member_no
-					 
-			join emp writer
-				on writer_pm.emp_no = writer.emp_no
+	
+		select * 
+		from (
+			select
+				pr.project_record_no,
+				pr.project_record_type,
+				pr.project_record_title,
 				
-			left outer join project_member modifier_pm
-				on pr.project_record_modifier_no
-					= modifier_pm.project_member_no
+				case
+				    when dbms_lob.getlength(pr.project_record_content) > 90
+				    then dbms_lob.substr(
+				        pr.project_record_content,
+				        90,
+				        1
+				    ) || '...'
+				    else dbms_lob.substr(
+				        pr.project_record_content,
+				        90,
+				        1
+				    )
+				end content_preview,
+				
+				pr.project_record_writer_no,
+				writer.emp_name project_record_writer_name,
+				
+				pr.project_record_modifier_no,
+				modifier.emp_name project_record_modifier_name,
+				
+				pr.project_record_ctime,
+				pr.project_record_utime,
+				
+				pri.issue_status project_record_issue_status,
+				
+				case
+				    when dbms_lob.getlength(pri.issue_resolution) > 90
+				    then dbms_lob.substr(
+				        pri.issue_resolution,
+				        90,
+				        1
+				    ) || '...'
+				    else dbms_lob.substr(
+				        pri.issue_resolution,
+				        90,
+				        1
+				    )
+				end resolution_preview,
+				
+				pri.issue_resolved_at,
+				
+				(
+					select count(*)
+					from project_record_task prt
+					where prt.project_record_no = pr.project_record_no
+				)
+				+
+				(
+					select count(*)
+					from project_record_message prm
+					where prm.project_record_no = pr.project_record_no
+				)
+				+
+				(
+					select count(*)
+					from project_record_note prn
+					where prn.project_record_no = pr.project_record_no
+				)
+				+
+				(
+					select count(*)
+					from project_record_attach pra
+					where pra.project_record_no = pr.project_record_no
+				) related_count,
+				
+				<!-- 페이징용 번호 -->
+				row_number() over(
+					<choose>
+						<when test="request.sort == 'OLDEST'">
+							order by
+								pr.project_record_ctime asc,
+								pr.project_record_no asc
+						</when>
+						
+						<when test="request.sort == 'UPDATED'">
+							order by
+								nvl(
+									pr.project_record_utime,
+									pr.project_record_ctime
+								)desc,
+								pr.project_record_no desc
+						</when>
+						
+						<otherwise>
+							order by
+								pr.project_record_ctime desc,
+								pr.project_record_no desc
+						</otherwise>
+					</choose>
+				) rn
+				
+			from project_record pr
+			
+				join project_member writer_pm
+					on pr.project_record_writer_no
+						 = writer_pm.project_member_no
+						 
+				join emp writer
+					on writer_pm.emp_no = writer.emp_no
 					
-			left outer join emp modifier
-				on modifier_pm.emp_no = modifier.emp_no
-				
+				left outer join project_member modifier_pm
+					on pr.project_record_modifier_no
+						= modifier_pm.project_member_no
+						
+				left outer join emp modifier
+					on modifier_pm.emp_no = modifier.emp_no
+					
+				left outer join project_record_issue pri
+					on pr.project_record_no
+						= pri.project_record_no
+						
+			<include refid="searchCondition"/>
+			
+		)
+		
+		where rn between
+			#{request.beginRownum}
+			and #{request.endRownum}
+			
+		order by rn
+			
+	</select>
+	
+	<!-- Record 검색 결과 전체 개수 -->
+	<select id="searchCount" resultType="int">
+		select count(*)
+		
+		from project_record pr
 			left outer join project_record_issue pri
 				on pr.project_record_no
 					= pri.project_record_no
 					
-		where pr.project_no = #{projectNo}
-		
-		<!-- Record 유형 -->
-		<if test="request.type != null
-				and request.type != ''
-				and request.type != 'ALL'">
-			
-			and pr.project_record_type = #{request.type}
-				
-		</if>	
-		
-		<!-- Issue 상태 -->
-		<if test="request.issueStatus != null
-				and request.issueStatus != ''
-				and request.issueStatus != 'ALL'">
-		
-			and pr.project_record_type = 'ISSUE'
-			and pri.issue_status = #{request.issueStatus}
-					
-		</if>
-		
-		<!-- 작성자 -->
-		<if test="request.writerNo != null">
-			
-			and pr.project_record_writer_no = #{request.writerNo}
-			
-		</if>
-		
-		<!-- 시작일 -->
-		<if test="request.startDate != null">
-			
-			and pr.project_record_ctime >= #{request.startDate}
-			
-		</if>
-		
-		<!-- 종료일 -->
-		<if test="request.endDate != null">
-		
-			and pr.project_record_ctime
-				&lt; #{request.endDate} + 1
-				
-		</if>
-		
-		<!-- 관련 원본 유형 -->
-		<if test="request.relatedType != null
-				and request.relatedType != ''
-				and request.relatedType != 'ALL'">
-		
-			<choose>
-			
-				<when test="request.relatedType == 'TASK'">
-					and exists (
-						select 1
-						from project_record_task prt
-						where prt.project_record_no
-							 = pr.project_record_no
-					)
-				</when>
-				
-				<when test="request.relatedType == 'MESSAGE'">
-					and exists (
-						select 1
-						from project_record_message prm
-						where prm.project_record_no
-							 = pr.project_record_no
-					)
-				</when>
-				
-				<when test="request.relatedType == 'NOTE'">
-					and exists (
-						select 1
-						from project_record_note prn
-						where prn.project_record_no
-							 = pr.project_record_no
-					)
-				</when>
-				
-				<when test="request.relatedType == 'ATTACH'">
-					and exists (
-						select 1
-						from project_record_attach pra
-						where pra.project_record_no
-							 = pr.project_record_no
-					)
-				</when>
-				
-			</choose>		
-		</if>
-		
-		<!-- 검색 -->
-		<if test="request.keyword != null
-				and request.keyword.trim() != ''">
-				
-			and (
-				lower(pr.project_record_title)
-					like '%' || lower(#{request.keyword}) || '%'
-					
-				or dbms_lob.instr(
-					lower(pr.project_record_content),
-					lower(#{request.keyword})
-				) > 0
-				
-				or exists (
-					select 1 
-					from project_record_task prt
-						join task t
-							on prt.task_no = t.task_no
-					where prt.project_record_no
-							 = pr.project_record_no
-						and lower(t.task_title)
-							like '%' || lower(#{request.keyword}) || '%'
-				)
-				
-				or exists (
-					select 1 
-					from project_record_note prn
-						join note n
-							on prn.note_no = n.note_no
-					where prn.project_record_no
-							 = pr.project_record_no
-						and lower(n.note_title)
-							like '%' || lower(#{request.keyword}) || '%'
-				)
-				
-				or exists (
-					select 1 
-					from project_record_attach pra
-						join attach a
-							on pra.attach_no = a.attach_no
-					where pra.project_record_no
-							 = pr.project_record_no
-						and lower(a.attach_name)
-							like '%' || lower(#{request.keyword}) || '%'
-				)
-				
-				or exists (
-					select 1 
-					from project_record_message prm
-						join chat_message cm
-							on prm.chat_message_no = cm.chat_message_no
-					where prm.project_record_no
-							 = pr.project_record_no
-						and lower(cm.chat_message_content)
-							like '%' || lower(#{request.keyword}) || '%'
-				)
-			)
-				
-		</if>
-		
-		<choose>
-		
-			<!-- 오래된 작성순 -->
-			<when test="request.sort == 'OLDEST'">
-				order by pr.project_record_ctime asc
-			</when>
-			
-			<!-- 최근 수정순 -->
-			<when test="request.sort == 'UPDATED'">
-				order by
-					nvl(
-						pr.project_record_utime,
-						pr.project_record_ctime
-					) desc
-			</when>
-			
-			<!-- 기본: 최신 작성순 -->
-			<otherwise>
-				order by pr.project_record_ctime desc
-			</otherwise>
-		</choose>
-			
+		<include refid="searchCondition"/>
 	</select>
 	
 	
