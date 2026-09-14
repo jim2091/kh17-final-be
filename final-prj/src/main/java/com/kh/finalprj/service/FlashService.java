@@ -50,10 +50,6 @@ public class FlashService {
 	public List<EmpDto> list(){
 		return new ArrayList<>(onlineUsers.values());
 	}
-	
-	
-	
-	
-	
+
 
 }
