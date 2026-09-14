@@ -23,6 +23,10 @@ public class SearchServiceImpl implements SearchService {
 
 	private final SearchDao searchDao;
 
+	// ========================================
+	// 통합 검색
+	// ========================================
+
 	@Override
 	public SearchDto search(String keyword, String filter, int empNo) {
 
@@ -47,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
 		filter = filter.trim().toLowerCase();
 
 		// ========================================
-		// 결과 객체
+		// 결과 객체 생성
 		// ========================================
 
 		SearchDto result = new SearchDto();
@@ -76,12 +80,22 @@ public class SearchServiceImpl implements SearchService {
 
 		if ("all".equals(filter)) {
 
+			// 사용자
 			result.setUsers(searchDao.searchMembers(keyword));
 
+			// 프로젝트
 			result.setProjects(searchDao.searchProjects(keyword, empNo));
 
+			// 업무
 			result.setTasks(searchDao.searchTasks(keyword));
 
+			// 기록
+			result.setRecords(searchDao.searchRecords(keyword));
+
+			// 노트
+			result.setNotes(searchDao.searchNotes(keyword));
+
+			// 파일
 			result.setFiles(searchDao.searchFiles(keyword));
 
 			return result;
@@ -126,7 +140,7 @@ public class SearchServiceImpl implements SearchService {
 
 		if (filters.contains("record") || filters.contains("records")) {
 
-			// 아직 구현하지 않음
+			result.setRecords(searchDao.searchRecords(keyword));
 		}
 
 		// ========================================
@@ -135,7 +149,7 @@ public class SearchServiceImpl implements SearchService {
 
 		if (filters.contains("note") || filters.contains("notes")) {
 
-			// 아직 구현하지 않음
+			result.setNotes(searchDao.searchNotes(keyword));
 		}
 
 		// ========================================
@@ -150,6 +164,10 @@ public class SearchServiceImpl implements SearchService {
 		return result;
 	}
 
+	// ========================================
+	// 사용자 프로젝트 참여 이력
+	// ========================================
+
 	@Override
 	public ProjectHistoryResponseDto searchProjectHistory(int empNo) {
 
@@ -160,11 +178,15 @@ public class SearchServiceImpl implements SearchService {
 		List<ProjectHistoryDto> projects = searchDao.searchProjectHistory(empNo);
 
 		if (response == null) {
+
 			response = ProjectHistoryResponseDto.builder().empNo(empNo).projects(projects).build();
+
 		} else {
+
 			response.setProjects(projects);
 		}
 
 		return response;
 	}
+
 }

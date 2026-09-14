@@ -1,60 +1,69 @@
 package com.kh.finalprj.dto;
 
-import java.util.List;
+import java.sql.Timestamp;
 
 import lombok.Data;
 
 @Data
-public class SearchDto {
+public class NoteSearchDto {
 
     // ========================================
-    // 검색 조건
+    // 노트 번호
     // ========================================
 
-    private String keyword;
-
-    private String filter;
+    private int noteNo;
 
 
     // ========================================
-    // 사용자
+    // 프로젝트 번호
     // ========================================
 
-    private List<EmpDto> users;
-
-
-    // ========================================
-    // 프로젝트
-    // ========================================
-
-    private List<ProjectDto> projects;
+    private int projectNo;
 
 
     // ========================================
-    // 업무
+    // 프로젝트 이름
     // ========================================
 
-    private List<TaskDto> tasks;
-
-
-    // ========================================
-    // 기록
-    // ========================================
-
-    private List<ProjectRecordSearchDto> records;
+    private String projectName;
 
 
     // ========================================
-    // 노트
+    // 작성자
     // ========================================
 
-    private List<NoteSearchDto> notes;
+    private int noteWriterNo;
+
+    private int writerEmpNo;
+
+    private String writerName;
 
 
     // ========================================
-    // 파일
+    // 노트 제목
     // ========================================
 
-    private List<AttachDto> files;
+    private String noteTitle;
+
+
+    // ========================================
+    // 노트 내용
+    // ========================================
+
+    private String noteContent;
+
+
+    // ========================================
+    // 생성일
+    // ========================================
+
+    private Timestamp noteCtime;
+
+
+    // ========================================
+    // 수정일
+    // ========================================
+
+    private Timestamp noteUtime;
 
 }
