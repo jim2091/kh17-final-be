@@ -46,8 +46,11 @@ public class ProjectDaoMybatis implements ProjectDao{
 	}
 
 	@Override
-	public int countPublicProject(PageVO pageVO) {
-		return sqlSession.selectOne("mapper.project.countPublicProject",pageVO);
+	public int countPublicProject(PageVO pageVO, int empNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("pageVO", pageVO);
+		params.put("empNo", empNo);
+		return sqlSession.selectOne("mapper.project.countPublicProject",params);
 	}
 
 	@Override

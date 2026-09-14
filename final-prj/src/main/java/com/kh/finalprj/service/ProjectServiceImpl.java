@@ -158,7 +158,7 @@ public class ProjectServiceImpl implements ProjectService{
 	@Override
 	public PublicProjectListResponseVO publicProjectList(PageVO pageVO,int empNo) {
 		//1.공개 프로젝트 전체 개수
-		int count = projectDao.countPublicProject(pageVO);
+		int count = projectDao.countPublicProject(pageVO,empNo);
 		
 		//2.pageVO에 전체 개수 설정
 		pageVO.setCount(count);
