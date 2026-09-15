@@ -26,6 +26,8 @@ public class EmpDto {
 	private String empAddress2;
 	private Timestamp empCtime;
 	private Timestamp empUtime;
+	//사용자 검색시 프로필 사진 조회용
+	private String attachNo;
 	
 
 }

@@ -17,62 +17,71 @@
          - 대소문자 무시
          - 띄어쓰기 무시
          - 부분 검색
+         - 프로필 이미지 attachNo 반환
          ===================================================== -->
 
     <select id="searchMembers" resultType="EmpDto">
 
         SELECT
-            emp_no,
-            emp_name,
-            emp_email,
-            emp_dept_no,
-            emp_position_no,
-            emp_level,
-            emp_state,
-            emp_presence,
-            emp_birth,
-            emp_contact,
-            emp_post,
-            emp_address1,
-            emp_address2,
-            emp_ctime,
-            emp_utime
+            e.emp_no,
+            e.emp_name,
+            e.emp_email,
+            e.emp_dept_no,
+            e.emp_position_no,
+            e.emp_level,
+            e.emp_state,
+            e.emp_presence,
+            e.emp_birth,
+            e.emp_contact,
+            e.emp_post,
+            e.emp_address1,
+            e.emp_address2,
+            e.emp_ctime,
+            e.emp_utime,
 
-        FROM emp
+            /* 사용자 프로필 이미지 */
+            ep.attach_no AS attachNo
+
+        FROM emp e
+
+        /* emp → emp_profile → attach */
+        LEFT JOIN emp_profile ep
+            ON e.emp_no = ep.emp_no
 
         WHERE
+            (
+                REPLACE(
+                    LOWER(e.emp_name),
+                    ' ',
+                    ''
+                )
+                LIKE
+                '%' ||
+                REPLACE(
+                    LOWER(#{keyword}),
+                    ' ',
+                    ''
+                ) ||
+                '%'
 
-        REPLACE(
-            LOWER(emp_name),
-            ' ',
-            ''
-        )
-        LIKE
-        '%' ||
-        REPLACE(
-            LOWER(#{keyword}),
-            ' ',
-            ''
-        ) ||
-        '%'
+                OR
 
-        OR
+                REPLACE(
+                    LOWER(e.emp_email),
+                    ' ',
+                    ''
+                )
+                LIKE
+                '%' ||
+                REPLACE(
+                    LOWER(#{keyword}),
+                    ' ',
+                    ''
+                ) ||
+                '%'
+            )
 
-        REPLACE(
-            LOWER(emp_email),
-            ' ',
-            ''
-        )
-        LIKE
-        '%' ||
-        REPLACE(
-            LOWER(#{keyword}),
-            ' ',
-            ''
-        ) ||
-        '%'
-
-        ORDER BY emp_no
+        ORDER BY e.emp_no
 
     </select>
 
@@ -96,7 +105,6 @@
     <select id="searchProjects" resultType="ProjectDto">
 
         SELECT
-
             p.project_no,
             p.project_name,
             p.project_purpose,
@@ -132,13 +140,11 @@
             AND pm.emp_no = #{empNo}
 
         WHERE
-
             p.project_status = 'active'
 
             AND p.project_visibility != 'private'
 
             AND (
-
                 REPLACE(
                     LOWER(p.project_name),
                     ' ',
@@ -168,7 +174,6 @@
                     ''
                 ) ||
                 '%'
-
             )
 
         ORDER BY p.project_ctime DESC
@@ -196,7 +201,6 @@
     <select id="searchTasks" resultType="TaskDto">
 
         SELECT
-
             t.task_no,
             t.project_no,
             p.project_name AS projectName,
@@ -219,14 +223,12 @@
             ON t.project_no = p.project_no
 
         WHERE
-
             p.project_visibility != 'private'
 
             /* Soft Delete된 업무 제외 */
             AND t.task_deleted = 'N'
 
             AND (
-
                 REPLACE(
                     LOWER(t.task_title),
                     ' ',
@@ -256,7 +258,6 @@
                     ''
                 ) ||
                 '%'
-
             )
 
         ORDER BY t.task_ctime DESC
@@ -287,7 +288,6 @@
             resultType="ProjectRecordSearchDto">
 
         SELECT
-
             r.project_record_no AS projectRecordNo,
             r.project_no AS projectNo,
             p.project_name AS projectName,
@@ -356,11 +356,9 @@
                 = i.project_record_no
 
         WHERE
-
             p.project_visibility != 'private'
 
             AND (
-
                 /* ==========================
                    기록 제목
                    ========================== */
@@ -379,39 +377,25 @@
                 ) ||
                 '%'
 
-
                 OR
-
 
                 /* ==========================
                    기록 내용
                    CLOB
-
-                   DB 값:
-                   "프로젝트 회의 기록"
-
-                   검색:
-                   "프로젝트회의"
-                   "프로 젝트 회의"
-                   모두 검색 가능
                    ========================== */
 
                 DBMS_LOB.INSTR(
-
                     REGEXP_REPLACE(
                         LOWER(r.project_record_content),
                         '[[:space:]]',
                         ''
                     ),
-
                     REGEXP_REPLACE(
                         LOWER(#{keyword}),
                         '[[:space:]]',
                         ''
                     )
-
                 ) > 0
-
             )
 
         ORDER BY
@@ -443,7 +427,6 @@
             resultType="NoteSearchDto">
 
         SELECT
-
             n.note_no AS noteNo,
             n.project_no AS projectNo,
             p.project_name AS projectName,
@@ -483,11 +466,9 @@
                 = writer_emp.emp_no
 
         WHERE
-
             p.project_visibility != 'private'
 
             AND (
-
                 /* ==========================
                    노트 제목
                    ========================== */
@@ -506,9 +487,7 @@
                 ) ||
                 '%'
 
-
                 OR
-
 
                 /* ==========================
                    노트 내용
@@ -516,21 +495,17 @@
                    ========================== */
 
                 DBMS_LOB.INSTR(
-
                     REGEXP_REPLACE(
                         LOWER(n.note_content),
                         '[[:space:]]',
                         ''
                     ),
-
                     REGEXP_REPLACE(
                         LOWER(#{keyword}),
                         '[[:space:]]',
                         ''
                     )
-
                 ) > 0
-
             )
 
         ORDER BY
@@ -543,6 +518,7 @@
          파일 검색
 
          구조:
+
          attach
             ↓
          project_file
@@ -569,7 +545,6 @@
             resultType="AttachDto">
 
         SELECT DISTINCT
-
             a.attach_no,
             a.attach_name,
             a.attach_type,
@@ -582,6 +557,7 @@
             e.emp_name AS empName,
 
             p.project_name AS projectName,
+
             p.project_no AS projectNo
 
         FROM attach a
@@ -597,11 +573,9 @@
             ON pf.project_no = p.project_no
 
         WHERE
-
             p.project_visibility != 'private'
 
             AND (
-
                 /* =====================================
                    파일명
                    ===================================== */
@@ -620,9 +594,7 @@
                 ) ||
                 '%'
 
-
                 OR
-
 
                 /* =====================================
                    파일 출처
@@ -670,9 +642,7 @@
                 ) ||
                 '%'
 
-
                 OR
-
 
                 /* =====================================
                    업로더 이름
@@ -691,7 +661,6 @@
                     ''
                 ) ||
                 '%'
-
             )
 
         ORDER BY
@@ -710,7 +679,6 @@
             resultType="ProjectHistoryDto">
 
         SELECT
-
             pm.project_no AS projectNo,
 
             p.project_name AS projectName,
@@ -733,13 +701,11 @@
             ON pm.project_no = p.project_no
 
         WHERE
-
             pm.emp_no = #{_parameter}
 
             AND p.project_visibility = 'public'
 
         ORDER BY
-
             pm.project_member_ctime DESC
 
     </select>
@@ -753,13 +719,13 @@
          - 직급
          - 이메일
          - 연락처
+         - 프로필 이미지 attachNo
          ===================================================== -->
 
     <select id="searchUserInfo"
             resultType="ProjectHistoryResponseDto">
 
         SELECT
-
             e.emp_no AS empNo,
 
             e.emp_name AS empName,
@@ -770,7 +736,10 @@
 
             p.position_name AS positionName,
 
-            e.emp_contact AS empContact
+            e.emp_contact AS empContact,
+
+            /* 사용자 프로필 이미지 */
+            ep.attach_no AS attachNo
 
         FROM emp e
 
@@ -780,8 +749,11 @@
         INNER JOIN position p
             ON e.emp_position_no = p.position_no
 
-        WHERE
+        /* emp → emp_profile → attach */
+        LEFT JOIN emp_profile ep
+            ON e.emp_no = ep.emp_no
 
+        WHERE
             e.emp_no = #{_parameter}
 
     </select>
