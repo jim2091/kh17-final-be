@@ -3,6 +3,7 @@ package com.kh.finalprj.dao;
 import java.util.List;
 
 import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
+import com.kh.finalprj.vo.message.MessageSearchRequestVO;
 import com.kh.finalprj.vo.message.MessageTargetVO;
 import com.kh.finalprj.vo.message.MessageUnreadChannelVO;
 import com.kh.finalprj.vo.message.MessageUnreadVO;
@@ -46,4 +47,12 @@ public interface MessageDao {
 	//채널별 내가 안 읽은 메세지 수
 	List<MessageUnreadChannelVO> selectChannelUnreadCount(
 			int projectNo, int projectMemberNo);
+	
+	//채널 메세지 검색
+	List<MessageVO> search(int channelNo, MessageSearchRequestVO request);
+	
+	int searchCount(int channelNo, MessageSearchRequestVO request);
+	
+	//특정 메세지 주변 대화 조회
+	List<MessageVO> selectContext(int channelNo, int chatMessageNo);
 }

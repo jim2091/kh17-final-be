@@ -13,7 +13,10 @@ import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
 import com.kh.finalprj.vo.message.ChannelMessageResponseVO;
+import com.kh.finalprj.vo.message.MessageContextResponseVO;
 import com.kh.finalprj.vo.message.MessageReadResponseVO;
+import com.kh.finalprj.vo.message.MessageSearchRequestVO;
+import com.kh.finalprj.vo.message.MessageSearchResponseVO;
 import com.kh.finalprj.vo.message.MessageTargetVO;
 import com.kh.finalprj.vo.message.MessageUnreadChannelVO;
 import com.kh.finalprj.vo.message.MessageUnreadVO;
@@ -195,5 +198,61 @@ public class MessageService {
 		) {
 		return messageDao.selectChannelUnreadCount(
 				projectNo, projectMemberNo);
+	}
+	
+	//현재 채널 메세지 검색
+	public MessageSearchResponseVO search(int channelNo, int empNo, MessageSearchRequestVO request) {
+		
+		//채널이 존재하는지 확인
+		Integer projectNo = channelDao.findProjectNo(channelNo);
+		
+		if(projectNo == null)
+			throw new TargetNotfoundException();
+		
+		//현재 사용자가 프로젝트 멤버인지 확인
+		Integer projectMemberNo = projectMemberDao.findProjectMemberNo(projectNo, empNo);
+		
+		if(projectMemberNo == null)
+			throw new GetOutException();
+		
+		//검색 결과 조회
+		List<MessageVO> messages = messageDao.search(channelNo, request);
+		
+		//검색 결과 전체 개수
+		int totalCount = messageDao.searchCount(channelNo, request);
+		
+		//마지막 페이지 여부
+		boolean last = request.getEndRownum() >= totalCount;
+		
+		return MessageSearchResponseVO.builder()
+					.messages(messages)
+					.totalCount(totalCount)
+					.last(last)
+				.build();
+		
+	}
+	
+	//특정 메세지 주변 대화 조회
+	public MessageContextResponseVO selectContext(int chatMessageNo, int empNo) {
+		//대상 메세지 정보 조회
+		MessageTargetVO target = messageDao.selectTarget(chatMessageNo);
+
+		if(target == null)
+			throw new TargetNotfoundException();
+		
+		//현재 사용자가 프로젝트 멤버인지 확인
+		Integer projectMemberNo = projectMemberDao.findProjectMemberNo(target.getProjectNo(), empNo);
+		
+		if(projectMemberNo == null)
+			throw new GetOutException();
+		
+		//대상 메세지 주변 대화 조회
+		List<MessageVO> messages = messageDao.selectContext(target.getChannelNo(), chatMessageNo);
+		
+		return MessageContextResponseVO.builder()
+					.channelNo(target.getChannelNo())
+					.targetMessageNo(chatMessageNo)
+					.messages(messages)
+				.build();
 	}
 }

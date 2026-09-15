@@ -309,4 +309,252 @@
 	
 	</select>
 	
+	<!-- 채널 메세지 검색 -->
+	<select id="search" resultMap="MessageVO">
+		select *
+		from (
+			select
+				M.chat_message_no,
+				M.chat_channel_no,
+				M.chat_message_sender,
+				
+				PM.emp_no as emp_no,
+				E.emp_name as sender_name,
+				
+				M.chat_message_content,
+				M.chat_message_type,
+				M.chat_message_ctime,
+				M.chat_message_utime,
+				M.chat_message_deleted,
+				
+				0 as unread_count,
+				
+				row_number() over(
+					order by M.chat_message_no desc
+				) rn
+				
+			from chat_message M
+			
+				left outer join project_member PM
+					on M.chat_message_sender
+						= PM.project_member_no
+						
+				left outer join emp E
+					on PM.emp_no = E.emp_no
+					
+			where M.chat_channel_no = #{channelNo}
+				and M.chat_message_deleted = 'N'
+				and lower(M.chat_message_content)
+					like '%' || lower(#{request.keyword}) || '%'
+		)
+		where rn between
+			#{request.beginRownum}
+			and #{request.endRownum}
+		
+		order by rn
+	</select>
+	
+	<!-- 채널 메세지 검색 결과 개수 -->
+	<select id="searchCount" resultType="int">
+		select count(*)
+		from chat_message M
+		where M.chat_channel_no = #{channelNo}
+			and M.chat_message_deleted = 'N'
+			and lower(M.chat_message_content)
+				like '%' || lower(#{request.keyword}) || '%'
+	</select>
+	
+	<!-- 특정 메세지 주변 대화 조회 -->
+	<select id="selectContext" resultMap="MessageVO">
+	
+	    select *
+	    from (
+	        <!-- target 이전 메세지 50개 -->
+	        select *
+	        from (
+	            select
+	                M.chat_message_no,
+	                M.chat_channel_no,
+	                M.chat_message_sender,
+	
+	                PM.emp_no as emp_no,
+	                E.emp_name as sender_name,
+	
+	                M.chat_message_content,
+	                M.chat_message_type,
+	                M.chat_message_ctime,
+	                M.chat_message_utime,
+	                M.chat_message_deleted,
+	
+	                (
+	                    select count(*)
+	                    from project_member PM2
+	                    where PM2.project_no = CC.project_no
+	
+	                        and PM2.project_member_no
+	                            != M.chat_message_sender
+	
+	                        and not exists (
+	                            select 1
+	                            from chat_read CR
+	                            where CR.chat_message_no
+	                                    = M.chat_message_no
+	
+	                                and CR.project_member_no
+	                                    = PM2.project_member_no
+	                        )
+	                ) as unread_count
+	
+	            from chat_message M
+	
+	                left outer join chat_channel CC
+	                    on M.chat_channel_no
+	                        = CC.chat_channel_no
+	
+	                left outer join project_member PM
+	                    on M.chat_message_sender
+	                        = PM.project_member_no
+	
+	                left outer join emp E
+	                    on PM.emp_no = E.emp_no
+	
+	            where M.chat_channel_no = #{channelNo}
+	
+					<![CDATA[
+	                and M.chat_message_no < #{chatMessageNo}					
+					]]>
+	
+	            order by M.chat_message_no desc
+	        )
+	
+			<![CDATA[
+	        where rownum <= 50
+			]]>
+	
+	
+	        union all
+	
+	
+	        <!-- target 메세지 -->
+	        select
+	            M.chat_message_no,
+	            M.chat_channel_no,
+	            M.chat_message_sender,
+	
+	            PM.emp_no as emp_no,
+	            E.emp_name as sender_name,
+	
+	            M.chat_message_content,
+	            M.chat_message_type,
+	            M.chat_message_ctime,
+	            M.chat_message_utime,
+	            M.chat_message_deleted,
+	
+	            (
+	                select count(*)
+	                from project_member PM2
+	                where PM2.project_no = CC.project_no
+	
+	                    and PM2.project_member_no
+	                        != M.chat_message_sender
+	
+	                    and not exists (
+	                        select 1
+	                        from chat_read CR
+	                        where CR.chat_message_no
+	                                = M.chat_message_no
+	
+	                            and CR.project_member_no
+	                                = PM2.project_member_no
+	                    )
+	            ) as unread_count
+	
+	        from chat_message M
+	
+	            left outer join chat_channel CC
+	                on M.chat_channel_no
+	                    = CC.chat_channel_no
+	
+	            left outer join project_member PM
+	                on M.chat_message_sender
+	                    = PM.project_member_no
+	
+	            left outer join emp E
+	                on PM.emp_no = E.emp_no
+	
+	        where M.chat_channel_no = #{channelNo}
+	
+	            and M.chat_message_no
+	                = #{chatMessageNo}
+	
+	
+	        union all
+	
+	
+	        <!-- target 이후 메세지 50개 -->
+	        select *
+	        from (
+	            select
+	                M.chat_message_no,
+	                M.chat_channel_no,
+	                M.chat_message_sender,
+	
+	                PM.emp_no as emp_no,
+	                E.emp_name as sender_name,
+	
+	                M.chat_message_content,
+	                M.chat_message_type,
+	                M.chat_message_ctime,
+	                M.chat_message_utime,
+	                M.chat_message_deleted,
+	
+	                (
+	                    select count(*)
+	                    from project_member PM2
+	                    where PM2.project_no = CC.project_no
+	
+	                        and PM2.project_member_no
+	                            != M.chat_message_sender
+	
+	                        and not exists (
+	                            select 1
+	                            from chat_read CR
+	                            where CR.chat_message_no
+	                                    = M.chat_message_no
+	
+	                                and CR.project_member_no
+	                                    = PM2.project_member_no
+	                        )
+	                ) as unread_count
+	
+	            from chat_message M
+	
+	                left outer join chat_channel CC
+	                    on M.chat_channel_no
+	                        = CC.chat_channel_no
+	
+	                left outer join project_member PM
+	                    on M.chat_message_sender
+	                        = PM.project_member_no
+	
+	                left outer join emp E
+	                    on PM.emp_no = E.emp_no
+	
+	            where M.chat_channel_no = #{channelNo}
+	
+	                and M.chat_message_no
+	                    > #{chatMessageNo}
+	
+	            order by M.chat_message_no asc
+	        )
+	
+			<![CDATA[
+	        where rownum <= 50
+			]]>
+	
+	    )
+	
+	    order by chat_message_no asc
+	
+	</select>
 </mapper>
