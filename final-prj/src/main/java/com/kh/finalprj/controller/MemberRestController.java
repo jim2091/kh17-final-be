@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -208,7 +209,22 @@ public class MemberRestController {
 		
 	}
 	
+//	카카오 연결 해제
+	@DeleteMapping("/kakao")
+	public void kakaoDisconnect(
+	        @CurrentUser TokenParseResponseVO parseVO
+	) {
+	    empDao.kakaoDisconnect(parseVO.getEmpNo());
+	}
+	
 
+	@GetMapping("/kakao")
+	public boolean isKakaoConnected(
+			@CurrentUser TokenParseResponseVO parseVO) {
+		boolean result = empDao.isKakaoCennected(parseVO.getEmpNo())>0;
+		
+		return result;
+	}
 	
 	
 	

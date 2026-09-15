@@ -7,8 +7,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,6 +61,7 @@ public class KakaoController {
 	public String kakaoLogin() {
 		return "redirect:"+kakaoService.kakaoLogin();
 	}
+
 	
 	@GetMapping("/callback")
 //	@ResponseBody
@@ -68,17 +69,19 @@ public class KakaoController {
 			@RequestParam("code") String code,
 			@CurrentUser TokenParseResponseVO parseVo
 			) {
-		System.out.println("카카오 인증 코드 : "+ code);
+//		System.out.println("카카오 인증 코드 : "+ code);
 		
 		KakaoTokenResponseVO token = kakaoService.getKakaoToken(code);
 		
-		System.out.println("카카오 토큰 : "+ token);
+//		System.out.println("카카오 토큰 : "+ token);
 		
 		KakaoUserInfoResponseVO userInfo = kakaoService.getKakaoUserInfo(token.getAccessToken());
 		
-		System.out.println("카카오 id : " + userInfo.getId());
+//		System.out.println("카카오 id : " + userInfo.getId());
 		
 		Long id = userInfo.getId();
+		
+		
 		
 		//emp_kakao에 insert
 		KakaoLoginRequestVO request = new KakaoLoginRequestVO();
@@ -212,9 +215,8 @@ public class KakaoController {
 	
 	
 	
-	
-	
-	
+
+
 	
 	
 	
