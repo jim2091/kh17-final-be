@@ -29,10 +29,10 @@ public class ProjectInviteController {
 	@PostMapping(value = "/{projectNo}/invite/{receiverEmpNo}",produces = "application/json")
 	public void invite(
 			@PathVariable int projectNo,
-			@PathVariable int receiverEmpNo,
-			@CurrentUser TokenParseResponseVO parseVO
+			@CurrentUser TokenParseResponseVO parseVO,
+			@PathVariable int receiverEmpNo
 	) {
-		projectInviteService.invite(projectNo, receiverEmpNo, parseVO.getEmpNo());
+		projectInviteService.invite(projectNo,parseVO.getEmpNo(),receiverEmpNo);
 	}
 	
 	//초대 수락

@@ -19,13 +19,13 @@
 			project_invite_status,
 			project_invite_ctime
 		)
-		valuse(
+		values(
 			#{projectInviteNo},
 			#{projectNo},
 			#{projectInviteSender},
 			#{projectInviteReceiver},
 			#{projectInviteStatus},
-			systimestmp
+			systimestamp
 		)
 	</insert>
 	
@@ -36,10 +36,10 @@
 	</select>
 	
 	<!-- 대기중인 초대 확인 -->
-	<select id="countPening" resultType="int">
+	<select id="countPending" resultType="int">
 		select count(*) from project_invite
 		
-		where proejct_no = #{projectNo}
+		where project_no = #{projectNo}
 		
 		and project_invite_receiver = #{projectInviteReceiver}
 		and project_invite_status = '대기'
