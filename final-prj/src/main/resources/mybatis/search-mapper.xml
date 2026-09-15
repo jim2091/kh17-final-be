@@ -702,9 +702,6 @@
 
         WHERE
             pm.emp_no = #{_parameter}
-
-            AND p.project_visibility = 'public'
-
         ORDER BY
             pm.project_member_ctime DESC
 

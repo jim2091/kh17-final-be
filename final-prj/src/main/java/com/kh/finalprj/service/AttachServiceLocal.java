@@ -15,281 +15,557 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.finalprj.configuration.StorageProperties;
 import com.kh.finalprj.dao.AttachDao;
+import com.kh.finalprj.dao.ProjectDao;
 import com.kh.finalprj.dao.ProjectFileDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.AttachDto;
+import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.attach.AttachInfoVO;
 import com.kh.finalprj.vo.attach.AttachProfileVO;
 
+
 @Service
 @Profile("local")
-public class AttachServiceLocal implements AttachService {
+public class AttachServiceLocal
+        implements AttachService {
 
-	@Autowired
-	private AttachDao attachDao;
 
-	@Autowired
-	private ProjectFileDao projectFileDao;
+    @Autowired
+    private AttachDao attachDao;
 
-	@Autowired
-	private ProjectMemberDao projectMemberDao;
 
-	@Autowired
-	private StorageProperties storageProperties;
+    @Autowired
+    private ProjectFileDao projectFileDao;
 
-	// =========================================================
-	// 1. 프로젝트 파일 저장
-	// =========================================================
 
-	@Transactional
-	@Override
-	public int save(int projectNo, MultipartFile attach, String uploader, String source, Integer sourceNo)
-			throws IllegalStateException, IOException {
+    @Autowired
+    private ProjectMemberDao projectMemberDao;
 
-		if (attach == null || attach.isEmpty()) {
 
-			return 0;
-		}
+    @Autowired
+    private ProjectDao projectDao;
 
-		if (uploader == null || uploader.trim().isEmpty()) {
 
-			throw new IllegalStateException("파일 업로더 정보가 없습니다.");
-		}
+    @Autowired
+    private StorageProperties storageProperties;
 
-		if (source == null || source.trim().isEmpty()) {
 
-			source = "FILE";
-		}
+    // =========================================================
+    // 1. 프로젝트 파일 저장
+    // =========================================================
 
-		int attachNo = attachDao.sequence();
+    @Transactional
+    @Override
+    public int save(
+            int projectNo,
+            MultipartFile attach,
+            String uploader,
+            String source,
+            Integer sourceNo
+    ) throws IllegalStateException, IOException {
 
-		AttachDto dto = AttachDto.builder().attachNo(attachNo).attachName(attach.getOriginalFilename())
-				.attachType(attach.getContentType()).attachSize(attach.getSize()).attachUploader(uploader)
-				.attachSource(source).attachSourceNo(sourceNo).build();
 
-		// =====================================================
-		// ATTACH 저장
-		// =====================================================
+        // =====================================================
+        // 1-1. 파일 확인
+        // =====================================================
 
-		attachDao.insert(dto);
+        if (
+            attach == null
+            || attach.isEmpty()
+        ) {
 
-		// =====================================================
-		// PROJECT_FILE 연결
-		// =====================================================
+            return 0;
+        }
 
-		projectFileDao.insert(projectNo, attachNo);
 
-		// =====================================================
-		// 실제 파일 저장
-		// =====================================================
+        // =====================================================
+        // 1-2. 업로더 확인
+        // =====================================================
 
-		File dir = storageProperties.getLocalRoot();
+        if (
+            uploader == null
+            || uploader.trim().isEmpty()
+        ) {
 
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
+            throw new IllegalStateException(
+                    "파일 업로더 정보가 없습니다."
+            );
+        }
 
-		File target = new File(dir, String.valueOf(attachNo));
 
-		attach.transferTo(target);
+        // =====================================================
+        // 1-3. 프로젝트 존재 여부 확인
+        // =====================================================
 
-		return attachNo;
-	}
+        ProjectDto project =
+                projectDao.selectProject(
+                        projectNo
+                );
 
-	// =========================================================
-	// 2. 파일 로드
-	// =========================================================
 
-	@Override
-	public AttachInfoVO load(int attachNo) throws IOException {
+        if (project == null) {
 
-		AttachDto attachDto = attachDao.selectOne(attachNo);
+            throw new TargetNotfoundException();
+        }
 
-		if (attachDto == null) {
-			throw new TargetNotfoundException();
-		}
 
-		File dir = storageProperties.getLocalRoot();
+        // =====================================================
+        // 1-4. 프로젝트 종료 여부 확인
+        //
+        // closed 프로젝트는 파일 업로드 금지
+        //
+        // 반드시 ATTACH 저장보다 먼저 검사한다.
+        // =====================================================
 
-		if (!dir.exists()) {
-			throw new TargetNotfoundException();
-		}
+        if (
+            project.getProjectStatus() != null
+            && "closed".equalsIgnoreCase(
+                    project.getProjectStatus()
+            )
+        ) {
 
-		File target = new File(dir, String.valueOf(attachDto.getAttachNo()));
+            throw new IllegalStateException(
+                    "종료된 프로젝트에는 파일을 업로드할 수 없습니다."
+            );
+        }
 
-		if (!target.exists()) {
-			throw new TargetNotfoundException();
-		}
 
-		byte[] data = FileCopyUtils.copyToByteArray(target);
+        // =====================================================
+        // 2. 출처 기본값
+        // =====================================================
 
-		Resource resource = new ByteArrayResource(data);
+        if (
+            source == null
+            || source.trim().isEmpty()
+        ) {
 
-		return AttachInfoVO.builder().attachDto(attachDto).resource(resource).build();
-	}
+            source = "FILE";
+        }
 
-	// =========================================================
-	// 3. 파일 삭제
-	//
-	// owner / manager
-	// → 다른 사람이 올린 파일도 삭제 가능
-	//
-	// member
-	// → 본인이 올린 파일만 삭제 가능
-	//
-	// Note / Note Comment 등에서 삭제해도
-	// project_file 연결까지 함께 제거한다.
-	// =========================================================
 
-	@Transactional
-	@Override
-	public void delete(Integer attachNo, String uploader) {
+        // =====================================================
+        // 3. ATTACH 번호 생성
+        // =====================================================
 
-		if (attachNo == null) {
-			return;
-		}
+        int attachNo =
+                attachDao.sequence();
 
-		if (uploader == null || uploader.trim().isEmpty()) {
 
-			throw new IllegalStateException("로그인 사용자 정보가 없습니다.");
-		}
+        AttachDto dto =
+                AttachDto
+                        .builder()
+                        .attachNo(attachNo)
+                        .attachName(
+                                attach.getOriginalFilename()
+                        )
+                        .attachType(
+                                attach.getContentType()
+                        )
+                        .attachSize(
+                                attach.getSize()
+                        )
+                        .attachUploader(
+                                uploader
+                        )
+                        .attachSource(
+                                source
+                        )
+                        .attachSourceNo(
+                                sourceNo
+                        )
+                        .build();
 
-		AttachDto attachDto = attachDao.selectOne(attachNo);
 
-		if (attachDto == null) {
-			throw new TargetNotfoundException();
-		}
+        // =====================================================
+        // 4. ATTACH 저장
+        // =====================================================
 
-		// =====================================================
-		// 프로젝트 번호 조회
-		//
-		// project_file을 삭제하기 전에 조회해야 한다.
-		// =====================================================
+        attachDao.insert(dto);
 
-		Integer projectNo = attachDao.selectProjectNo(attachNo);
 
-		// =====================================================
-		// 업로더 본인 여부
-		// =====================================================
+        // =====================================================
+        // 5. PROJECT_FILE 연결
+        // =====================================================
 
-		boolean isUploader = uploader.equals(attachDto.getAttachUploader());
+        projectFileDao.insert(
+                projectNo,
+                attachNo
+        );
 
-		// =====================================================
-		// OWNER / MANAGER 여부
-		// =====================================================
 
-		boolean isOwnerOrManager = false;
+        // =====================================================
+        // 6. 실제 파일 저장
+        // =====================================================
 
-		if (projectNo != null) {
+        File dir =
+                storageProperties.getLocalRoot();
 
-			try {
 
-				int empNo = Integer.parseInt(uploader);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
-				String role = projectMemberDao.selectRole(projectNo, empNo);
 
-				isOwnerOrManager = "owner".equalsIgnoreCase(role) || "manager".equalsIgnoreCase(role);
+        File target =
+                new File(
+                        dir,
+                        String.valueOf(
+                                attachNo
+                        )
+                );
 
-			} catch (NumberFormatException e) {
 
-				// 사번이 숫자가 아니면
-				// owner / manager 권한을 인정하지 않음
-			}
-		}
+        attach.transferTo(target);
 
-		// =====================================================
-		// 최종 권한 검사
-		// =====================================================
 
-		if (!isUploader && !isOwnerOrManager) {
+        return attachNo;
+    }
 
-			throw new IllegalStateException("파일을 삭제할 권한이 없습니다.");
-		}
 
-		// =====================================================
-		// PROJECT_FILE 연결 삭제
-		//
-		// Note에서 파일을 삭제한 경우에도
-		// 파일함에서 해당 파일이 사라지도록 한다.
-		// =====================================================
+    // =========================================================
+    // 2. 파일 로드
+    // =========================================================
 
-		attachDao.deleteProjectFile(attachNo);
+    @Override
+    public AttachInfoVO load(
+            int attachNo
+    ) throws IOException {
 
-		// =====================================================
-		// ATTACH 삭제
-		// =====================================================
 
-		attachDao.delete(attachNo);
+        AttachDto attachDto =
+                attachDao.selectOne(
+                        attachNo
+                );
 
-		// =====================================================
-		// 실제 파일 삭제
-		// =====================================================
 
-		File dir = storageProperties.getLocalRoot();
+        if (attachDto == null) {
 
-		if (dir.exists()) {
+            throw new TargetNotfoundException();
+        }
 
-			File target = new File(dir, String.valueOf(attachNo));
 
-			if (target.exists()) {
+        File dir =
+                storageProperties.getLocalRoot();
 
-				target.delete();
 
-			}
-		}
-	}
+        if (!dir.exists()) {
 
-	// =========================================================
-	// 4. 프로젝트 파일 목록
-	// =========================================================
+            throw new TargetNotfoundException();
+        }
 
-	@Override
-	public List<AttachDto> list(int projectNo) {
 
-		return attachDao.selectListByProject(projectNo);
-	}
+        File target =
+                new File(
+                        dir,
+                        String.valueOf(
+                                attachDto.getAttachNo()
+                        )
+                );
 
-	// =========================================================
-	// 5. 프로젝트 파일 검색
-	// =========================================================
 
-	@Override
-	public List<AttachDto> list(int projectNo, String keyword, String searchType) {
+        if (!target.exists()) {
 
-		return attachDao.selectListByProjectAndKeyword(projectNo, keyword, searchType);
-	}
+            throw new TargetNotfoundException();
+        }
 
-	// =========================================================
-	// 6. 회원 프로필 사진 저장
-	// =========================================================
 
-	@Transactional
-	@Override
-	public int save(MultipartFile attach, String empName, String source) throws IllegalStateException, IOException {
+        byte[] data =
+                FileCopyUtils.copyToByteArray(
+                        target
+                );
 
-		if (attach == null || attach.isEmpty()) {
 
-			return 0;
-		}
+        Resource resource =
+                new ByteArrayResource(
+                        data
+                );
 
-		int attachNo = attachDao.sequence();
 
-		attachDao.insert(AttachProfileVO.builder().attachNo(attachNo).attachName(attach.getOriginalFilename())
-				.attachType(attach.getContentType()).attachSize(attach.getSize()).attachUploader(empName)
-				.attachSource(source).build());
+        return AttachInfoVO
+                .builder()
+                .attachDto(attachDto)
+                .resource(resource)
+                .build();
+    }
 
-		File dir = storageProperties.getLocalRoot();
 
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
+    // =========================================================
+    // 3. 파일 삭제
+    //
+    // owner / manager
+    // → 다른 사람이 올린 파일도 삭제 가능
+    //
+    // member
+    // → 본인이 올린 파일만 삭제 가능
+    //
+    // Note / Note Comment 등에서 삭제해도
+    // project_file 연결까지 함께 제거한다.
+    // =========================================================
 
-		File target = new File(dir, String.valueOf(attachNo));
+    @Transactional
+    @Override
+    public void delete(
+            Integer attachNo,
+            String uploader
+    ) {
 
-		attach.transferTo(target);
 
-		return attachNo;
-	}
+        if (attachNo == null) {
+
+            return;
+        }
+
+
+        if (
+            uploader == null
+            || uploader.trim().isEmpty()
+        ) {
+
+            throw new IllegalStateException(
+                    "로그인 사용자 정보가 없습니다."
+            );
+        }
+
+
+        AttachDto attachDto =
+                attachDao.selectOne(
+                        attachNo
+                );
+
+
+        if (attachDto == null) {
+
+            throw new TargetNotfoundException();
+        }
+
+
+        // =====================================================
+        // 프로젝트 번호 조회
+        //
+        // project_file을 삭제하기 전에 조회해야 한다.
+        // =====================================================
+
+        Integer projectNo =
+                attachDao.selectProjectNo(
+                        attachNo
+                );
+
+
+        // =====================================================
+        // 업로더 본인 여부
+        // =====================================================
+
+        boolean isUploader =
+                uploader.equals(
+                        attachDto.getAttachUploader()
+                );
+
+
+        // =====================================================
+        // OWNER / MANAGER 여부
+        // =====================================================
+
+        boolean isOwnerOrManager =
+                false;
+
+
+        if (projectNo != null) {
+
+            try {
+
+                int empNo =
+                        Integer.parseInt(
+                                uploader
+                        );
+
+
+                String role =
+                        projectMemberDao.selectRole(
+                                projectNo,
+                                empNo
+                        );
+
+
+                isOwnerOrManager =
+                        "owner".equalsIgnoreCase(role)
+                        || "manager".equalsIgnoreCase(role);
+
+
+            } catch (NumberFormatException e) {
+
+                // 사번이 숫자가 아니면
+                // owner / manager 권한을 인정하지 않음
+            }
+        }
+
+
+        // =====================================================
+        // 최종 권한 검사
+        // =====================================================
+
+        if (
+            !isUploader
+            && !isOwnerOrManager
+        ) {
+
+            throw new IllegalStateException(
+                    "파일을 삭제할 권한이 없습니다."
+            );
+        }
+
+
+        // =====================================================
+        // PROJECT_FILE 연결 삭제
+        // =====================================================
+
+        attachDao.deleteProjectFile(
+                attachNo
+        );
+
+
+        // =====================================================
+        // ATTACH 삭제
+        // =====================================================
+
+        attachDao.delete(
+                attachNo
+        );
+
+
+        // =====================================================
+        // 실제 파일 삭제
+        // =====================================================
+
+        File dir =
+                storageProperties.getLocalRoot();
+
+
+        if (dir.exists()) {
+
+            File target =
+                    new File(
+                            dir,
+                            String.valueOf(
+                                    attachNo
+                            )
+                    );
+
+
+            if (target.exists()) {
+
+                target.delete();
+            }
+        }
+    }
+
+
+    // =========================================================
+    // 4. 프로젝트 파일 목록
+    // =========================================================
+
+    @Override
+    public List<AttachDto> list(
+            int projectNo
+    ) {
+
+        return attachDao.selectListByProject(
+                projectNo
+        );
+    }
+
+
+    // =========================================================
+    // 5. 프로젝트 파일 검색
+    // =========================================================
+
+    @Override
+    public List<AttachDto> list(
+            int projectNo,
+            String keyword,
+            String searchType
+    ) {
+
+        return attachDao.selectListByProjectAndKeyword(
+                projectNo,
+                keyword,
+                searchType
+        );
+    }
+
+
+    // =========================================================
+    // 6. 회원 프로필 사진 저장
+    // =========================================================
+
+    @Transactional
+    @Override
+    public int save(
+            MultipartFile attach,
+            String empName,
+            String source
+    ) throws IllegalStateException, IOException {
+
+
+        if (
+            attach == null
+            || attach.isEmpty()
+        ) {
+
+            return 0;
+        }
+
+
+        int attachNo =
+                attachDao.sequence();
+
+
+        attachDao.insert(
+                AttachProfileVO
+                        .builder()
+                        .attachNo(attachNo)
+                        .attachName(
+                                attach.getOriginalFilename()
+                        )
+                        .attachType(
+                                attach.getContentType()
+                        )
+                        .attachSize(
+                                attach.getSize()
+                        )
+                        .attachUploader(
+                                empName
+                        )
+                        .attachSource(
+                                source
+                        )
+                        .build()
+        );
+
+
+        File dir =
+                storageProperties.getLocalRoot();
+
+
+        if (!dir.exists()) {
+
+            dir.mkdirs();
+        }
+
+
+        File target =
+                new File(
+                        dir,
+                        String.valueOf(
+                                attachNo
+                        )
+                );
+
+
+        attach.transferTo(target);
+
+
+        return attachNo;
+    }
 
 }

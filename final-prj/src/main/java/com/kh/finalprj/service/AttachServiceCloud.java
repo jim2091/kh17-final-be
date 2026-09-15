@@ -14,9 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.finalprj.configuration.StorageProperties;
 import com.kh.finalprj.dao.AttachDao;
+import com.kh.finalprj.dao.ProjectDao;
 import com.kh.finalprj.dao.ProjectFileDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.AttachDto;
+import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.vo.attach.AttachInfoVO;
 import com.kh.finalprj.vo.attach.AttachProfileVO;
@@ -54,6 +56,10 @@ public class AttachServiceCloud
 
 
     @Autowired
+    private ProjectDao projectDao;
+
+
+    @Autowired
     private S3Client s3Client;
 
 
@@ -75,13 +81,22 @@ public class AttachServiceCloud
             Integer sourceNo
     ) throws IllegalStateException, IOException {
 
+        // =====================================================
+        // 1-1. 파일 확인
+        // =====================================================
+
         if (
             attach == null
             || attach.isEmpty()
         ) {
+
             return 0;
         }
 
+
+        // =====================================================
+        // 1-2. 업로더 확인
+        // =====================================================
 
         if (
             uploader == null
@@ -94,6 +109,47 @@ public class AttachServiceCloud
         }
 
 
+        // =====================================================
+        // 1-3. 프로젝트 존재 여부 확인
+        // =====================================================
+
+        ProjectDto project =
+                projectDao.selectProject(
+                        projectNo
+                );
+
+
+        if (project == null) {
+
+            throw new TargetNotfoundException();
+        }
+
+
+        // =====================================================
+        // 1-4. 프로젝트 종료 여부 확인
+        //
+        // closed 프로젝트는 파일 업로드 금지
+        //
+        // 반드시 ATTACH 저장보다 먼저 검사한다.
+        // =====================================================
+
+        if (
+            project.getProjectStatus() != null
+            && "closed".equalsIgnoreCase(
+                    project.getProjectStatus()
+            )
+        ) {
+
+            throw new IllegalStateException(
+                    "종료된 프로젝트에는 파일을 업로드할 수 없습니다."
+            );
+        }
+
+
+        // =====================================================
+        // 2. 출처 기본값
+        // =====================================================
+
         if (
             source == null
             || source.trim().isEmpty()
@@ -102,6 +158,10 @@ public class AttachServiceCloud
             source = "FILE";
         }
 
+
+        // =====================================================
+        // 3. ATTACH 번호 생성
+        // =====================================================
 
         int attachNo =
                 attachDao.sequence();
@@ -133,14 +193,14 @@ public class AttachServiceCloud
 
 
         // =====================================================
-        // ATTACH 저장
+        // 4. ATTACH 저장
         // =====================================================
 
         attachDao.insert(dto);
 
 
         // =====================================================
-        // PROJECT_FILE 연결
+        // 5. PROJECT_FILE 연결
         // =====================================================
 
         projectFileDao.insert(
@@ -150,7 +210,7 @@ public class AttachServiceCloud
 
 
         // =====================================================
-        // S3 저장
+        // 6. S3 저장
         // =====================================================
 
         String objectKey =
@@ -261,9 +321,6 @@ public class AttachServiceCloud
 
         // =====================================================
         // 프로젝트 번호 조회
-        //
-        // 권한 확인을 먼저 해야 하므로
-        // project_file을 삭제하기 전에 조회한다.
         // =====================================================
 
         Integer projectNo =
@@ -338,12 +395,6 @@ public class AttachServiceCloud
 
         // =====================================================
         // PROJECT_FILE 연결 삭제
-        //
-        // 기존에는 ATTACH만 삭제해서
-        // project_file에 연결이 남아 있었습니다.
-        //
-        // Note에서 삭제한 경우에도
-        // 파일함에서 사라지도록 연결을 먼저 제거한다.
         // =====================================================
 
         attachDao.deleteProjectFile(
@@ -353,9 +404,6 @@ public class AttachServiceCloud
 
         // =====================================================
         // ATTACH 삭제
-        //
-        // NOTE_FILE은 NoteService에서 이미 삭제된 상태이므로
-        // 여기서 ATTACH를 삭제한다.
         // =====================================================
 
         attachDao.delete(
