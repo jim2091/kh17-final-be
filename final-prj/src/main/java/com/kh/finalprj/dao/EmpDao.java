@@ -91,7 +91,10 @@ public interface EmpDao {
 	void kakao(KakaoLoginRequestVO vo);
 	//emp_kakao에서 empNo 찾기
 	Integer findEmpNoByKakaoId(Long id);
-	
+	//emp_kakao에서 EmpNo 삭제하기
+	void kakaoDisconnect(Integer empNo);
+	//연결확인
+	int isKakaoCennected(Integer empNo);
 	
 	
 	

@@ -49,6 +49,7 @@ public class KakaoService {
     			+ "&response_type=code";
     	return url;
     }
+
     
     public KakaoTokenResponseVO getKakaoToken(String code) {
     	return kakaoAuthClient.post()

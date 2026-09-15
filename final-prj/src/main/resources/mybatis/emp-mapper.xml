@@ -626,6 +626,13 @@ order by e.emp_no asc
 	select emp_no from emp_kakao where kakao_id = #{id}
 </select>
 
+<delete id="kakaoDisconnect">
+	delete from emp_kakao where emp_no = #{empNo}
+</delete>
+
+<select id="isKakaoConnected" resultType="int">
+	select count(*) from emp_kakao where emp_no = #{empNo}
+</select>
 
 
 

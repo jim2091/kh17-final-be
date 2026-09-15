@@ -200,6 +200,16 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectOne("mapper.emp.findEmpNoByKakaoId", id);
 	}
 
+	@Override
+	public void kakaoDisconnect(Integer empNo) {
+		sqlSession.delete("mapper.emp.kakaoDisconnect", empNo);
+	}
+
+	@Override
+	public int isKakaoCennected(Integer empNo) {
+		return sqlSession.selectOne("mapper.emp.isKakaoConnected", empNo);
+	}
+
 	
 	
 	
