@@ -14,13 +14,14 @@ import lombok.NoArgsConstructor;
 public class ProjectHistoryResponseDto {
 
     // 사용자 정보
-    private int empNo;
+    private String attachNo;
+	private int empNo;
     private String empName;
     private String empEmail;
     private String deptName;
     private String positionName;
     private String empContact;
-
+    
     // 프로젝트 참여 이력
     private List<ProjectHistoryDto> projects;
 }

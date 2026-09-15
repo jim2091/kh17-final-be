@@ -12,7 +12,8 @@
 	<select id="sequence" resultType="int">
 
 		select attach_seq.nextval
-		from dual
+		from
+		dual
 
 	</select>
 
@@ -133,7 +134,8 @@
 
 		from attach
 
-		where attach_no in(
+		where attach_no
+		in(
 
 		<foreach item="attachNo" collection="list" separator=",">
 
@@ -163,7 +165,8 @@
 		a.attach_source_no,
 		a.attach_ctime,
 
-		e.emp_name as empName
+		e.emp_name as
+		empName
 
 		from project_file pf
 
@@ -173,7 +176,8 @@
 		left join emp e
 		on a.attach_uploader = e.emp_no
 
-		where pf.project_no = #{projectNo}
+		where pf.project_no =
+		#{projectNo}
 
 		order by a.attach_ctime desc
 
@@ -202,12 +206,14 @@
 		FROM project_file pf
 
 		JOIN attach a
-		ON pf.attach_no = a.attach_no
+		ON pf.attach_no
+		= a.attach_no
 
 		LEFT JOIN emp e
 		ON a.attach_uploader = e.emp_no
 
-		WHERE pf.project_no = #{projectNo}
+		WHERE
+		pf.project_no = #{projectNo}
 
 		<choose>
 
@@ -240,53 +246,8 @@
 
 			<when test="searchType == 'source'">
 
-				AND REPLACE(
-
-				LOWER(
-
-				CASE
-
-				WHEN UPPER(a.attach_source) = 'FILE'
-				THEN '파일함'
-
-				WHEN UPPER(a.attach_source) = 'NOTE'
-				THEN '노트'
-
-				WHEN UPPER(a.attach_source) = 'NOTE_COMMENT'
-				THEN '노트 댓글'
-
-				WHEN UPPER(a.attach_source) = 'TASK'
-				THEN '업무'
-
-				WHEN UPPER(a.attach_source) = 'TASK_COMMENT'
-				THEN '업무 댓글'
-
-				ELSE NVL(
-				a.attach_source,
-				''
-				)
-
-				END
-
-				),
-
-				' ',
-
-				''
-
-				)
-
-				LIKE '%'
-
-				||
-
-				REPLACE(
-				LOWER(#{keyword}),
-				' ',
-				''
-				)
-
-				|| '%'
+				AND UPPER(a.attach_source) =
+				UPPER(#{keyword})
 
 			</when>
 
@@ -308,7 +269,8 @@
 				''
 				)
 
-				LIKE '%'
+				LIKE
+				'%'
 
 				||
 
@@ -401,7 +363,8 @@
 
 				REPLACE(
 				LOWER(#{keyword}),
-				' ',
+				'
+				',
 				''
 				)
 
@@ -450,7 +413,8 @@
 
 		select project_no
 
-		from project_file
+		from
+		project_file
 
 		where attach_no = #{attachNo}
 
@@ -461,7 +425,8 @@
 
 	<select id="selectProjectStatus" resultType="string">
 
-		select project_status
+		select
+		project_status
 
 		from project
 
