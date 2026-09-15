@@ -13,4 +13,6 @@ public interface ScheduleDao {
 	boolean delete(int scheduleNo);
 	ScheduleDetailResponseVO  selectOne(int scheduleNo);
 	List<ScheduleEventVO> selectList(int projectNo);
+	//마감일 알림을 위해 추가 -승훈
+	List<ScheduleDto> selectTodayDeadlineSchedules();
 }

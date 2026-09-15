@@ -12,4 +12,5 @@ public interface NotificationService {
 	Map<String, Object> getNotificationSummary(int empNo);
 	boolean markAsRead(int notificationNo, int empNo);
 	boolean markAllAsRead(int empNo);
+	void sendDeadlineNotifications();
 }

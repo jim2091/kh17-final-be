@@ -44,4 +44,9 @@ public class ScheduleDaoMybatis implements ScheduleDao{
 	public List<ScheduleEventVO> selectList(int projectNo) {
 	    return sqlSession.selectList("mapper.schedule.list", projectNo);
 	}
+	
+	@Override
+	public List<ScheduleDto> selectTodayDeadlineSchedules() {
+	    return sqlSession.selectList("mapper.schedule.findTodayDeadlineSchedules");
+	}
 }
