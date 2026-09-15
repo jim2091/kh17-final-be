@@ -3,71 +3,91 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-  
+
 <mapper namespace="mapper.schedule">
 
 	<!-- 시퀀스 -->
 	<select id="sequence" resultType="int">
-		select schedule_seq.nextval from dual
+		select schedule_seq.nextval
+		from dual
 	</select>
-	
+
 	<!-- 등록 -->
 	<insert id="add">
 		insert into schedule (
-			schedule_no, project_no, schedule_writer_no,
-			schedule_title, schedule_content, schedule_start,
-			schedule_end, schedule_place
+		schedule_no, project_no,
+		schedule_writer_no,
+		schedule_title, schedule_content, schedule_start,
+		schedule_end, schedule_place
 		)
 		values (
-			#{scheduleNo}, #{projectNo}, #{scheduleWriterNo},
-			#{scheduleTitle}, #{scheduleContent}, #{scheduleStart},
-			#{scheduleEnd}, #{schedulePlace}
+		#{scheduleNo}, #{projectNo},
+		#{scheduleWriterNo},
+		#{scheduleTitle}, #{scheduleContent},
+		#{scheduleStart},
+		#{scheduleEnd}, #{schedulePlace}
 		)
 	</insert>
-	
+
 	<!-- 수정 -->
 	<update id="update">
 		update schedule
 		set schedule_title = #{scheduleTitle},
-			schedule_content = #{scheduleContent},
-			schedule_start = #{scheduleStart},
-			schedule_end = #{scheduleEnd},
-			schedule_place = #{schedulePlace},
-			schedule_utime = systimestamp
-		where schedule_no = #{scheduleNo}
+		schedule_content = #{scheduleContent},
+		schedule_start =
+		#{scheduleStart},
+		schedule_end = #{scheduleEnd},
+		schedule_place =
+		#{schedulePlace},
+		schedule_utime = systimestamp
+		where schedule_no =
+		#{scheduleNo}
 	</update>
-	
+
 	<!-- 삭제 -->
 	<delete id="delete">
 		delete schedule where schedule_no = #{scheduleNo}
 	</delete>
-	
+
 	<!-- 상세 조회 -->
 	<select id="find" resultType="ScheduleDetailResponseVO">
 		select * from schedule
-		where schedule_no = #{scheduleNo}
+		where
+		schedule_no = #{scheduleNo}
 	</select>
-	
+
 	<!-- 목록 조회 -->
 	<select id="list" resultType="ScheduleEventVO">
-	    select
-	        schedule_no,
-	        schedule_writer_no,
-	        schedule_title,
-	        schedule_start,
-	        schedule_end,
-	        schedule_place
-	    from schedule
-	    where project_no = #{projectNo}
-	    order by schedule_start asc
+		select
+		schedule_no,
+		schedule_writer_no,
+		schedule_title,
+		schedule_start,
+		schedule_end,
+		schedule_place
+		from schedule
+		where project_no = #{projectNo}
+		order by
+		schedule_start asc
 	</select>
-	
+
 	<!-- 알림을 위한 데드라인 조회 -->
 	<select id="findTodayDeadlineSchedules" resultType="ScheduleDto">
-		select * from schedule
-		where schedule_end is not null
-			and trunc(schedule_end) =trunc(sysdate)
+		select
+		s.schedule_no as scheduleNo,
+		s.project_no as projectNo,
+		s.schedule_title as scheduleTitle,
+		s.schedule_content as scheduleContent,
+		s.schedule_start as scheduleStart,
+		s.schedule_end as scheduleEnd,
+		pm.emp_no as scheduleWriterNo
+		from schedule s
+		inner join project_member pm on s.schedule_writer_no = pm.project_member_no
+		inner join project p on s.project_no = p.project_no
+		where s.schedule_end is not null
+		and trunc(s.schedule_end) = trunc(sysdate)
+		and pm.project_member_status = 'active'
+		and p.project_status != 'closed'
 	</select>
-	
-	
+
 </mapper>

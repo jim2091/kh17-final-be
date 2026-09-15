@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.finalprj.dao.NotificationDao;
+import com.kh.finalprj.dao.ProjectMemberDao; // 👈 프로젝트 멤버 검증을 위해 주입 필요
 import com.kh.finalprj.dao.ScheduleDao;
 import com.kh.finalprj.dto.NotificationDto;
 import com.kh.finalprj.dto.ScheduleDto;
+import com.kh.finalprj.vo.project.ProjectMemberListResponseVO;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -26,6 +28,9 @@ public class NotificationServiceImpl implements NotificationService {
 	@Autowired
 	private ScheduleDao scheduleDao;
 
+	@Autowired
+	private ProjectMemberDao projectMemberDao; 
+
 	@Override
 	@Transactional
 	public void send(NotificationDto notificationDto) {
@@ -34,7 +39,7 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationDto.setNotificationRead("N");
 		notificationDao.insert(notificationDto);
 		
-		// 실시간 웹소켓 푸시 전송 (수신자 사번 기준 채널)
+		// 실시간 웹소켓 푸시 전송 (수신자 사번 기준 채널)[cite: 1, 2]
 		simpMessagingTemplate.convertAndSend(
 			"/public/user/" + notificationDto.getNotificationReceiver() + "/notify", 
 			notificationDto
@@ -71,30 +76,43 @@ public class NotificationServiceImpl implements NotificationService {
 		return notificationDao.markAllAsRead(empNo);
 	}
 	
-	@Scheduled(cron = "0 0 8 * * *")
-	@Transactional
-	@Override
-	public void sendDeadlineNotifications() {
-		List<ScheduleDto> urgentSchedules = scheduleDao.selectTodayDeadlineSchedules();
-		
-		if (urgentSchedules == null || urgentSchedules.isEmpty()) {
-			return;
-		}
-		
-		for (ScheduleDto schedule : urgentSchedules) {
-			String content = "오늘 마감인 일정 '" + schedule.getScheduleTitle() + "'이 있습니다.";
-			String url = "/projects/" + schedule.getProjectNo() + "/schedule";
-			
-			NotificationDto notificationDto = NotificationDto.builder()
-					.notificationReceiver(schedule.getScheduleWriterNo()) // 수신자 사번 (emp_no)
-					.projectNo(schedule.getProjectNo())
-					.notificationType("SCHEDULE_DEADLINE")
-					.notificationTarget(schedule.getScheduleNo())
-					.notificationUrl(url)
-					.notificationContent(content)
-					.build();
-					
-			send(notificationDto);
-		}
-	}
+	// 매일 아침 8시 마감일 알림 발송 스케줄러
+    @Scheduled(cron = "0 0 8 * * *")
+    @Transactional
+    @Override
+    public void sendDeadlineNotifications() {
+        List<ScheduleDto> urgentSchedules = scheduleDao.selectTodayDeadlineSchedules();
+        
+        if (urgentSchedules == null || urgentSchedules.isEmpty()) {
+            return;
+        }
+        
+        for (ScheduleDto schedule : urgentSchedules) {
+            List<ProjectMemberListResponseVO> projectMembers = projectMemberDao.selectProjectMemberList(schedule.getProjectNo());
+            
+            if (projectMembers == null || projectMembers.isEmpty()) {
+                continue;
+            }
+            
+            String content = "오늘 마감인 일정 '" + schedule.getScheduleTitle() + "'이 있습니다.";
+            String url = "/projects/" + schedule.getProjectNo() + "/calendar";
+            
+            // 3. 💡 프로젝트에 참여 중인 모든 사원에게 개별 알림 생성 및 전송
+            for (ProjectMemberListResponseVO member : projectMembers) {
+                int receiverEmpNo = member.getEmpNo(); // 팀원 사번
+                if (receiverEmpNo <= 0) continue;
+                
+                NotificationDto notificationDto = NotificationDto.builder()
+                        .notificationReceiver(receiverEmpNo)
+                        .projectNo(schedule.getProjectNo())
+                        .notificationType("SCHEDULE_DEADLINE")
+                        .notificationTarget(schedule.getScheduleNo())
+                        .notificationUrl(url)
+                        .notificationContent(content)
+                        .build();
+                        
+                send(notificationDto);
+            }
+        }
+    }
 }
