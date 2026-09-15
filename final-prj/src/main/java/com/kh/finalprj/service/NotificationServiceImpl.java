@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.finalprj.dao.NotificationDao;
-import com.kh.finalprj.dao.ProjectMemberDao; // 👈 프로젝트 멤버 검증을 위해 주입 필요
+import com.kh.finalprj.dao.ProjectMemberDao; 
 import com.kh.finalprj.dao.ScheduleDao;
 import com.kh.finalprj.dto.NotificationDto;
 import com.kh.finalprj.dto.ScheduleDto;
@@ -39,7 +39,7 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationDto.setNotificationRead("N");
 		notificationDao.insert(notificationDto);
 		
-		// 실시간 웹소켓 푸시 전송 (수신자 사번 기준 채널)[cite: 1, 2]
+		// 실시간 웹소켓 푸시 전송 
 		simpMessagingTemplate.convertAndSend(
 			"/public/user/" + notificationDto.getNotificationReceiver() + "/notify", 
 			notificationDto
@@ -97,7 +97,7 @@ public class NotificationServiceImpl implements NotificationService {
             String content = "오늘 마감인 일정 '" + schedule.getScheduleTitle() + "'이 있습니다.";
             String url = "/projects/" + schedule.getProjectNo() + "/calendar";
             
-            // 3. 💡 프로젝트에 참여 중인 모든 사원에게 개별 알림 생성 및 전송
+            // 프로젝트에 참여 중인 모든 사원에게 개별 알림 생성 및 전송
             for (ProjectMemberListResponseVO member : projectMembers) {
                 int receiverEmpNo = member.getEmpNo(); // 팀원 사번
                 if (receiverEmpNo <= 0) continue;
