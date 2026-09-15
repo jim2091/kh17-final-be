@@ -23,7 +23,10 @@ import com.kh.finalprj.service.MessageService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
 import com.kh.finalprj.vo.message.ChannelMessageResponseVO;
+import com.kh.finalprj.vo.message.MessageContextResponseVO;
 import com.kh.finalprj.vo.message.MessageDeleteResponseVO;
+import com.kh.finalprj.vo.message.MessageSearchRequestVO;
+import com.kh.finalprj.vo.message.MessageSearchResponseVO;
 import com.kh.finalprj.vo.message.MessageTargetVO;
 import com.kh.finalprj.vo.message.MessageUnreadChannelVO;
 import com.kh.finalprj.vo.message.MessageUpdateRequestVO;
@@ -161,5 +164,26 @@ public class MessageRestController {
 	    return messageService.selectChannelUnreadCount(
 	            projectNo, projectMemberNo
 	    );
+	}
+	
+	//현재 채널 메세지 검색
+	@ApiResponse(responseCode = "200", description = "채널 메세지 검색 성공")
+	@PostMapping("/channel/{channelNo}/search")
+	public MessageSearchResponseVO search(
+			@PathVariable int channelNo,
+			@CurrentUser TokenParseResponseVO parseVO,
+			@Valid @RequestBody MessageSearchRequestVO request) {
+		
+		return messageService.search(channelNo, parseVO.getEmpNo(), request);
+	}
+	
+	//특정 메세지 주변 대화 조회
+	@ApiResponse(responseCode = "200", description = "특정 메세지 주변 대화 조회 성공")
+	@GetMapping("/{chatMessageNo}/context")
+	public MessageContextResponseVO context(
+			@PathVariable int chatMessageNo,
+			@CurrentUser TokenParseResponseVO parseVO) {
+		
+		return messageService.selectContext(chatMessageNo, parseVO.getEmpNo());
 	}
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.finalprj.vo.message.ChannelMessageRequestVO;
+import com.kh.finalprj.vo.message.MessageSearchRequestVO;
 import com.kh.finalprj.vo.message.MessageTargetVO;
 import com.kh.finalprj.vo.message.MessageUnreadChannelVO;
 import com.kh.finalprj.vo.message.MessageUnreadVO;
@@ -104,5 +105,35 @@ public class MessageDaoMybatis implements MessageDao {
 		params.put("projectNo", projectNo);
 		params.put("projectMemberNo", projectMemberNo);
 		return sqlSession.selectList("mapper.message.selectChannelUnreadCount", params);
+	}
+	
+	@Override
+	public List<MessageVO> search(int channelNo, MessageSearchRequestVO request) {
+		Map<String, Object> params = new HashMap<>();
+		
+		params.put("channelNo", channelNo);
+		params.put("request", request);
+		
+		return sqlSession.selectList("mapper.message.search", params);
+	}
+	
+	@Override
+	public int searchCount(int channelNo, MessageSearchRequestVO request) {
+		Map<String, Object> params = new HashMap<>();
+		
+		params.put("channelNo", channelNo);
+		params.put("request", request);
+		
+		return sqlSession.selectOne("mapper.message.searchCount", params);
+	}
+	
+	@Override
+	public List<MessageVO> selectContext(int channelNo, int chatMessageNo) {
+		Map<String, Object> params = new HashMap<>();
+		
+		params.put("channelNo", channelNo);
+		params.put("chatMessageNo", chatMessageNo);
+		
+		return sqlSession.selectList("mapper.message.selectContext", params);
 	}
 }
