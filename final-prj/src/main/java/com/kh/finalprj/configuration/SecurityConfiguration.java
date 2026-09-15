@@ -63,6 +63,7 @@ public class SecurityConfiguration {
 							"/service/auth/login"
 							,"/service/auth/logout"
 							,"/service/auth/refresh"
+							,"/oauth/kakao/login/**"
 					).permitAll()
 					//admin기능 
 					.requestMatchers(

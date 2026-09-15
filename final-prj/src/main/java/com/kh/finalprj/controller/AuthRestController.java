@@ -11,6 +11,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -29,7 +30,6 @@ import com.kh.finalprj.service.JwtService;
 import com.kh.finalprj.vo.auth.AuthLoginRequestVO;
 import com.kh.finalprj.vo.auth.AuthLoginResponseVO;
 import com.kh.finalprj.vo.jwt.TokenCreateRequestVO;
-import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -300,6 +300,7 @@ public class AuthRestController {
 
 	}
 	
+
 	
 
 }

@@ -26,7 +26,7 @@ public class KakaoService {
 	@Autowired
 	private KakaoProperties kakaoProperties;
 	
-    public String kakaoLogin() throws Exception {
+    public String kakaoConnect() throws Exception {
 
         String url = "https://kauth.kakao.com/oauth/authorize"
                 + "?client_id=" + kakaoProperties.getClientId()
@@ -39,6 +39,17 @@ public class KakaoService {
         return url;
     }
     
+    public String kakaoLogin() {
+    	String url = "https://kauth.kakao.com/oauth/authorize"
+    			+ "?client_id=" + kakaoProperties.getClientId()
+    			+ "&redirect_uri=" + URLEncoder.encode(
+                        kakaoProperties.getRedirectUri2(),
+                        StandardCharsets.UTF_8
+                  )
+    			+ "&response_type=code";
+    	return url;
+    }
+    
     public KakaoTokenResponseVO getKakaoToken(String code) {
     	return kakaoAuthClient.post()
     			.uri("/oauth/token")
@@ -49,6 +60,28 @@ public class KakaoService {
     					+ "&client_secret=" + kakaoProperties.getClientSecret()
     					+ "&redirect_uri=" + URLEncoder.encode(
     							kakaoProperties.getRedirectUri(),
+    							StandardCharsets.UTF_8
+    							)
+    					+ "&code=" + URLEncoder.encode(
+    							code,
+    							StandardCharsets.UTF_8
+    							)
+    					)
+    			.retrieve()
+    			.bodyToMono(KakaoTokenResponseVO.class)
+    			.block();
+    			
+    }
+    public KakaoTokenResponseVO getKakaoToken2(String code) {
+    	return kakaoAuthClient.post()
+    			.uri("/oauth/token")
+    			.header("Content-type", "application/x-www-form-urlencoded;charset=utf-8")
+    			.bodyValue(
+    					"grant_type=authorization_code"
+    					+ "&client_id="+ kakaoProperties.getClientId()
+    					+ "&client_secret=" + kakaoProperties.getClientSecret()
+    					+ "&redirect_uri=" + URLEncoder.encode(
+    							kakaoProperties.getRedirectUri2(),
     							StandardCharsets.UTF_8
     							)
     					+ "&code=" + URLEncoder.encode(
