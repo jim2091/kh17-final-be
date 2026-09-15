@@ -195,6 +195,11 @@ public class EmpDaoMybatis implements EmpDao {
 		sqlSession.insert("mapper.emp.kakao", vo);
 	}
 
+	@Override
+	public Integer findEmpNoByKakaoId(Long id) {
+		return sqlSession.selectOne("mapper.emp.findEmpNoByKakaoId", id);
+	}
+
 	
 	
 	

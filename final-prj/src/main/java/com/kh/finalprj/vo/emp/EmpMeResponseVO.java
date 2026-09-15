@@ -10,9 +10,10 @@ import lombok.NoArgsConstructor;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class EmpMeResponseVO {
 	
-
+	private int empNo;
 	private String empName;
 	private String empEmail;
+	private String empLevel;
 	private String deptName;
 	private String positionName;
 	private String empBirth;

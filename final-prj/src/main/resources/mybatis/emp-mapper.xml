@@ -621,6 +621,11 @@ order by e.emp_no asc
 	values(#{empNo}, #{id})
 </insert>
 
+<!--  카카오 id로 회원 번호 찾기 -->
+<select id="findEmpNoByKakaoId" resultType="Integer">
+	select emp_no from emp_kakao where kakao_id = #{id}
+</select>
+
 
 
 

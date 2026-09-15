@@ -89,6 +89,8 @@ public interface EmpDao {
 	
 	//emp_kakao에 insert
 	void kakao(KakaoLoginRequestVO vo);
+	//emp_kakao에서 empNo 찾기
+	Integer findEmpNoByKakaoId(Long id);
 	
 	
 	
