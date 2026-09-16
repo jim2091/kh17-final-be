@@ -1,5 +1,7 @@
 package com.kh.finalprj.service;
 
+import com.kh.finalprj.dto.ProjectInviteDto;
+
 public interface ProjectInviteService {
 
 	//초대
@@ -8,4 +10,6 @@ public interface ProjectInviteService {
 	void accept(int projectInviteNo,int empNo);
 	//거절
 	void reject(int projectInviteNo,int empNo);
+	//초대 확인
+	ProjectInviteDto find(int projectInviteNo);
 }
