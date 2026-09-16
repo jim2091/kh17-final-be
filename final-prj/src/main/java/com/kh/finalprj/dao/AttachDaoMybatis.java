@@ -62,7 +62,10 @@ public class AttachDaoMybatis implements AttachDao {
 	@Override
 	public boolean delete(int attachNo) {
 
-		return sqlSession.delete("mapper.attach.delete", attachNo) > 0;
+		return sqlSession.delete(
+				"mapper.attach.delete",
+				attachNo
+		) > 0;
 	}
 
 	// ==================================================
@@ -74,7 +77,10 @@ public class AttachDaoMybatis implements AttachDao {
 	@Override
 	public boolean deleteProjectFile(int attachNo) {
 
-		return sqlSession.delete("mapper.attach.deleteProjectFile", attachNo) > 0;
+		return sqlSession.delete(
+				"mapper.attach.deleteProjectFile",
+				attachNo
+		) > 0;
 	}
 
 	// ==================================================
@@ -88,7 +94,10 @@ public class AttachDaoMybatis implements AttachDao {
 			return List.of();
 		}
 
-		return sqlSession.selectList("mapper.attach.findList", attachNumbers);
+		return sqlSession.selectList(
+				"mapper.attach.findList",
+				attachNumbers
+		);
 	}
 
 	// ==================================================
@@ -98,7 +107,10 @@ public class AttachDaoMybatis implements AttachDao {
 	@Override
 	public List<AttachDto> selectListByProject(int projectNo) {
 
-		return sqlSession.selectList("mapper.attach.selectListByProject", projectNo);
+		return sqlSession.selectList(
+				"mapper.attach.selectListByProject",
+				projectNo
+		);
 	}
 
 	// ==================================================
@@ -106,11 +118,23 @@ public class AttachDaoMybatis implements AttachDao {
 	// ==================================================
 
 	@Override
-	public List<AttachDto> selectListByProjectAndKeyword(int projectNo, String keyword, String searchType) {
+	public List<AttachDto> selectListByProjectAndKeyword(
+			int projectNo,
+			String keyword,
+			String searchType
+	) {
 
-		ProjectFileSearch search = new ProjectFileSearch(projectNo, keyword, searchType);
+		ProjectFileSearch search =
+				new ProjectFileSearch(
+						projectNo,
+						keyword,
+						searchType
+				);
 
-		return sqlSession.selectList("mapper.attach.selectListByProjectAndKeyword", search);
+		return sqlSession.selectList(
+				"mapper.attach.selectListByProjectAndKeyword",
+				search
+		);
 	}
 
 	// ==================================================
@@ -120,7 +144,10 @@ public class AttachDaoMybatis implements AttachDao {
 	@Override
 	public Integer selectProjectNo(int attachNo) {
 
-		return sqlSession.selectOne("mapper.attach.selectProjectNo", attachNo);
+		return sqlSession.selectOne(
+				"mapper.attach.selectProjectNo",
+				attachNo
+		);
 	}
 
 	// ==================================================
@@ -130,7 +157,25 @@ public class AttachDaoMybatis implements AttachDao {
 	@Override
 	public String selectProjectStatus(int projectNo) {
 
-		return sqlSession.selectOne("mapper.attach.selectProjectStatus", projectNo);
+		return sqlSession.selectOne(
+				"mapper.attach.selectProjectStatus",
+				projectNo
+		);
+	}
+
+	// ==================================================
+	// 기록에서 파일을 참조하고 있는지 확인
+	// ==================================================
+
+	@Override
+	public boolean existsProjectRecordAttach(int attachNo) {
+
+		Integer count = sqlSession.selectOne(
+				"mapper.attach.existsProjectRecordAttach",
+				attachNo
+		);
+
+		return count != null && count > 0;
 	}
 
 	// ==================================================
@@ -143,7 +188,11 @@ public class AttachDaoMybatis implements AttachDao {
 		private final String keyword;
 		private final String searchType;
 
-		public ProjectFileSearch(int projectNo, String keyword, String searchType) {
+		public ProjectFileSearch(
+				int projectNo,
+				String keyword,
+				String searchType
+		) {
 
 			this.projectNo = projectNo;
 			this.keyword = keyword;
@@ -170,7 +219,10 @@ public class AttachDaoMybatis implements AttachDao {
 	@Override
 	public void insert(AttachProfileVO attachProfileVO) {
 
-		sqlSession.insert("mapper.attach.add", attachProfileVO);
+		sqlSession.insert(
+				"mapper.attach.add",
+				attachProfileVO
+		);
 	}
 
 }

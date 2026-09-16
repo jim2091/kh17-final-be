@@ -9,6 +9,7 @@
 
     <!-- =====================================================
          사용자 검색
+
          검색 대상:
          - 이름
          - 이메일
@@ -95,6 +96,11 @@
 
          제외:
          - private 프로젝트
+         - 종료된 프로젝트
+
+         회원 상태:
+         - active 회원만 참여 인원으로 카운트
+         - active 회원만 현재 로그인 사용자의 참여 상태로 판단
 
          검색 특징:
          - 대소문자 무시
@@ -115,33 +121,58 @@
             p.project_ctime,
             p.project_utime,
 
-            /* 프로젝트 전체 참여 인원 */
+            /* =================================================
+               프로젝트 참여 인원
+
+               inactive 회원은 제외하고
+               active 회원만 카운트
+               ================================================= */
             (
                 SELECT COUNT(*)
                 FROM project_member pm_count
                 WHERE pm_count.project_no = p.project_no
+                  AND pm_count.project_member_status = 'active'
             ) AS memberCount,
 
-            /* 현재 로그인 사용자의 역할 */
+            /* =================================================
+               현재 로그인 사용자의 프로젝트 참여 상태
+
+               active 상태인 회원만 참여자로 판단
+
+               owner  → owner
+               member → member
+               그 외  → NULL
+               ================================================= */
             CASE
                 WHEN pm.project_member_role = 'owner'
-                THEN 'owner'
+                    THEN 'owner'
 
                 WHEN pm.project_member_no IS NOT NULL
-                THEN 'member'
+                    THEN 'member'
 
                 ELSE NULL
             END AS projectRole
 
         FROM project p
 
+        /* =====================================================
+           현재 로그인 사용자의 active 회원 정보만 연결
+
+           inactive 상태라면 JOIN되지 않음
+           → projectRole = NULL
+           → 프론트에서 "참여" 버튼 표시
+           ===================================================== */
         LEFT JOIN project_member pm
             ON p.project_no = pm.project_no
             AND pm.emp_no = #{empNo}
+            AND pm.project_member_status = 'active'
 
         WHERE
+
+            /* 종료된 프로젝트 제외 */
             p.project_status = 'active'
 
+            /* private 프로젝트 제외 */
             AND p.project_visibility != 'private'
 
             AND (
@@ -190,6 +221,7 @@
 
          제외:
          - private 프로젝트
+         - 종료된 프로젝트
          - Soft Delete된 업무
 
          검색 특징:
@@ -223,7 +255,12 @@
             ON t.project_no = p.project_no
 
         WHERE
-            p.project_visibility != 'private'
+
+            /* 종료된 프로젝트 제외 */
+            p.project_status = 'active'
+
+            /* private 프로젝트 제외 */
+            AND p.project_visibility != 'private'
 
             /* Soft Delete된 업무 제외 */
             AND t.task_deleted = 'N'
@@ -274,6 +311,7 @@
 
          제외:
          - private 프로젝트
+         - 종료된 프로젝트
 
          project_record_content가 CLOB이므로
          DBMS_LOB.INSTR 사용
@@ -356,7 +394,12 @@
                 = i.project_record_no
 
         WHERE
-            p.project_visibility != 'private'
+
+            /* 종료된 프로젝트 제외 */
+            p.project_status = 'active'
+
+            /* private 프로젝트 제외 */
+            AND p.project_visibility != 'private'
 
             AND (
                 /* ==========================
@@ -413,6 +456,7 @@
 
          제외:
          - private 프로젝트
+         - 종료된 프로젝트
 
          note_content가 CLOB이므로
          DBMS_LOB.INSTR 사용
@@ -466,7 +510,12 @@
                 = writer_emp.emp_no
 
         WHERE
-            p.project_visibility != 'private'
+
+            /* 종료된 프로젝트 제외 */
+            p.project_status = 'active'
+
+            /* private 프로젝트 제외 */
+            AND p.project_visibility != 'private'
 
             AND (
                 /* ==========================
@@ -518,7 +567,6 @@
          파일 검색
 
          구조:
-
          attach
             ↓
          project_file
@@ -532,6 +580,7 @@
 
          제외:
          - private 프로젝트
+         - 종료된 프로젝트
 
          검색 특징:
          - 대소문자 무시
@@ -557,7 +606,6 @@
             e.emp_name AS empName,
 
             p.project_name AS projectName,
-
             p.project_no AS projectNo
 
         FROM attach a
@@ -573,7 +621,12 @@
             ON pf.project_no = p.project_no
 
         WHERE
-            p.project_visibility != 'private'
+
+            /* 종료된 프로젝트 제외 */
+            p.project_status = 'active'
+
+            /* private 프로젝트 제외 */
+            AND p.project_visibility != 'private'
 
             AND (
                 /* =====================================
@@ -673,6 +726,9 @@
          사용자 프로젝트 참여 이력
 
          특정 사용자가 참여했던 프로젝트 목록
+
+         ※ inactive 이력도 표시
+         → 사용자의 과거 프로젝트 이력을 보여주기 위한 조회
          ===================================================== -->
 
     <select id="searchProjectHistory"
@@ -702,6 +758,7 @@
 
         WHERE
             pm.emp_no = #{_parameter}
+
         ORDER BY
             pm.project_member_ctime DESC
 
@@ -724,9 +781,7 @@
 
         SELECT
             e.emp_no AS empNo,
-
             e.emp_name AS empName,
-
             e.emp_email AS empEmail,
 
             d.dept_name AS deptName,

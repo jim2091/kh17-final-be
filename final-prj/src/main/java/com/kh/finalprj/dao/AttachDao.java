@@ -57,7 +57,11 @@ public interface AttachDao {
 	// 프로젝트별 검색
 	// ==================================================
 
-	List<AttachDto> selectListByProjectAndKeyword(int projectNo, String keyword, String searchType);
+	List<AttachDto> selectListByProjectAndKeyword(
+			int projectNo,
+			String keyword,
+			String searchType
+	);
 
 	// ==================================================
 	// 첨부파일이 속한 프로젝트 번호
@@ -70,6 +74,12 @@ public interface AttachDao {
 	// ==================================================
 
 	String selectProjectStatus(int projectNo);
+
+	// ==================================================
+	// 기록에서 파일을 참조하고 있는지 확인
+	// ==================================================
+
+	boolean existsProjectRecordAttach(int attachNo);
 
 	// ==================================================
 	// 프로필 사진 등록
