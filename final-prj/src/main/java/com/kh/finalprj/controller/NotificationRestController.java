@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CommonsApiResponse;
@@ -27,12 +28,19 @@ public class NotificationRestController {
 	private NotificationService notificationService;
 	
 	//내 알림 목록 확인 (확인 안한거)
-	@ApiResponse(responseCode = "200", description = "알람 조회 성공")
-	@GetMapping(value = "/", produces = "application/json")
-	public Map<String, Object> getMyNotifications(@CurrentUser TokenParseResponseVO parseVO) {
-		int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
-		return notificationService.getNotificationSummary(loginEmpNo);
-	}
+	@ApiResponse(responseCode = "200", description = "알림 페이징 조회 성공")
+    @GetMapping(value = "/", produces = "application/json")
+    public Map<String, Object> getMyNotifications(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "all") String filter,
+            @CurrentUser TokenParseResponseVO parseVO) {
+        
+        int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
+        
+        // 서비스에 페이징 및 필터 파라미터 전달
+        return notificationService.getNotificationPage(loginEmpNo, page, size, filter);
+    }
 	
 	//하나 읽음처리
 	@ApiResponse(responseCode = "200", description = "하나 읽음처리 성공")
