@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.organization">
+
+
+	<!-- 일반 사용자용 부서 목록 조회 -->
+	<select
+		id="departmentList"
+		resultType="OrganizationDepartmentListResponseVO"
+	>
+		select
+			D.dept_no,
+			D.dept_name,
+			D.dept_info,
+			count(E.emp_no) member_count
+		from dept D
+		left outer join emp E
+			on D.dept_no = E.emp_dept_no
+			and E.emp_state = 'active'
+		where D.dept_block = 'Y'
+		group by
+			D.dept_no,
+			D.dept_name,
+			D.dept_info
+		order by D.dept_no asc
+	</select>
+	
+	<!-- 일반 사용자용 부서 상세 -->
+	<select
+		id="departmentDetail"
+		resultType="OrganizationDepartmentDetailResponseVO"
+	>
+		select
+			D.dept_no,
+			D.dept_name,
+			D.dept_info,
+			count(E.emp_no) member_count
+		from dept D
+		left outer join emp E
+			on D.dept_no = E.emp_dept_no
+			and E.emp_state = 'active'
+		where D.dept_no = #{deptNo}
+		and D.dept_block = 'Y'
+		group by
+			D.dept_no,
+			D.dept_name,
+			D.dept_info
+	</select>
+	
+	<!-- 일반 사용자용 부서 구성원 조회 -->
+	<select
+		id="departmentMemberList"
+		resultType="OrganizationMemberResponseVO"
+	>
+		select
+			E.emp_no,
+			E.emp_name,
+			E.emp_email,
+			E.emp_contact,
+			P.position_name,
+			E.emp_presence,
+			E.emp_level,
+			EP.attach_no
+		from emp E
+		join position P
+			on E.emp_position_no = P.position_no
+		left outer join emp_profile EP
+			on E.emp_no = EP.emp_no
+		where E.emp_dept_no = #{deptNo}
+		and E.emp_state = 'active'
+		order by
+			P.position_no asc,
+			E.emp_name asc
+	</select>
+	
+
+</mapper>
