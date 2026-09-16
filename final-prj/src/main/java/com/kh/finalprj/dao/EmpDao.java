@@ -95,6 +95,8 @@ public interface EmpDao {
 	void kakaoDisconnect(Integer empNo);
 	//연결확인
 	int isKakaoCennected(Integer empNo);
+	//사원 검색
+	List<EmpDto> searchEmp(String keyword);
 	
 	
 	

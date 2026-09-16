@@ -210,6 +210,11 @@ public class EmpDaoMybatis implements EmpDao {
 		return sqlSession.selectOne("mapper.emp.isKakaoConnected", empNo);
 	}
 
+	@Override
+	public List<EmpDto> searchEmp(String keyword) {
+		return sqlSession.selectList("mapper.emp.searchEmp",keyword);
+	}
+
 	
 	
 	
