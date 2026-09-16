@@ -1,6 +1,7 @@
 package com.kh.finalprj.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.finalprj.annotation.CommonsApiResponse;
 import com.kh.finalprj.annotation.CurrentUser;
+import com.kh.finalprj.dto.ProjectInviteDto;
 import com.kh.finalprj.service.ProjectInviteService;
 import com.kh.finalprj.vo.jwt.TokenParseResponseVO;
 
@@ -54,5 +56,12 @@ public class ProjectInviteController {
 	) {
 		projectInviteService.reject(projectInviteNo, parseVO.getEmpNo());
 	}
-
+	
+	//초대 거절,수락 했는지
+	@ApiResponse(responseCode = "200", description = "초대 확인 성공")
+	@GetMapping("/invite/{projectInviteNo}")
+	public ProjectInviteDto inviteDetail(@PathVariable int projectInviteNo) {
+		
+		return projectInviteService.find(projectInviteNo);
+	}
 }

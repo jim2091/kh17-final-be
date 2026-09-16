@@ -201,4 +201,14 @@ public class ProjectInviteServiceImpl implements ProjectInviteService{
 		}
 	}
 
+	@Override
+	public ProjectInviteDto find(int projectInviteNo) {
+		ProjectInviteDto invite = projectInviteDao.find(projectInviteNo);
+		
+		if(invite == null) {
+			throw new TargetNotfoundException("존재하지 않는 초대입니다.");
+		}
+		return invite;
+	}
+
 }
