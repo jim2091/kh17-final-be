@@ -100,7 +100,7 @@ public class ProjectInviteServiceImpl implements ProjectInviteService{
 				.notificationNo(notificationNo)
 				.notificationReceiver(receiverEmpNo)
 				.projectNo(projectNo)
-				.notificationType("project_invite")
+				.notificationType("PROJECT_INVITE")
 				.notificationTarget(projectInviteNo)
 				.notificationContent(
 						project.getProjectName()+"프로젝트에 초대되었습니다."
