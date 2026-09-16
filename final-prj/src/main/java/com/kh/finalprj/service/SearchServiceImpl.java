@@ -9,7 +9,9 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.finalprj.dao.EmpDao;
 import com.kh.finalprj.dao.SearchDao;
+import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.ProjectHistoryDto;
 import com.kh.finalprj.dto.ProjectHistoryResponseDto;
 import com.kh.finalprj.dto.SearchDto;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class SearchServiceImpl implements SearchService {
 
 	private final SearchDao searchDao;
+	private final EmpDao empDao;
 
 	// ========================================
 	// 통합 검색
@@ -187,6 +190,12 @@ public class SearchServiceImpl implements SearchService {
 		}
 
 		return response;
+	}
+
+	//사원 검색
+	@Override
+	public List<EmpDto> searchEmp(String keyword) {
+		return empDao.searchEmp(keyword);
 	}
 
 }
