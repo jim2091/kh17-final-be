@@ -26,7 +26,7 @@ import com.kh.finalprj.vo.page.PagenationVO;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name="부서 정보 관리 서비스")
+@Tag(name="부서 API")
 @AuthApiResponse
 
 @RestController

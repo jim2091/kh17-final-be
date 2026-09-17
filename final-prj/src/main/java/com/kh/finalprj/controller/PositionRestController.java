@@ -28,7 +28,7 @@ import com.kh.finalprj.vo.position.PositionListVO;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name="직급 정보 관리 서비스")
+@Tag(name="직급 API")
 @AuthApiResponse
 
 @RestController

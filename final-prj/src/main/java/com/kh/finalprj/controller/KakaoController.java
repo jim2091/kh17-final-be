@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,9 +29,10 @@ import com.kh.finalprj.vo.kakao.KakaoLoginRequestVO;
 import com.kh.finalprj.vo.kakao.KakaoTokenResponseVO;
 import com.kh.finalprj.vo.kakao.KakaoUserInfoResponseVO;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 @Controller
 @RequestMapping("/oauth/kakao")
 public class KakaoController {
@@ -56,7 +56,6 @@ public class KakaoController {
 	public String kakaoConnect() throws Exception {
 		return "redirect:"+kakaoService.kakaoConnect();
 	}
-	
 	@GetMapping("/login")
 	public String kakaoLogin() {
 		return "redirect:"+kakaoService.kakaoLogin();
@@ -182,15 +181,7 @@ public class KakaoController {
 					.tokenValue(refreshToken)
 				.build()
 		);
-//		ResponseEntity.ok()
-//		//쿠키를 추가하는 설정
-//			.header(
-//					HttpHeaders.SET_COOKIE, 
-//					accessCookie.toString(),
-//					refreshCookie.toString(),
-//					sessionCookie.toString()
-//					)
-//			.body(response);
+
 		
 		res.addHeader(
 	            HttpHeaders.SET_COOKIE,
