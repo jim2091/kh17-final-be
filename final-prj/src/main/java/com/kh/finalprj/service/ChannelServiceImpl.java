@@ -44,6 +44,10 @@ public class ChannelServiceImpl implements ChannelService{
 	@Transactional
 	@Override
 	public void create(ChannelDto channelDto, int empNo) {	
+		
+		//종료된 프로젝트에서는 채널 생성 불가
+		projectPermissionService.checkActive(channelDto.getProjectNo());
+		
 		//(1) OWNER / MANAGER 권한 확인
 		ProjectMemberDto projectMemberDto = 
 				checkChannelManager(
@@ -85,6 +89,10 @@ public class ChannelServiceImpl implements ChannelService{
 	@Transactional
 	@Override
 	public void delete(int projectNo, int channelNo, int empNo) {
+		
+		//종료된 프로젝트에서는 채널 삭제 불가
+		projectPermissionService.checkActive(projectNo);
+		
 		//(1) OWNER / MANAGER 권한 확인
 		checkChannelManager(projectNo, empNo);
 		
@@ -107,6 +115,10 @@ public class ChannelServiceImpl implements ChannelService{
 	@Transactional
 	@Override
 	public void update(ChannelDto channelDto, int empNo) {
+		
+		//종료된 프로젝트에서는 채널 수정 불가
+		projectPermissionService.checkActive(channelDto.getProjectNo());
+			
 		//(1) OWNER / MANAGER 권한 확인
 		checkChannelManager(channelDto.getProjectNo(), empNo);
 				

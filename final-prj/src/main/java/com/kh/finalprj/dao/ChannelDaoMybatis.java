@@ -52,7 +52,7 @@ public class ChannelDaoMybatis implements ChannelDao{
 	}
 
 	@Override
-	public int findProjectNo(int channelNo) {
+	public Integer findProjectNo(int channelNo) {
 		return sqlSession.selectOne("mapper.channel.findProjectNo", channelNo);
 	}
 }

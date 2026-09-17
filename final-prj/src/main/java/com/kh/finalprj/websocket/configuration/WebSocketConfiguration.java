@@ -2,6 +2,7 @@ package com.kh.finalprj.websocket.configuration;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.handler.invocation.HandlerMethodArgumentResolver;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -12,9 +13,14 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import com.kh.finalprj.websocket.interceptor.ChatSubscriptionInterceptor;
+
 @EnableWebSocketMessageBroker
 @Configuration
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer{
+	
+	@Autowired
+	private ChatSubscriptionInterceptor chatSubscriptionInterceptor;
 	
 	//WebSocket 연결 주소 설정
 	@Override
@@ -36,7 +42,10 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer{
 	//WebSocket 메세지에서도 SpringSecurity 인증정보 사용
 	@Override
 	public void configureClientInboundChannel(ChannelRegistration registration) {
-		registration.interceptors(new SecurityContextChannelInterceptor());
+		registration.interceptors(
+				new SecurityContextChannelInterceptor(),
+				chatSubscriptionInterceptor
+		);
 	}
 	
 	//@AuthenticationPrincipal 사용 가능하도록 설정

@@ -13,8 +13,11 @@ import com.kh.finalprj.dao.ChannelDao;
 import com.kh.finalprj.dao.EmpDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dto.EmpDto;
+import com.kh.finalprj.dto.ProjectMemberDto;
+import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.service.JwtService;
 import com.kh.finalprj.service.MessageService;
+import com.kh.finalprj.service.ProjectPermissionService;
 import com.kh.finalprj.vo.message.MessageReadResponseVO;
 import com.kh.finalprj.vo.message.MessageVO;
 import com.kh.finalprj.websocket.vo.WebSocketRequestVO;
@@ -35,6 +38,8 @@ public class WebSocketController {
 	private ProjectMemberDao projectMemberDao;
 	@Autowired
 	private EmpDao empDao;
+	@Autowired
+	private ProjectPermissionService projectPermissionService;
 
 	//주소 : /app/{channleNo}/chat
 	@MessageMapping("/{channelNo}/chat")
@@ -65,17 +70,26 @@ public class WebSocketController {
 		///System.out.println("content = " + request.getContent());
 		
 		//[3] channelNo로 projectNo 확인
-	    int projectNo = channelDao.findProjectNo(channelNo);
-		
-	    //[4] projectNo와 empNo를 이용해 projectMemberNo 확인
-		Integer projectMemberNo = 
-				projectMemberDao.findProjectMemberNo(
-						projectNo, empNo);
-		
-		//[5] empNo를 이용해 사원 정보 확인
-		EmpDto empDto = empDao.selectOne(empNo);
+	    Integer projectNo = channelDao.findProjectNo(channelNo);
 	    
-	    //[6] DB에 메세지 저장
+	    if(projectNo == null) {
+	    	throw new TargetNotfoundException();
+	    }
+		
+	    //[4] 종료된 프로젝트에서는 메세지 작성 불가
+	    projectPermissionService.checkActive(projectNo);
+		
+		//[5] 현재 사용자가 실제 프로젝트 멤버인지 확인
+	    ProjectMemberDto projectMemberDto = 
+	    		projectPermissionService.findMember(projectNo, empNo);
+
+	    int projectMemberNo = projectMemberDto.getProjectMemberNo();
+	    
+	    //[6] 메세지 작성자 사원 정보 조회
+	    EmpDto empDto =
+	            empDao.selectOne(empNo);
+	    
+	    //[7] DB에 메세지 저장
 	    MessageVO messageVO = MessageVO.builder()
 	    			.channelNo(channelNo)
 	    			.projectMemberNo(projectMemberNo)
@@ -85,11 +99,11 @@ public class WebSocketController {
 	    
 	    MessageVO save = messageService.add(messageVO);
 	    
-	    //[7] 새 메시지의 안 읽은 사람 수
+	    //[8] 새 메시지의 안 읽은 사람 수
 	    int unreadCount = messageService.countUnread(
 	    		save.getNo(), channelNo, projectMemberNo);
 	    
-	    //[8] 사용자에게 전달할 객체 (WebSocket 반환)
+	    //[9] 사용자에게 전달할 객체 (WebSocket 반환)
 	    WebSocketResponseVO response = WebSocketResponseVO.builder()
 	    			.no(save.getNo())
 	    			.channelNo(channelNo)
@@ -103,7 +117,7 @@ public class WebSocketController {
 	    			.unreadCount(unreadCount)
 	    		.build();
 	    
-	    //[8] 해당 채널 사용자들에게 전송
+	    //[10] 해당 채널 사용자들에게 전송
 	    simpMessagingTemplate.convertAndSend(
 	    		"/public/"+channelNo+"/chat",
 	    		response
@@ -138,7 +152,11 @@ public class WebSocketController {
 			);
 		
 		//해당 채널이 속한 프로젝트
-		int projectNo = channelDao.findProjectNo(channelNo);
+		Integer projectNo = channelDao.findProjectNo(channelNo);
+		
+		if(projectNo == null) {
+			throw new TargetNotfoundException();
+		}
 
 		//프로젝트 채팅 unread 갱신용
 		simpMessagingTemplate.convertAndSend(
@@ -147,45 +165,5 @@ public class WebSocketController {
 			);
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	//웹소켓 테스트
-	@MessageMapping("/test")
-	public void test(String message) {
-		System.out.println("수신 : " + message);
-		
-		simpMessagingTemplate.convertAndSend(
-			"/public/test",
-			message
-		);
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 }
