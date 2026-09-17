@@ -391,8 +391,13 @@ select count(*) from emp_initial_view E
 
 <!-- 회원프로필 테이블에 저장 -->
 <insert id="connect">
-	insert into emp_profile(emp_no, attach_no)
-	values(#{empNo}, #{attachNo})
+    MERGE INTO emp_profile T
+    USING (SELECT #{empNo} AS emp_no, #{attachNo} AS attach_no FROM DUAL) S
+    ON (T.emp_no = S.emp_no)
+    WHEN MATCHED THEN
+        UPDATE SET T.attach_no = S.attach_no
+    WHEN NOT MATCHED THEN
+        INSERT (emp_no, attach_no) VALUES (S.emp_no, S.attach_no)
 </insert>
 
 <!-- 프로필 번호 조회 -->
