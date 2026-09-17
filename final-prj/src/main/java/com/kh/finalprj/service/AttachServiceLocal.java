@@ -465,6 +465,10 @@ public class AttachServiceLocal implements AttachService {
         int attachNo =
                 attachDao.sequence();
 
+        if (source == null || source.trim().isEmpty()) {
+            source = "PROFILE";
+        }
+
         attachDao.insert(
                 AttachProfileVO.builder()
                         .attachNo(attachNo)
