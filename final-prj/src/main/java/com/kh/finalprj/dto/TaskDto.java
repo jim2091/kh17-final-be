@@ -42,4 +42,8 @@ public class TaskDto {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private Timestamp taskUtime;
+    
+    //수정자 추가
+    private Integer taskModifierNo;
+    private String modifierName;
 }

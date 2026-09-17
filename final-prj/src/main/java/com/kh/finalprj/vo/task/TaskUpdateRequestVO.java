@@ -23,4 +23,7 @@ public class TaskUpdateRequestVO {
     private Timestamp taskEnd;
 
     private List<Integer> collaboratorMemberNos;
+
+    // 👇 수정자 번호 필드 추가 (이 부분이 있어야 쿼리로 넘어갑니다)
+    private Integer taskModifierNo;
 }

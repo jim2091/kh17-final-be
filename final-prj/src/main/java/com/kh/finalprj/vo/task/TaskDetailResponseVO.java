@@ -33,6 +33,10 @@ public class TaskDetailResponseVO {
 	private int taskOrder;
 	private int taskWriterNo;
 	private String taskWriterName;
+	
+	private Integer taskModifierNo;
+	private String modifierName;
+	
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private Timestamp taskCtime;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
