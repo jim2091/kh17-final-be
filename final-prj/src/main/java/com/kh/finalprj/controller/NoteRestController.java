@@ -65,7 +65,6 @@ public class NoteRestController {
 
 
     // 1. 프로젝트별 노트 목록 조회 (무한 스크롤 / 검색)
-    @Operation(summary = "프로젝트별 노트 목록 조회")
     @ApiResponse(responseCode = "200", description = "노트 목록 조회 성공")
     @PostMapping("/project/{projectNo}/list")
     public NoteListResponseVO list(
@@ -100,7 +99,6 @@ public class NoteRestController {
 
 
     // 2. 신규 노트 등록
-    @Operation(summary = "신규 노트 등록")
     @ApiResponse(responseCode = "200", description = "노트 등록 성공")
     @PostMapping("/project/{projectNo}")
     public NoteAddResponseVO add(
@@ -139,7 +137,6 @@ public class NoteRestController {
 
 
     // 3. 노트 단건 상세 조회
-    @Operation(summary = "노트 단건 상세 조회")
     @ApiResponse(responseCode = "200", description = "노트 상세 조회 성공")
     @GetMapping("/{noteNo}")
     public NoteDetailResponseVO detail(
@@ -168,7 +165,6 @@ public class NoteRestController {
 
 
     // 4. 노트 내용 수정 (작성자 본인 검증)
-    @Operation(summary = "노트 수정")
     @ApiResponse(responseCode = "200", description = "노트 수정 성공")
     @PutMapping("/{noteNo}")
     public NoteEditResponseVO edit(
@@ -226,7 +222,6 @@ public class NoteRestController {
     // ④ 노트 본체 삭제
     //
     // 순서로 처리한다.
-    @Operation(summary = "노트 삭제")
     @ApiResponse(responseCode = "200", description = "노트 삭제 성공")
     @DeleteMapping("/{noteNo}")
     @Transactional

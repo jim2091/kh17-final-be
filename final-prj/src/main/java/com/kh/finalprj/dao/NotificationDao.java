@@ -1,6 +1,7 @@
 package com.kh.finalprj.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import com.kh.finalprj.dto.NotificationDto;
 
@@ -12,4 +13,6 @@ public interface NotificationDao {
 	boolean markAsRead(int notificationNo, int empNo);
 	boolean markAllAsRead(int empNo);
 	boolean delete(int notificationNo, int empNo);
+	List<NotificationDto>selectListByPage(Map<String,Object>params);
+	int count(Map<String, Object>params);
 }

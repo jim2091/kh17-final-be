@@ -93,4 +93,38 @@
 			and notification_receiver = #{empNo}
 	</delete>
 	
+	<!-- 페이징이 적용된 알림 목록 조회 -->
+	<select id="selectListByPage" parameterType="map" resultType="NotificationDto">
+    select * from (
+        select rownum rn, TMP.* from (
+            select
+                notification_no as notificationNo,
+                notification_receiver as notificationReceiver,
+                project_no as projectNo,
+                notification_type as notificationType,
+                notification_target as notificationTarget,
+                notification_url as notificationUrl,
+                notification_content as notificationContent,
+                notification_read as notificationRead,
+                notification_ctime as notificationCtime
+            from notification
+            where notification_receiver = #{empNo}
+            <if test="filter == 'unread'">
+                and notification_read = 'N'
+            </if>
+            order by notification_ctime desc
+        ) TMP
+    )
+    where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<!-- 알림 총 개수 조회 (필터 조건 대응) -->
+	<select id="count" parameterType="map" resultType="int">
+    	select count(*) from notification
+    	where notification_receiver = #{empNo}
+    	<if test="filter == 'unread'">
+        	and notification_read = 'N'
+    	</if>
+	</select>
+	
 </mapper>

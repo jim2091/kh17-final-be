@@ -70,9 +70,10 @@ public class NoteCommentServiceImpl implements NoteCommentService {
         noteCommentDao.add(noteCommentDto);
 
         if (generatedCommentNo > 0) {
-            int projectNo = note.getProjectNo();
-            String targetUrl = "/projects/" + projectNo + "/notes?noteNo=" + note.getNoteNo();
-            String notiContent = "'" + note.getNoteTitle() + "' 노트에 새 댓글이 등록되었습니다.";
+        	int projectNo = note.getProjectNo();
+        	// 💡 쿼리스트링 대신 /note/{noteNo} 경로 변수 형태로 수정
+        	String targetUrl = "/projects/" + projectNo + "/note/" + note.getNoteNo();
+        	String notiContent = "'" + note.getNoteTitle() + "' 노트에 새 댓글이 등록되었습니다.";
 
             // 1) 실시간 노트 댓글창 동기화 브로드캐스트 전송
             simpMessagingTemplate.convertAndSend(

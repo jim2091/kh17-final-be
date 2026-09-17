@@ -91,7 +91,6 @@ public class TaskServiceImpl implements TaskService {
 			}
 		}
 
-		// 💡 [중복 방지] Set을 이용해 알림 받을 사원 번호(empNo) 취합
 		Set<Integer> receiverEmpNos = new HashSet<>();
 
 		// 주 담당자 사번 추가
@@ -186,6 +185,15 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	@Transactional
 	public boolean update(TaskUpdateRequestVO updateVO) {
+		// [추가] 현재 프로젝트 참여 멤버 번호 조회 (세션이나 인증 정보의 empNo 활용)
+		// ※ 주의: 컨트롤러나 인증 구조에 따라 empNo를 받아오는 방식이 다를 수 있다면 
+		// updateVO나 메서드 파라미터로 empNo를 넘겨받는 구조로 확장할 수 있습니다.
+		// 여기서는 현재 프로젝트 번호와 updateVO에 담긴 정보 기반으로 처리하거나 
+		// 혹은 컨트롤러에서 updateVO에 modifierNo를 미리 세팅해 넘기는 방식을 쓸 수도 있습니다.
+		
+		// 만약 updateVO에 이미 modifierNo가 세팅되어 오지 않았다면 아래와 같이 처리할 수 있습니다.
+		// (현재 컨트롤러에서 empNo를 어떻게 처리하고 계신지 확인 후 적용해주세요)
+		
 		// 기존 업무 정보 조회 (taskOrder 유지용)
 		TaskDetailResponseVO original = taskDao.selectOne(updateVO.getTaskNo());
 		int currentOrder = (original != null) ? original.getTaskOrder() : 1;
@@ -196,7 +204,7 @@ public class TaskServiceImpl implements TaskService {
 			assignedMemberNo = null;
 		}
 
-		// task 테이블 레코드 갱신
+		// task 테이블 레코드 갱신 (taskModifierNo 포함)
 		TaskDto taskDto = TaskDto.builder()
 				.taskNo(updateVO.getTaskNo())
 				.projectNo(updateVO.getProjectNo())
@@ -209,6 +217,7 @@ public class TaskServiceImpl implements TaskService {
 				.taskCategory(updateVO.getTaskCategory())
 				.taskStart(updateVO.getTaskStart())
 				.taskEnd(updateVO.getTaskEnd())
+				.taskModifierNo(updateVO.getTaskModifierNo()) // 👈 수정자 번호 빌드 추가
 				.build();
 
 		boolean result = taskDao.update(taskDto);

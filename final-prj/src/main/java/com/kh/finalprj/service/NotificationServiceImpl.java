@@ -1,5 +1,6 @@
 package com.kh.finalprj.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.finalprj.dao.NotificationDao;
-import com.kh.finalprj.dao.ProjectMemberDao; 
+import com.kh.finalprj.dao.ProjectMemberDao;
 import com.kh.finalprj.dao.ScheduleDao;
 import com.kh.finalprj.dto.NotificationDto;
 import com.kh.finalprj.dto.ScheduleDto;
@@ -115,4 +116,24 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
     }
+
+	@Override
+	public Map<String, Object> getNotificationPage(int empNo, int page, int size, String filter) {
+		int startRow = (page -1) * size + 1;
+		int endRow = page * size;
+		
+		Map<String, Object> params = new HashMap<>();
+		params.put("empNo", empNo);
+		params.put("startRow", startRow);
+		params.put("endRow", endRow);
+		params.put("filter", filter);
+		
+		List<NotificationDto>list = notificationDao.selectListByPage(params);
+		int totalCount = notificationDao.count(params);
+		
+		return Map.of(
+			"list", list,
+			"totalCount", totalCount
+		);
+	}
 }

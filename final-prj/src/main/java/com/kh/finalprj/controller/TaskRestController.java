@@ -31,7 +31,6 @@ import com.kh.finalprj.vo.task.TaskMoveRequestVO;
 import com.kh.finalprj.vo.task.TaskMoveResponseVO;
 import com.kh.finalprj.vo.task.TaskUpdateRequestVO;
 
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -133,43 +132,53 @@ public class TaskRestController {
 	}
 
 	// 업무 내용 및 협업자 수정
-	@ApiResponse(responseCode = "200", description = "업무 수정 성공")
-	@PutMapping(value = "/", produces = "application/json")
-	public boolean update(@RequestBody TaskUpdateRequestVO updateVO, @CurrentUser TokenParseResponseVO parseVO) {
+		@ApiResponse(responseCode = "200", description = "업무 수정 성공")
+		@PutMapping(value = "/", produces = "application/json")
+		public boolean update(@RequestBody TaskUpdateRequestVO updateVO, @CurrentUser TokenParseResponseVO parseVO) {
 
-		int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
-		TaskDetailResponseVO beforeTask = taskService.selectOne(updateVO.getTaskNo());
-
-		// 서비스 계층에서 기본 정보 및 협업자 교체를 단일 트랜잭션으로 안전하게 처리
-		boolean result = taskService.update(updateVO);
-
-		if (result && updateVO.getProjectNo() > 0) {
-			// 칸반 실시간 브로드캐스트
-			simpMessagingTemplate.convertAndSend("/public/projects/" + updateVO.getProjectNo() + "/kanban",
-					Map.of("eventType", "TASK_UPDATED", "projectNo", updateVO.getProjectNo(), "taskNo",
-							updateVO.getTaskNo(), "senderEmpNo", senderEmpNo));
-
-			// 담당자 변경 알림 발송
-			Integer currentAssignee = updateVO.getAssignedMemberNo();
-			Integer beforeAssignee = (beforeTask != null) ? beforeTask.getAssignedMemberNo() : null;
-
-			if (currentAssignee != null && currentAssignee > 0 && !currentAssignee.equals(beforeAssignee)) {
-				ProjectMemberDto assignedMember = projectMemberDao.findMember2(currentAssignee);
-				if (assignedMember != null && assignedMember.getEmpNo() != senderEmpNo) {
-					notificationService.send(NotificationDto.builder()
-							.notificationReceiver(assignedMember.getEmpNo())
-							.projectNo(updateVO.getProjectNo())
-							.notificationType("TASK_ASSIGNED")
-							.notificationTarget(updateVO.getTaskNo())
-							.notificationUrl("/projects/" + updateVO.getProjectNo() + "/kanban?taskNo=" + updateVO.getTaskNo())
-							.notificationContent("'" + updateVO.getTaskTitle() + "' 업무의 담당자로 배정되었습니다.")
-							.build());
+			int senderEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
+			
+			// 1. 현재 로그인한 사원 번호(empNo)와 프로젝트 번호(projectNo)를 이용해 해당 프로젝트에서의 멤버 번호 조회
+			if (senderEmpNo > 0 && updateVO.getProjectNo() > 0) {
+				Integer projectMemberNo = projectMemberDao.findProjectMemberNo(updateVO.getProjectNo(), senderEmpNo);
+				if (projectMemberNo != null) {
+					// 2. 수정자 번호(taskModifierNo)에 대입
+					updateVO.setTaskModifierNo(projectMemberNo);
 				}
 			}
-		}
 
-		return result;
-	}
+			TaskDetailResponseVO beforeTask = taskService.selectOne(updateVO.getTaskNo());
+
+			// 서비스 계층에서 기본 정보 및 협업자 교체를 단일 트랜잭션으로 안전하게 처리
+			boolean result = taskService.update(updateVO);
+
+			if (result && updateVO.getProjectNo() > 0) {
+				// 칸반 실시간 브로드캐스트
+				simpMessagingTemplate.convertAndSend("/public/projects/" + updateVO.getProjectNo() + "/kanban",
+						Map.of("eventType", "TASK_UPDATED", "projectNo", updateVO.getProjectNo(), "taskNo",
+								updateVO.getTaskNo(), "senderEmpNo", senderEmpNo));
+
+				// 담당자 변경 알림 발송
+				Integer currentAssignee = updateVO.getAssignedMemberNo();
+				Integer beforeAssignee = (beforeTask != null) ? beforeTask.getAssignedMemberNo() : null;
+
+				if (currentAssignee != null && currentAssignee > 0 && !currentAssignee.equals(beforeAssignee)) {
+					ProjectMemberDto assignedMember = projectMemberDao.findMember2(currentAssignee);
+					if (assignedMember != null && assignedMember.getEmpNo() != senderEmpNo) {
+						notificationService.send(NotificationDto.builder()
+								.notificationReceiver(assignedMember.getEmpNo())
+								.projectNo(updateVO.getProjectNo())
+								.notificationType("TASK_ASSIGNED")
+								.notificationTarget(updateVO.getTaskNo())
+								.notificationUrl("/projects/" + updateVO.getProjectNo() + "/kanban?taskNo=" + updateVO.getTaskNo())
+								.notificationContent("'" + updateVO.getTaskTitle() + "' 업무의 담당자로 배정되었습니다.")
+								.build());
+					}
+				}
+			}
+
+			return result;
+		}
 
 	//칸반 카드 드래그 이동
 	@ApiResponse(responseCode = "200", description = "칸반 이동 성공")
