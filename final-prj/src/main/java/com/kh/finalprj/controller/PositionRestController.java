@@ -43,7 +43,7 @@ public class PositionRestController {
 	public List<PositionListVO> list(){
 		return positionDao.selectList();
 	}
-	
+	@ApiResponse(responseCode = "200", description="조회성공")
 	@PostMapping("/")
 	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
 		int count = positionDao.count();
@@ -58,13 +58,13 @@ public class PositionRestController {
 		return result;
 		
 	}
-	
+	@ApiResponse(responseCode = "200", description="검색 조회 성공")
 	@GetMapping("/search")
 	public List<PositionListSearchVO> listSearch(){
 		return positionDao.listSearch();
 	}
 	
-	
+	@ApiResponse(responseCode = "200", description="등록 완료")
 	@PostMapping("/add")
 	public PositionAddResponseVO add(@RequestBody PositionAddRequestVO request) {
 		
@@ -86,6 +86,7 @@ public class PositionRestController {
 	}
 	
 	//직급수정
+	@ApiResponse(responseCode = "200", description="수정 성공")
 	@PutMapping("/edit")
 	public PositionChangeResponseVO edit(@RequestBody PositionChangeRequestVO request) {
 		

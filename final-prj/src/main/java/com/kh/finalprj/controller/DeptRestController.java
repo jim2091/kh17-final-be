@@ -24,6 +24,7 @@ import com.kh.finalprj.vo.dept.DeptListSearchVO;
 import com.kh.finalprj.vo.dept.DeptListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name="부서 API")
@@ -37,6 +38,7 @@ public class DeptRestController {
 	private DeptDao deptDao;
 	
 	//부서목록 조회(번호순)
+	@ApiResponse(responseCode = "200", description="조회 완료")
 	@GetMapping("/")
 	public List<DeptListVO> list(){
 		return deptDao.selectList();
@@ -44,6 +46,7 @@ public class DeptRestController {
 	}
 	
 	//부서목록 조회(+페이지네이션)
+	@ApiResponse(responseCode = "200", description="조회 완료")
 	@PostMapping("/")
 	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
 		int count = deptDao.count();
@@ -57,6 +60,7 @@ public class DeptRestController {
 		
 	}
 	//부서목록 조회(검색용)
+	@ApiResponse(responseCode = "200", description="조회 완료")
 	@GetMapping("/search")
 	public List<DeptListSearchVO> listSearch(){
 		return deptDao.listSearch();
@@ -64,6 +68,7 @@ public class DeptRestController {
 	}
 	
 	//부서등록
+	@ApiResponse(responseCode = "200", description="등록 완료")
 	@PostMapping("/add")
 	public DeptAddResponseVO add(@RequestBody DeptAddRequestVO request) {
 		
@@ -89,6 +94,7 @@ public class DeptRestController {
 	}
 	
 	//부서 수정
+	@ApiResponse(responseCode = "200", description="수정 완료")
 	@PutMapping("/edit")
 	public DeptChangeResponseVO edit(@RequestBody DeptChangeRequestVO request) {
 		DeptDto deptDto = new DeptDto();
