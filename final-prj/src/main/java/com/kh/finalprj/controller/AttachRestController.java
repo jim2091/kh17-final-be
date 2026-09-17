@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,16 +84,14 @@ public class AttachRestController {
         log.debug("source = {}", source);
         log.debug("sourceNo = {}", sourceNo);
 
-
         // ==================================================
         // 로그인 검사
         // ==================================================
 
         if (
-            uploader == null
-            || uploader.trim().isEmpty()
+                uploader == null
+                || uploader.trim().isEmpty()
         ) {
-
             throw new IllegalStateException(
                     "로그인 사용자 정보가 없습니다."
             );
@@ -101,24 +100,19 @@ public class AttachRestController {
 
         // ==================================================
         // 프로젝트 상태 검사
-        //
-        // closed이면 업로드 금지
         // ==================================================
 
         String projectStatus =
-                attachDao.selectProjectStatus(projectNo);
+                attachDao.selectProjectStatus(
+                        projectNo
+                );
 
         log.debug(
                 "업로드 프로젝트 상태 = {}",
                 projectStatus
         );
 
-        if (
-            "closed".equalsIgnoreCase(
-                    projectStatus
-            )
-        ) {
-
+        if ("closed".equalsIgnoreCase(projectStatus)) {
             throw new IllegalStateException(
                     "종료된 프로젝트에는 파일을 업로드할 수 없습니다."
             );
@@ -150,11 +144,16 @@ public class AttachRestController {
 
         log.debug("파일 다운로드 요청");
         log.debug("attachNo = {}", attachNo);
+
         log.debug(
                 "현재 profile = {}",
                 environment.getActiveProfiles()
         );
 
+
+        // ==================================================
+        // Cloud
+        // ==================================================
 
         if (environment.matchesProfiles("cloud")) {
 
@@ -169,13 +168,16 @@ public class AttachRestController {
         }
 
 
+        // ==================================================
+        // Local
+        // ==================================================
+
         AttachInfoVO vo =
                 attachService.load(attachNo);
 
-
         if (
-            vo == null
-            || vo.getAttachDto() == null
+                vo == null
+                || vo.getAttachDto() == null
         ) {
 
             log.warn(
@@ -187,7 +189,6 @@ public class AttachRestController {
                     "첨부파일을 찾을 수 없습니다."
             );
         }
-
 
         return ResponseEntity
                 .ok()
@@ -227,10 +228,8 @@ public class AttachRestController {
         log.debug("Cloud 파일 다운로드 요청");
         log.debug("attachNo = {}", attachNo);
 
-
         AttachDto attachDto =
                 attachDao.selectOne(attachNo);
-
 
         if (attachDto == null) {
 
@@ -241,7 +240,7 @@ public class AttachRestController {
 
             throw new TargetNotfoundException(
                     "첨부파일을 찾을 수 없습니다. attachNo = "
-                    + attachNo
+                            + attachNo
             );
         }
 
@@ -307,8 +306,6 @@ public class AttachRestController {
     // ==================================================
     // 파일 삭제
     //
-    // 권한
-    //
     // owner   → 모든 파일 삭제 가능
     // manager → 모든 파일 삭제 가능
     // member  → 본인이 올린 파일만 삭제 가능
@@ -321,16 +318,13 @@ public class AttachRestController {
     ) {
 
         if (authentication == null) {
-
             throw new IllegalStateException(
                     "로그인 사용자 정보가 없습니다."
             );
         }
 
-
         String uploader =
                 authentication.getName();
-
 
         log.debug(
                 "삭제 요청 파일 번호 = {}",
@@ -342,7 +336,6 @@ public class AttachRestController {
                 uploader
         );
 
-
         attachService.delete(
                 attachNo,
                 uploader
@@ -351,7 +344,10 @@ public class AttachRestController {
 
 
     // ==================================================
-    // 프로젝트 파일 목록 조회 / 검색
+    // 프로젝트 파일 목록 조회
+    // + 검색
+    // + 페이징
+    // + 정렬
     //
     // searchType
     //
@@ -359,15 +355,46 @@ public class AttachRestController {
     // source   = 출처
     // uploader = 업로더
     // type     = 파일 형태
+    //
+    // sortType
+    //
+    // date-desc = 최신순
+    // date-asc  = 오래된순
+    //
+    // page
+    // 1부터 시작
+    //
+    // size
+    // 한 페이지에 보여줄 파일 개수
+    // 기본값 12
     // ==================================================
 
     @GetMapping("/list/{projectNo}")
     public ResponseEntity<?> list(
+
             @PathVariable int projectNo,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "name") String searchType,
+
+            @RequestParam(required = false)
+            String keyword,
+
+            @RequestParam(defaultValue = "name")
+            String searchType,
+
+            @RequestParam(defaultValue = "date-desc")
+            String sortType,
+
+            @RequestParam(defaultValue = "1")
+            int page,
+
+            @RequestParam(defaultValue = "12")
+            int size,
+
             Authentication authentication
     ) {
+
+        // ==================================================
+        // 로그인 검사
+        // ==================================================
 
         if (authentication == null) {
 
@@ -376,9 +403,25 @@ public class AttachRestController {
             );
         }
 
-
         String loginUser =
                 authentication.getName();
+
+
+        // ==================================================
+        // page / size 안전성 검사
+        // ==================================================
+
+        if (page < 1) {
+            page = 1;
+        }
+
+        if (size < 1) {
+            size = 12;
+        }
+
+        if (size > 100) {
+            size = 100;
+        }
 
 
         // ==================================================
@@ -386,13 +429,30 @@ public class AttachRestController {
         // ==================================================
 
         if (
-            !"name".equals(searchType)
-            && !"source".equals(searchType)
-            && !"uploader".equals(searchType)
-            && !"type".equals(searchType)
+                !"name".equals(searchType)
+                && !"source".equals(searchType)
+                && !"uploader".equals(searchType)
+                && !"type".equals(searchType)
         ) {
 
             searchType = "name";
+        }
+
+
+        // ==================================================
+        // 정렬 타입 검증
+        // ==================================================
+
+        if (
+                !"date-desc".equals(sortType)
+                && !"date-asc".equals(sortType)
+                && !"name-asc".equals(sortType)
+                && !"name-desc".equals(sortType)
+                && !"size-desc".equals(sortType)
+                && !"size-asc".equals(sortType)
+        ) {
+
+            sortType = "date-desc";
         }
 
 
@@ -407,30 +467,145 @@ public class AttachRestController {
 
 
         // ==================================================
-        // 파일 목록 조회
+        // 검색어 정리
+        // ==================================================
+
+        String trimmedKeyword = null;
+
+        if (
+                keyword != null
+                && !keyword.trim().isEmpty()
+        ) {
+
+            trimmedKeyword =
+                    keyword.trim();
+        }
+
+
+        // ==================================================
+        // ROWNUM 계산
+        //
+        // page 1 / size 12
+        // begin = 1
+        // end   = 12
+        //
+        // page 2
+        // begin = 13
+        // end   = 24
+        //
+        // page 3
+        // begin = 25
+        // end   = 36
+        // ==================================================
+
+        int beginRownum =
+                (page - 1) * size + 1;
+
+        int endRownum =
+                page * size;
+
+
+        // ==================================================
+        // 파일 목록 + 전체 개수
+        //
+        // ★ 정렬값을 Service까지 전달
         // ==================================================
 
         List<AttachDto> files;
 
+        int totalCount;
 
-        if (
-            keyword == null
-            || keyword.trim().isEmpty()
-        ) {
 
-            files =
-                    attachService.list(
-                            projectNo
-                    );
-
-        } else {
+        if (trimmedKeyword == null) {
 
             files =
                     attachService.list(
                             projectNo,
-                            keyword.trim(),
+                            beginRownum,
+                            endRownum,
+                            sortType
+                    );
+
+            totalCount =
+                    attachService.count(
+                            projectNo
+                    );
+
+        }
+        else {
+
+            files =
+                    attachService.list(
+                            projectNo,
+                            trimmedKeyword,
+                            searchType,
+                            beginRownum,
+                            endRownum,
+                            sortType
+                    );
+
+            totalCount =
+                    attachService.count(
+                            projectNo,
+                            trimmedKeyword,
                             searchType
                     );
+        }
+
+
+        // ==================================================
+        // 전체 페이지 수
+        // ==================================================
+
+        int totalPages =
+                totalCount == 0
+                        ? 0
+                        : (int) Math.ceil(
+                                (double) totalCount / size
+                        );
+
+
+        // ==================================================
+        // 현재 페이지가 전체 페이지보다 큰 경우
+        // ==================================================
+
+        if (
+                totalPages > 0
+                && page > totalPages
+        ) {
+
+            page = totalPages;
+
+            beginRownum =
+                    (page - 1) * size + 1;
+
+            endRownum =
+                    page * size;
+
+
+            if (trimmedKeyword == null) {
+
+                files =
+                        attachService.list(
+                                projectNo,
+                                beginRownum,
+                                endRownum,
+                                sortType
+                        );
+
+            }
+            else {
+
+                files =
+                        attachService.list(
+                                projectNo,
+                                trimmedKeyword,
+                                searchType,
+                                beginRownum,
+                                endRownum,
+                                sortType
+                        );
+            }
         }
 
 
@@ -440,7 +615,6 @@ public class AttachRestController {
 
         String loginRole = null;
 
-
         try {
 
             int empNo =
@@ -448,14 +622,14 @@ public class AttachRestController {
                             loginUser
                     );
 
-
             loginRole =
                     projectMemberDao.selectRole(
                             projectNo,
                             empNo
                     );
 
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
 
             log.warn(
                     "로그인 사용자 번호 변환 실패: {}",
@@ -494,7 +668,7 @@ public class AttachRestController {
 
         log.debug(
                 "검색어 = {}",
-                keyword
+                trimmedKeyword
         );
 
         log.debug(
@@ -502,30 +676,95 @@ public class AttachRestController {
                 searchType
         );
 
+        log.debug(
+                "정렬 종류 = {}",
+                sortType
+        );
+
+        log.debug(
+                "현재 페이지 = {}",
+                page
+        );
+
+        log.debug(
+                "페이지 크기 = {}",
+                size
+        );
+
+        log.debug(
+                "beginRownum = {}",
+                beginRownum
+        );
+
+        log.debug(
+                "endRownum = {}",
+                endRownum
+        );
+
+        log.debug(
+                "전체 파일 수 = {}",
+                totalCount
+        );
+
+        log.debug(
+                "전체 페이지 수 = {}",
+                totalPages
+        );
+
 
         // ==================================================
         // 응답
         // ==================================================
 
-        return ResponseEntity.ok(
-                Map.of(
-                        "files",
-                        files,
+        Map<String, Object> response =
+                new HashMap<>();
 
-                        "loginUser",
-                        loginUser,
 
-                        "loginRole",
-                        loginRole == null
-                                ? ""
-                                : loginRole,
-
-                        "projectStatus",
-                        projectStatus == null
-                                ? ""
-                                : projectStatus
-                )
+        response.put(
+                "files",
+                files
         );
+
+        response.put(
+                "totalCount",
+                totalCount
+        );
+
+        response.put(
+                "page",
+                page
+        );
+
+        response.put(
+                "size",
+                size
+        );
+
+        response.put(
+                "totalPages",
+                totalPages
+        );
+
+        response.put(
+                "loginUser",
+                loginUser
+        );
+
+        response.put(
+                "loginRole",
+                loginRole == null
+                        ? ""
+                        : loginRole
+        );
+
+        response.put(
+                "projectStatus",
+                projectStatus == null
+                        ? ""
+                        : projectStatus
+        );
+
+        return ResponseEntity.ok(response);
     }
 
 }
