@@ -108,6 +108,12 @@ public class WebSocketController {
 	    		"/public/"+channelNo+"/chat",
 	    		response
 	    	);
+	    
+	    //프로젝트 채팅 unread 갱신용
+	    simpMessagingTemplate.convertAndSend(
+	    		"/public/project/" + projectNo + "/chat-unread",
+	    		response
+	    );
 	}
 	
 	
@@ -129,6 +135,15 @@ public class WebSocketController {
 		simpMessagingTemplate.convertAndSend(
 				"/public/"+channelNo+"/read",
 				response	
+			);
+		
+		//해당 채널이 속한 프로젝트
+		int projectNo = channelDao.findProjectNo(channelNo);
+
+		//프로젝트 채팅 unread 갱신용
+		simpMessagingTemplate.convertAndSend(
+				"/public/project/" + projectNo + "/chat-read",
+				response
 			);
 	}
 	
