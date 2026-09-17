@@ -17,6 +17,7 @@ import com.kh.finalprj.dto.ProjectCloseDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectExpectedResultDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
+import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.error.WhoAreYouException;
 import com.kh.finalprj.error.WrongDataException;
@@ -177,14 +178,33 @@ public class ProjectServiceImpl implements ProjectService{
 
 	//프로젝트 멤버 목록
 	@Override
-	public List<ProjectMemberListResponseVO> memberList(int projectNo, int empNo) {
-		//프로젝트 참여자인지 확인
-		String role = projectMemberDao.selectRole(projectNo, empNo);
-		
-		if(role == null) {
-			throw new WhoAreYouException("프로젝트 권한이 없습니다.");
-		}
-		return projectMemberDao.selectProjectMemberList(projectNo);
+	public List<ProjectMemberListResponseVO> memberList(
+	        int projectNo,int empNo
+	) {
+	    //프로젝트 조회
+	    ProjectDto project = projectDao.selectProject(projectNo);
+
+	    if(project == null) {
+	        throw new TargetNotfoundException("존재하지 않는 프로젝트입니다.");
+	    }
+
+	    //현재 사용자의 프로젝트 역할 조회
+	    String role =
+	            projectMemberDao.selectRole(projectNo,empNo );
+
+	    //종료된 공개 프로젝트인지 확인
+	    boolean publicClosed =
+	            "public".equals(project.getProjectVisibility())
+	            &&
+	            "closed".equals(project.getProjectStatus());
+	    
+	    //멤버도 아니고 종료된 공개 프로젝트도 아니면 접근 불가
+	    if(role == null && !publicClosed) {
+	        throw new GetOutException( "프로젝트 권한이 없습니다.");
+	    }
+
+	    return projectMemberDao
+	            .selectProjectMemberList(projectNo);
 	}
 
 	//멤버 권한 수정
