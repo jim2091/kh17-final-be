@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.finalprj.dao.ProjectDao;
 import com.kh.finalprj.dao.ProjectExpectedResultDao;
 import com.kh.finalprj.dao.ProjectMemberDao;
+import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectExpectedResultDto;
+import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.error.WhoAreYouException;
 import com.kh.finalprj.error.WrongDataException;
@@ -19,18 +22,41 @@ public class ProjectExpectedResultServiceImpl implements ProjectExpectedResultSe
 	@Autowired
 	private ProjectMemberDao projectMemberDao;
 	@Autowired
+	private ProjectDao projectDao;
+	@Autowired
 	private ProjectExpectedResultDao projectExpectedResultDao;
 	
 	//기대결과 목록
 	@Override
-	public List<ProjectExpectedResultDto> resultList(int projectNo, int empNo) {
-		//프로젝트 참여자 확인
-		String role = projectMemberDao.selectRole(projectNo,empNo);
-		
-		if(role == null) {
-			throw new WhoAreYouException("프로젝트 참여자가 아닙니다.");
-		}
-		return projectExpectedResultDao.selectList(projectNo);
+	public List<ProjectExpectedResultDto> resultList(
+	        int projectNo, int empNo
+	) {
+	
+	    //프로젝트 조회
+	    ProjectDto project = projectDao.selectProject(projectNo);
+	
+	    if(project == null) {
+	        throw new TargetNotfoundException("존재하지 않는 프로젝트입니다.");
+	    }
+	
+	
+	    //프로젝트 참여자 확인
+	    String role = projectMemberDao.selectRole(projectNo,empNo);
+	
+	
+	    //종료된 공개 프로젝트인지 확인
+	    boolean publicClosed =
+	            "public".equals(project.getProjectVisibility())
+	            &&
+	            "closed".equals(project.getProjectStatus());
+	
+	    //멤버도 아니고,
+	    //종료된 공개 프로젝트도 아니면 조회 불가
+	    if(role == null && !publicClosed) {
+	        throw new GetOutException("프로젝트 조회 권한이 없습니다.");
+	    }
+	    
+	    return projectExpectedResultDao.selectList(projectNo);
 	}
 
 	//기대결과 등록

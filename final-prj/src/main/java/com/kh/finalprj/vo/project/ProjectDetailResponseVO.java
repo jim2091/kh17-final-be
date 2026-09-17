@@ -19,7 +19,7 @@ public class ProjectDetailResponseVO {
 	private String projectStatus;
 	private Timestamp projectStart,projectDeadline;
 
-	private int projectMemberNo;
+	private Integer projectMemberNo;
 	//현재 로그인 사용자의 프로젝트 역할
 	private String projectMemberRole;
 }

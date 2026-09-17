@@ -12,6 +12,7 @@ import com.kh.finalprj.dto.NotificationDto;
 import com.kh.finalprj.dto.ProjectDto;
 import com.kh.finalprj.dto.ProjectInviteDto;
 import com.kh.finalprj.dto.ProjectMemberDto;
+import com.kh.finalprj.error.GetOutException;
 import com.kh.finalprj.error.TargetNotfoundException;
 import com.kh.finalprj.error.WhoAreYouException;
 import com.kh.finalprj.error.WrongDataException;
@@ -40,11 +41,6 @@ public class ProjectInviteServiceImpl implements ProjectInviteService{
 		
 		//종료 프로젝트 초대 불가
 		if("closed".equals(project.getProjectStatus())) {
-			throw new TargetNotfoundException("존재하지 않는 프로젝트입니다.");
-		}
-		
-		//종료 프로젝트 초대 불가
-		if("closed".equals(project.getProjectStatus())) {
 			throw new TargetNotfoundException("종료된 프로젝트에는 초대할 수 없습니다.");
 		}
 		
@@ -57,13 +53,17 @@ public class ProjectInviteServiceImpl implements ProjectInviteService{
 		
 		//owner,manager만 초대 가능
 		String senderRole = senderMember.getProjectMemberRole();
+		String visibility = project.getProjectVisibility();
 		
-		if(
-			!"owner".equals(senderRole)
+		//private 프로젝트
+		if("private".equals(visibility)) {
+			if(
+				!"owner".equals(senderRole)
 				&&
-			!"manager".equals(senderRole)
-		) {
-			throw new WhoAreYouException("프로젝트 초대 권한이 없습니다.");
+				!"manager".equals(senderRole)
+			) {
+				throw new GetOutException("프로젝트 권한이 없습니다.");
+			}
 		}
 		
 		//이미 프로젝트 멤버인지 확인
@@ -123,7 +123,7 @@ public class ProjectInviteServiceImpl implements ProjectInviteService{
 		
 		//초대 받은 본인인지 확인
 		if(invite.getProjectInviteReceiver() != empNo) {
-			throw new WhoAreYouException("본인의 프로젝트 초대가 아닙니다.");
+			throw new GetOutException("본인의 프로젝트 초대가 아닙니다.");
 		}
 		
 		//대기 상태 확인
@@ -185,7 +185,7 @@ public class ProjectInviteServiceImpl implements ProjectInviteService{
 		
 		//내 초대인지
 		if(invite.getProjectInviteReceiver() != empNo) {
-			throw new WhoAreYouException("본인의 프로젝트 초대가 아닙니다.");
+			throw new GetOutException("본인의 프로젝트 초대가 아닙니다.");
 		}
 		
 		//대기 확인

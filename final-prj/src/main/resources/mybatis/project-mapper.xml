@@ -67,12 +67,25 @@
 			p.project_deadline,
 			pm.project_member_role,
 			pm.project_member_no
+			
 		from project p
-		inner join project_member pm
-			on p.project_no = pm.project_no
-		where p.project_no = #{projectNo}
-			and pm.emp_no = #{empNo} 
-			and pm.project_member_status = 'active'
+		
+		left join project_member pm
+	        on p.project_no = pm.project_no
+	        and pm.emp_no = #{empNo}
+	        and pm.project_member_status = 'active'
+	
+	    where p.project_no = #{projectNo}
+	
+	    and (
+	        pm.project_member_no is not null
+	        or
+	        (
+	            p.project_visibility = 'public'
+	            and p.project_status = 'closed'
+	        )
+	    )
+		
 	</select>
 	
 	<!-- 프로젝트 수정 -->
@@ -197,12 +210,21 @@
 			pm.project_member_role
 		from project p
 		
-		inner join project_member pm
+		left join project_member pm
 			on p.project_no = pm.project_no
-			
-		where pm.emp_no = #{empNo}
-			and p.project_status = 'closed'
+			and pm.emp_no = #{empNo}
 			and pm.project_member_status = 'active'
+			
+		where p.project_status = 'closed'
+		
+		and(
+			p.project_visibility = 'public'
+			or
+			(
+				p.project_visibility = 'private'
+				and pm.project_member_no is not null
+			)
+		)
 			
 		order by p.project_utime desc
 			
