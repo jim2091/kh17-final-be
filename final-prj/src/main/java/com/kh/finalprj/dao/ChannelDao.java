@@ -22,5 +22,5 @@ public interface ChannelDao {
 	void update(ChannelDto channelDto);
 	
 	//프로젝트 번호를 찾는 메소드
-	int findProjectNo(int channelNo);
+	Integer findProjectNo(int channelNo);
 }

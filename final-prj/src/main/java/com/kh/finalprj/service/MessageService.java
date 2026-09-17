@@ -31,7 +31,8 @@ public class MessageService {
 	private ChannelDao channelDao;
 	@Autowired
 	private ProjectMemberDao projectMemberDao;
-
+	@Autowired
+	private ProjectPermissionService projectPermissionService;
 	
 	//메세지 등록
 	@Transactional
@@ -94,6 +95,9 @@ public class MessageService {
 			throw new TargetNotfoundException();
 		}
 		
+		//종료 프로젝트에서는 메세지 삭제 불가
+		projectPermissionService.checkActive(target.getProjectNo());
+		
 		//(3) 현재 사용자의 projectMemberNo 조회
 		Integer projectMemberNo = 
 			projectMemberDao.findProjectMemberNo(
@@ -131,6 +135,9 @@ public class MessageService {
 			throw new TargetNotfoundException();
 		}
 		
+		//종료 프로젝트에서는 메세지 수정 불가
+		projectPermissionService.checkActive(target.getProjectNo());
+		
 		//(3) 현재 사용자의 projectMemberNo 조회
 		Integer projectMemberNo = 
 			projectMemberDao.findProjectMemberNo(
@@ -158,7 +165,11 @@ public class MessageService {
 	@Transactional
 	public MessageReadResponseVO readChannelMessage(int channelNo, int empNo) {
 		//(1) 채널이 속한 프로젝트 번호 조회
-		int projectNo = channelDao.findProjectNo(channelNo);
+		Integer projectNo = channelDao.findProjectNo(channelNo);
+		
+		if(projectNo == null) {
+			throw new TargetNotfoundException();
+		}
 		
 		//(2) 현재 사용자의 projectMemberNo 조회
 		Integer projectMemberNo = 
