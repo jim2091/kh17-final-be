@@ -53,14 +53,55 @@ public interface AttachService {
 
     // ==================================================
     // 프로젝트 파일 검색
-    //
-    // name     = 파일명
-    // source   = 출처
-    // uploader = 업로더
-    // type     = 파일 형태
     // ==================================================
 
     List<AttachDto> list(
+            int projectNo,
+            String keyword,
+            String searchType
+    );
+
+
+    // ==================================================
+    // 프로젝트 파일 페이징 + 정렬
+    // ==================================================
+
+    List<AttachDto> list(
+            int projectNo,
+            int beginRownum,
+            int endRownum,
+            String sortType
+    );
+
+
+    // ==================================================
+    // 프로젝트 파일 검색 + 페이징 + 정렬
+    // ==================================================
+
+    List<AttachDto> list(
+            int projectNo,
+            String keyword,
+            String searchType,
+            int beginRownum,
+            int endRownum,
+            String sortType
+    );
+
+
+    // ==================================================
+    // 전체 파일 개수
+    // ==================================================
+
+    int count(
+            int projectNo
+    );
+
+
+    // ==================================================
+    // 검색 결과 전체 개수
+    // ==================================================
+
+    int count(
             int projectNo,
             String keyword,
             String searchType
