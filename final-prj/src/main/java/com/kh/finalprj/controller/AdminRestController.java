@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.finalprj.annotation.AuthApiResponse;
 import com.kh.finalprj.dao.EmpDao;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.service.EmailService;
@@ -38,10 +39,12 @@ import com.kh.finalprj.vo.admin.EmpSearchResponseVO;
 import com.kh.finalprj.vo.emp.EmpListVO;
 import com.kh.finalprj.vo.page.PagenationVO;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 
 @Tag(name = "관리자API")
+@AuthApiResponse
 
 @RestController
 @RequestMapping("/api/admin")
@@ -58,6 +61,7 @@ public class AdminRestController {
 	
 	
 	//사용자 추가 -> 회원가입 이메일 발송(+임시비밀번호)
+	@ApiResponse(responseCode = "200", description="초대 완료")
 	@PostMapping("/add")
 	public EmpAddResponseVO add(@RequestBody EmpAddRequestVO request) throws IOException, MessagingException {
 //		System.out.println("request : "+ request);
@@ -85,20 +89,17 @@ public class AdminRestController {
 	}
 	
 	// 이메일 중복검사-사용 가능하면 true, 불가능하면 false를 반환
+	@ApiResponse(responseCode = "200", description="이메일 중복 검사 완료")
 	@GetMapping("/check-email/{empEmail}")
 	public boolean checkEmpEmail(@PathVariable String empEmail) {
 		return empDao.checkAvailableEmail(empEmail);
 	}
 	
 	//회원목록 조회(+페이지네이션)
+	@ApiResponse(responseCode = "200", description="목록 조회 완료")
 	@PostMapping("/")
 	public Map<String, Object> list(@RequestBody PagenationVO pageVO){
-//		int beginRownum = pageVO.getBeginRownum();
-//		int endRownum = pageVO.getEndRownum();
-//		String sort = pageVO.getSort();
-		
-//		System.out.println("beginRownum : " + beginRownum);
-//		System.out.println("endRownum : " + endRownum);
+
 		
 		int count = empDao.count();
 		List<EmpListVO> list = empDao.selectList(pageVO);
@@ -115,12 +116,10 @@ public class AdminRestController {
 	
 	
 	//회원 복합 검색 결과 조회 
+	@ApiResponse(responseCode = "200", description="복합 검색 조회 완료")
 	@PostMapping("/complexSearch")
 	public Map<String, Object> list(@RequestBody AdminComplexSearchRequestVO request ){
-//		System.out.println("검색 요청 데이터 : "+request);
-//		System.out.println("검색 응답 데이터 :"+ empDao.complexSearch(request));
-//		 System.out.println("keyword = " + request.getKeyword());
-//		    System.out.println("pageVO = " + request.getPageVO());
+
 		String keyword = request.getKeyword();
 		int count = empDao.searchCount(keyword);
 		List<AdminComplexSearchResponseVO> list = empDao.complexSearch(request);
@@ -133,6 +132,7 @@ public class AdminRestController {
 	}
 	
 	//회원 초성 검색 결과 조회
+	@ApiResponse(responseCode = "200", description="초성 분류 완료")
 	@PostMapping("/initial")
 	public Map<String, Object> initial(@RequestBody AdminInitialSearchRequestVO request){
 		
@@ -153,6 +153,7 @@ public class AdminRestController {
 	
 
 	//회원 활성화<->비활성화 수정
+	@ApiResponse(responseCode = "200", description="회원 상태 변경 완료")
 	@PatchMapping("/active/{empNo}")
 	public EmpActiveResponseVO active(@PathVariable int empNo) {
 //		System.out.println("empNo : "+ empNo);
@@ -166,6 +167,7 @@ public class AdminRestController {
 	}
 	
 	//회원 일괄 상태 변경 
+	@ApiResponse(responseCode = "200", description="회원 일괄 상태 변경 완료")
 	@PatchMapping("/activeAll")
 	public EmpActiveResponseVO activeAll(@RequestBody EmpActiveAllRequestVO request) {
 		
@@ -180,6 +182,7 @@ public class AdminRestController {
 	
 	
 	//회원 부서/직급 수정
+	@ApiResponse(responseCode = "200", description="회원 부서/직급 수정 완료")
 	@PutMapping("/memberEdit/")
 	public EmpEditResponseVO memberEdit(@RequestBody EmpEditRequestVO request) {
 //		System.out.println("수정할 회원 정보 : "+ request);
@@ -200,6 +203,7 @@ public class AdminRestController {
 	}
 	
 	//회원 부서 일괄 수정
+	@ApiResponse(responseCode = "200", description="회원 부서 일괄 수정 완료")
 	@PatchMapping("/changeDeptAll")
 	public EmpEditResponseVO changeDeptAll(@RequestBody EmpChangeDeptAllRequestVO request) {
 		System.out.println("상태변경 요청 정보 : "+ request);
@@ -217,6 +221,7 @@ public class AdminRestController {
 	}
 	
 	//회원 직급 일괄 수정
+	@ApiResponse(responseCode = "200", description="회원 직급 일괄 수정 완료")
 	@PatchMapping("/changePositionAll")
 	public EmpEditResponseVO changePositionAll(@RequestBody EmpChangePositionAllRequestVO request) {
 //		System.out.println("상태변경 요청 정보 : "+ request);
@@ -234,6 +239,7 @@ public class AdminRestController {
 	}
 	
 	//검색 키워드로 사용자 목록 조회(페이지네이션 없음)
+	@ApiResponse(responseCode = "200", description="사용자 검색 완료")
 	@PostMapping("/empSearch")
 	public List<EmpSearchResponseVO> list(@RequestBody EmpSearchRequestVO request){
 //		System.out.println("키워드 : "+ request.getKeyword());
@@ -241,6 +247,7 @@ public class AdminRestController {
 	}
 	
 	//관리자로 변경하기
+	@ApiResponse(responseCode = "200", description="회원 레벨 변경 완료")
 	@PatchMapping("/becomeAdmin/{empNo}")
 	public EmpAdminResponseVO admin(@PathVariable int empNo) {
 		EmpAdminResponseVO result = new EmpAdminResponseVO();
@@ -252,7 +259,8 @@ public class AdminRestController {
 		return result;
 		
 	}
-	
+	//회원 목록 조회
+	@ApiResponse(responseCode = "200", description="회원 조회 완료")
 	@GetMapping("/")
 	public List<EmpListVO> list(){
 		return empDao.selectList();

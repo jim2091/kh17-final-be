@@ -96,6 +96,7 @@ public class MemberRestController {
 	
 	
 	//사용자 정보 수정(본인) + 프로필 사진 추가 or 수정
+	@ApiResponse(responseCode = "200", description = "수정성공")
 	@Transactional
 	@PutMapping(
 			value = "/"
@@ -171,6 +172,7 @@ public class MemberRestController {
 	
 	
 	//사용자 목록 조회
+	@ApiResponse(responseCode = "200", description = "조회성공")
 	@GetMapping("/")
 	public List<EmpListVO> list(){
 		return empDao.selectList();
@@ -191,6 +193,7 @@ public class MemberRestController {
 		return result;
 	}
 	//회원 초성 검색 결과 조회
+	@ApiResponse(responseCode = "200", description = "검색성공")
 	@PostMapping("/initial")
 	public Map<String, Object> initial(@RequestBody MemberInitialSearchRequestVO request){
 		
@@ -210,6 +213,7 @@ public class MemberRestController {
 	}
 	
 //	카카오 연결 해제
+	@ApiResponse(responseCode = "200", description = "카카오 연결 해제 성공")
 	@DeleteMapping("/kakao")
 	public void kakaoDisconnect(
 	        @CurrentUser TokenParseResponseVO parseVO
@@ -217,7 +221,7 @@ public class MemberRestController {
 	    empDao.kakaoDisconnect(parseVO.getEmpNo());
 	}
 	
-
+	@ApiResponse(responseCode = "200", description = "카카오 연결 여부 조회 성공")
 	@GetMapping("/kakao")
 	public boolean isKakaoConnected(
 			@CurrentUser TokenParseResponseVO parseVO) {
