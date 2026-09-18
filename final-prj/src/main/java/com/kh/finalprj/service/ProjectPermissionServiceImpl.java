@@ -63,4 +63,42 @@ public class ProjectPermissionServiceImpl implements ProjectPermissionService{
 			throw new WrongDataException("종료된 프로젝트에서는 변경할 수 없습니다");
 	}
 	
+	@Override
+	public void checkReadPermission(int projectNo, int empNo) {
+
+	    //프로젝트 조회
+	    ProjectDto projectDto =
+	            projectDao.selectProject(projectNo);
+
+	    if(projectDto == null) {
+	        throw new TargetNotfoundException(
+	            "존재하지 않는 프로젝트입니다."
+	        );
+	    }
+
+	    //현재 사용자가 프로젝트 멤버인지 확인
+	    ProjectMemberDto projectMemberDto =
+	            projectMemberDao.findMember(
+	                projectNo,
+	                empNo
+	            );
+
+	    //종료된 공개 프로젝트인지 확인
+	    boolean publicClosed =
+	            "public".equals(
+	                projectDto.getProjectVisibility()
+	            )
+	            &&
+	            "closed".equals(
+	                projectDto.getProjectStatus()
+	            );
+
+	    //멤버도 아니고,
+	    //종료된 공개 프로젝트도 아니라면 조회 불가
+	    if(projectMemberDto == null && !publicClosed) {
+	        throw new GetOutException(
+	            "프로젝트 조회 권한이 없습니다."
+	        );
+	    }
+	}
 }
