@@ -230,10 +230,27 @@ public class MemberRestController {
 		return result;
 	}
 	
-	
-	
-	
-	
+
+	@PostMapping("/check-password")
+	public boolean checkPassword(
+	        @CurrentUser TokenParseResponseVO parseVO,
+	        @RequestBody Map<String, String> request) {
+
+	    EmpDto empDto = empDao.selectOne(parseVO.getEmpNo());
+
+	    System.out.println("empNo = " + parseVO.getEmpNo());
+	    System.out.println("입력 비밀번호 = " + request.get("empPassword"));
+	    System.out.println("DB 비밀번호 = " + empDto.getEmpPassword());
+
+	    boolean result = passwordEncoder.matches(
+	            request.get("empPassword"),
+	            empDto.getEmpPassword()
+	    );
+
+	    System.out.println("비밀번호 결과 = " + result);
+
+	    return result;
+	}
 	
 	
 	

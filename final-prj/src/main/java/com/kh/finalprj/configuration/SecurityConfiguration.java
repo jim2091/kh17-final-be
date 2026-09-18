@@ -67,7 +67,8 @@ public class SecurityConfiguration {
 					).permitAll()
 					//admin기능 
 					.requestMatchers(
-							"/api/admin/add"
+							"/api/admin/**"
+//							,"/api/admin/"
 							,"/api/dept/add"
 							,"/api/position/add"
 					).hasAuthority("admin")
