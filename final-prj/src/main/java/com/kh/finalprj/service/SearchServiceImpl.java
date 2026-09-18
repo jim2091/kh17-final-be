@@ -23,179 +23,226 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class SearchServiceImpl implements SearchService {
 
-	private final SearchDao searchDao;
-	private final EmpDao empDao;
+    private final SearchDao searchDao;
+    private final EmpDao empDao;
 
-	// ========================================
-	// 통합 검색
-	// ========================================
+    // ========================================
+    // 통합 검색
+    // ========================================
 
-	@Override
-	public SearchDto search(String keyword, String filter, int empNo) {
+    @Override
+    public SearchDto search(String keyword, String filter, int empNo) {
 
-		// ========================================
-		// 검색어 정리
-		// ========================================
+        // ========================================
+        // 검색어 정리
+        // ========================================
 
-		if (keyword == null) {
-			keyword = "";
-		}
+        if (keyword == null) {
+            keyword = "";
+        }
 
-		keyword = keyword.trim();
+        keyword = keyword.trim();
 
-		// ========================================
-		// 필터 정리
-		// ========================================
+        // ========================================
+        // 필터 정리
+        // ========================================
 
-		if (filter == null || filter.trim().isEmpty()) {
-			filter = "all";
-		}
+        if (filter == null || filter.trim().isEmpty()) {
+            filter = "all";
+        }
 
-		filter = filter.trim().toLowerCase();
+        filter = filter.trim().toLowerCase();
 
-		// ========================================
-		// 결과 객체 생성
-		// ========================================
+        // ========================================
+        // 결과 객체 생성
+        // ========================================
 
-		SearchDto result = new SearchDto();
+        SearchDto result = new SearchDto();
 
-		result.setKeyword(keyword);
-		result.setFilter(filter);
+        result.setKeyword(keyword);
+        result.setFilter(filter);
 
-		result.setUsers(new ArrayList<>());
-		result.setProjects(new ArrayList<>());
-		result.setTasks(new ArrayList<>());
-		result.setRecords(new ArrayList<>());
-		result.setNotes(new ArrayList<>());
-		result.setFiles(new ArrayList<>());
+        result.setUsers(new ArrayList<>());
+        result.setProjects(new ArrayList<>());
+        result.setTasks(new ArrayList<>());
+        result.setRecords(new ArrayList<>());
+        result.setNotes(new ArrayList<>());
+        result.setFiles(new ArrayList<>());
 
-		// ========================================
-		// 검색어 없음
-		// ========================================
+        // ========================================
+        // 검색어 없음
+        // ========================================
 
-		if (keyword.isEmpty()) {
-			return result;
-		}
+        if (keyword.isEmpty()) {
+            return result;
+        }
 
-		// ========================================
-		// 전체 검색
-		// ========================================
+        // ========================================
+        // 전체 검색
+        // ========================================
 
-		if ("all".equals(filter)) {
+        if ("all".equals(filter)) {
 
-			// 사용자
-			result.setUsers(searchDao.searchMembers(keyword));
+            // 사용자
+            result.setUsers(
+                searchDao.searchMembers(keyword)
+            );
 
-			// 프로젝트
-			result.setProjects(searchDao.searchProjects(keyword, empNo));
+            // 프로젝트
+            result.setProjects(
+                searchDao.searchProjects(keyword, empNo)
+            );
 
-			// 업무
-			result.setTasks(searchDao.searchTasks(keyword));
+            // 업무
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setTasks(
+                searchDao.searchTasks(keyword, empNo)
+            );
 
-			// 기록
-			result.setRecords(searchDao.searchRecords(keyword));
+            // 기록
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setRecords(
+                searchDao.searchRecords(keyword, empNo)
+            );
 
-			// 노트
-			result.setNotes(searchDao.searchNotes(keyword));
+            // 노트
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setNotes(
+                searchDao.searchNotes(keyword, empNo)
+            );
 
-			// 파일
-			result.setFiles(searchDao.searchFiles(keyword));
+            // 파일
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setFiles(
+                searchDao.searchFiles(keyword, empNo)
+            );
 
-			return result;
-		}
+            return result;
+        }
 
-		// ========================================
-		// 다중 필터 처리
-		// ========================================
+        // ========================================
+        // 다중 필터 처리
+        // ========================================
 
-		Set<String> filters = new HashSet<>(Arrays.asList(filter.split(",")));
+        Set<String> filters =
+            new HashSet<>(Arrays.asList(filter.split(",")));
 
-		// ========================================
-		// 사용자
-		// ========================================
+        // ========================================
+        // 사용자
+        // ========================================
 
-		if (filters.contains("user") || filters.contains("users")) {
+        if (filters.contains("user")
+                || filters.contains("users")) {
 
-			result.setUsers(searchDao.searchMembers(keyword));
-		}
+            result.setUsers(
+                searchDao.searchMembers(keyword)
+            );
+        }
 
-		// ========================================
-		// 프로젝트
-		// ========================================
+        // ========================================
+        // 프로젝트
+        // ========================================
 
-		if (filters.contains("project") || filters.contains("projects")) {
+        if (filters.contains("project")
+                || filters.contains("projects")) {
 
-			result.setProjects(searchDao.searchProjects(keyword, empNo));
-		}
+            result.setProjects(
+                searchDao.searchProjects(keyword, empNo)
+            );
+        }
 
-		// ========================================
-		// 업무
-		// ========================================
+        // ========================================
+        // 업무
+        // ========================================
 
-		if (filters.contains("task") || filters.contains("tasks")) {
+        if (filters.contains("task")
+                || filters.contains("tasks")) {
 
-			result.setTasks(searchDao.searchTasks(keyword));
-		}
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setTasks(
+                searchDao.searchTasks(keyword, empNo)
+            );
+        }
 
-		// ========================================
-		// 기록
-		// ========================================
+        // ========================================
+        // 기록
+        // ========================================
 
-		if (filters.contains("record") || filters.contains("records")) {
+        if (filters.contains("record")
+                || filters.contains("records")) {
 
-			result.setRecords(searchDao.searchRecords(keyword));
-		}
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setRecords(
+                searchDao.searchRecords(keyword, empNo)
+            );
+        }
 
-		// ========================================
-		// 노트
-		// ========================================
+        // ========================================
+        // 노트
+        // ========================================
 
-		if (filters.contains("note") || filters.contains("notes")) {
+        if (filters.contains("note")
+                || filters.contains("notes")) {
 
-			result.setNotes(searchDao.searchNotes(keyword));
-		}
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setNotes(
+                searchDao.searchNotes(keyword, empNo)
+            );
+        }
 
-		// ========================================
-		// 파일
-		// ========================================
+        // ========================================
+        // 파일
+        // ========================================
 
-		if (filters.contains("file") || filters.contains("files")) {
+        if (filters.contains("file")
+                || filters.contains("files")) {
 
-			result.setFiles(searchDao.searchFiles(keyword));
-		}
+            // 현재 로그인 사용자가 active 상태로 참여 중인 프로젝트만 검색
+            result.setFiles(
+                searchDao.searchFiles(keyword, empNo)
+            );
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	// ========================================
-	// 사용자 프로젝트 참여 이력
-	// ========================================
+    // ========================================
+    // 사용자 프로젝트 참여 이력
+    // ========================================
 
-	@Override
-	public ProjectHistoryResponseDto searchProjectHistory(int empNo) {
+    @Override
+    public ProjectHistoryResponseDto searchProjectHistory(int empNo) {
 
-		// 사용자 정보 조회
-		ProjectHistoryResponseDto response = searchDao.searchUserInfo(empNo);
+        // 사용자 정보 조회
+        ProjectHistoryResponseDto response =
+            searchDao.searchUserInfo(empNo);
 
-		// 프로젝트 참여 이력 조회
-		List<ProjectHistoryDto> projects = searchDao.searchProjectHistory(empNo);
+        // 프로젝트 참여 이력 조회
+        List<ProjectHistoryDto> projects =
+            searchDao.searchProjectHistory(empNo);
 
-		if (response == null) {
+        if (response == null) {
 
-			response = ProjectHistoryResponseDto.builder().empNo(empNo).projects(projects).build();
+            response =
+                ProjectHistoryResponseDto.builder()
+                    .empNo(empNo)
+                    .projects(projects)
+                    .build();
 
-		} else {
+        } else {
 
-			response.setProjects(projects);
-		}
+            response.setProjects(projects);
+        }
 
-		return response;
-	}
+        return response;
+    }
 
-	//사원 검색
-	@Override
-	public List<EmpDto> searchEmp(String keyword) {
-		return empDao.searchEmp(keyword);
-	}
+    // ========================================
+    // 사원 검색
+    // ========================================
 
+    @Override
+    public List<EmpDto> searchEmp(String keyword) {
+        return empDao.searchEmp(keyword);
+    }
 }

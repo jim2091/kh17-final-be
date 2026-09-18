@@ -68,11 +68,19 @@ public class SearchDaoMybatis implements SearchDao {
     // ========================================
 
     @Override
-    public List<TaskDto> searchTasks(String keyword) {
+    public List<TaskDto> searchTasks(
+            String keyword,
+            int empNo
+    ) {
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("keyword", keyword);
+        params.put("empNo", empNo);
 
         return sqlSession.selectList(
                 NAMESPACE + ".searchTasks",
-                keyword
+                params
         );
     }
 
@@ -83,12 +91,18 @@ public class SearchDaoMybatis implements SearchDao {
 
     @Override
     public List<ProjectRecordSearchDto> searchRecords(
-            String keyword
+            String keyword,
+            int empNo
     ) {
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("keyword", keyword);
+        params.put("empNo", empNo);
 
         return sqlSession.selectList(
                 NAMESPACE + ".searchRecords",
-                keyword
+                params
         );
     }
 
@@ -99,12 +113,18 @@ public class SearchDaoMybatis implements SearchDao {
 
     @Override
     public List<NoteSearchDto> searchNotes(
-            String keyword
+            String keyword,
+            int empNo
     ) {
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("keyword", keyword);
+        params.put("empNo", empNo);
 
         return sqlSession.selectList(
                 NAMESPACE + ".searchNotes",
-                keyword
+                params
         );
     }
 
@@ -114,11 +134,19 @@ public class SearchDaoMybatis implements SearchDao {
     // ========================================
 
     @Override
-    public List<AttachDto> searchFiles(String keyword) {
+    public List<AttachDto> searchFiles(
+            String keyword,
+            int empNo
+    ) {
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("keyword", keyword);
+        params.put("empNo", empNo);
 
         return sqlSession.selectList(
                 NAMESPACE + ".searchFiles",
-                keyword
+                params
         );
     }
 

@@ -231,75 +231,78 @@
          ===================================================== -->
 
     <select id="searchTasks" resultType="TaskDto">
+    SELECT
+        t.task_no,
+        t.project_no,
+        p.project_name AS projectName,
+        t.task_title,
+        t.task_content,
+        t.assigned_member_no,
+        t.task_status,
+        t.task_order,
+        t.task_start,
+        t.task_end,
+        t.task_category,
+        t.task_priority,
+        t.task_writer_no,
+        t.task_ctime,
+        t.task_utime
+    FROM task t
+    INNER JOIN project p
+        ON t.project_no = p.project_no
+    WHERE
+        /* 종료된 프로젝트 제외 */
+        p.project_status = 'active'
 
-        SELECT
-            t.task_no,
-            t.project_no,
-            p.project_name AS projectName,
-            t.task_title,
-            t.task_content,
-            t.assigned_member_no,
-            t.task_status,
-            t.task_order,
-            t.task_start,
-            t.task_end,
-            t.task_category,
-            t.task_priority,
-            t.task_writer_no,
-            t.task_ctime,
-            t.task_utime
+        /* private 프로젝트 제외 */
+        AND p.project_visibility != 'private'
 
-        FROM task t
+        /* 현재 로그인 사용자가 프로젝트의 active 회원인지 확인 */
+        AND EXISTS (
+            SELECT 1
+            FROM project_member pm
+            WHERE pm.project_no = p.project_no
+              AND pm.emp_no = #{empNo}
+              AND pm.project_member_status = 'active'
+        )
 
-        LEFT JOIN project p
-            ON t.project_no = p.project_no
+        /* Soft Delete된 업무 제외 */
+        AND t.task_deleted = 'N'
 
-        WHERE
-
-            /* 종료된 프로젝트 제외 */
-            p.project_status = 'active'
-
-            /* private 프로젝트 제외 */
-            AND p.project_visibility != 'private'
-
-            /* Soft Delete된 업무 제외 */
-            AND t.task_deleted = 'N'
-
-            AND (
-                REPLACE(
-                    LOWER(t.task_title),
-                    ' ',
-                    ''
-                )
-                LIKE
-                '%' ||
-                REPLACE(
-                    LOWER(#{keyword}),
-                    ' ',
-                    ''
-                ) ||
-                '%'
-
-                OR
-
-                REPLACE(
-                    LOWER(t.task_content),
-                    ' ',
-                    ''
-                )
-                LIKE
-                '%' ||
-                REPLACE(
-                    LOWER(#{keyword}),
-                    ' ',
-                    ''
-                ) ||
-                '%'
+        AND (
+            REPLACE(
+                LOWER(t.task_title),
+                ' ',
+                ''
             )
+            LIKE
+            '%' ||
+            REPLACE(
+                LOWER(#{keyword}),
+                ' ',
+                ''
+            ) ||
+            '%'
 
-        ORDER BY t.task_ctime DESC
+            OR
 
-    </select>
+            REPLACE(
+                LOWER(t.task_content),
+                ' ',
+                ''
+            )
+            LIKE
+            '%' ||
+            REPLACE(
+                LOWER(#{keyword}),
+                ' ',
+                ''
+            ) ||
+            '%'
+        )
+
+    ORDER BY t.task_ctime DESC
+</select>
 
 
     <!-- =====================================================
@@ -323,128 +326,128 @@
          ===================================================== -->
 
     <select id="searchRecords"
-            resultType="ProjectRecordSearchDto">
+        resultType="ProjectRecordSearchDto">
 
-        SELECT
-            r.project_record_no AS projectRecordNo,
-            r.project_no AS projectNo,
-            p.project_name AS projectName,
+    SELECT
+        r.project_record_no AS projectRecordNo,
+        r.project_no AS projectNo,
+        p.project_name AS projectName,
 
-            /* 기록 작성자 */
-            r.project_record_writer_no
-                AS projectRecordWriterNo,
+        /* 기록 작성자 */
+        r.project_record_writer_no
+            AS projectRecordWriterNo,
 
-            writer_pm.emp_no
-                AS writerEmpNo,
+        writer_pm.emp_no
+            AS writerEmpNo,
 
-            writer_emp.emp_name
-                AS writerName,
+        writer_emp.emp_name
+            AS writerName,
 
-            /* 기록 수정자 */
-            r.project_record_modifier_no
-                AS projectRecordModifierNo,
+        /* 기록 수정자 */
+        r.project_record_modifier_no
+            AS projectRecordModifierNo,
 
-            /* 기록 타입 */
-            r.project_record_type
-                AS projectRecordType,
+        /* 기록 타입 */
+        r.project_record_type
+            AS projectRecordType,
 
-            /* 제목 */
-            r.project_record_title
-                AS projectRecordTitle,
+        /* 제목 */
+        r.project_record_title
+            AS projectRecordTitle,
 
-            /* 내용 */
-            r.project_record_content
-                AS projectRecordContent,
+        /* 내용 */
+        r.project_record_content
+            AS projectRecordContent,
 
-            /* 날짜 */
-            r.project_record_ctime
-                AS projectRecordCtime,
+        /* 날짜 */
+        r.project_record_ctime
+            AS projectRecordCtime,
 
-            r.project_record_utime
-                AS projectRecordUtime,
+        r.project_record_utime
+            AS projectRecordUtime,
 
-            /* ISSUE 정보 */
-            i.issue_status
-                AS issueStatus,
+        /* ISSUE 정보 */
+        i.issue_status
+            AS issueStatus,
 
-            i.issue_resolution
-                AS issueResolution,
+        i.issue_resolution
+            AS issueResolution,
 
-            i.issue_resolved_at
-                AS issueResolvedAt
+        i.issue_resolved_at
+            AS issueResolvedAt
 
-        FROM project_record r
+    FROM project_record r
 
-        /* 프로젝트 */
-        INNER JOIN project p
-            ON r.project_no = p.project_no
+    /* 프로젝트 */
+    INNER JOIN project p
+        ON r.project_no = p.project_no
 
-        /* 기록 작성자 project_member */
-        LEFT JOIN project_member writer_pm
-            ON r.project_record_writer_no
-                = writer_pm.project_member_no
+    /* 기록 작성자 project_member */
+    LEFT JOIN project_member writer_pm
+        ON r.project_record_writer_no
+            = writer_pm.project_member_no
 
-        /* 기록 작성자 emp */
-        LEFT JOIN emp writer_emp
-            ON writer_pm.emp_no = writer_emp.emp_no
+    /* 기록 작성자 emp */
+    LEFT JOIN emp writer_emp
+        ON writer_pm.emp_no = writer_emp.emp_no
 
-        /* ISSUE 기록 */
-        LEFT JOIN project_record_issue i
-            ON r.project_record_no
-                = i.project_record_no
+    /* ISSUE 기록 */
+    LEFT JOIN project_record_issue i
+        ON r.project_record_no
+            = i.project_record_no
 
-        WHERE
+    WHERE
+        /* 종료된 프로젝트 제외 */
+        p.project_status = 'active'
 
-            /* 종료된 프로젝트 제외 */
-            p.project_status = 'active'
+        /* private 프로젝트 제외 */
+        AND p.project_visibility != 'private'
 
-            /* private 프로젝트 제외 */
-            AND p.project_visibility != 'private'
+        /* 현재 로그인 사용자가 프로젝트의 active 회원인지 확인 */
+        AND EXISTS (
+            SELECT 1
+            FROM project_member pm
+            WHERE pm.project_no = p.project_no
+              AND pm.emp_no = #{empNo}
+              AND pm.project_member_status = 'active'
+        )
 
-            AND (
-                /* ==========================
-                   기록 제목
-                   ========================== */
+        AND (
+            /* 기록 제목 */
+            REPLACE(
+                LOWER(r.project_record_title),
+                ' ',
+                ''
+            )
+            LIKE
+            '%' ||
+            REPLACE(
+                LOWER(#{keyword}),
+                ' ',
+                ''
+            ) ||
+            '%'
 
-                REPLACE(
-                    LOWER(r.project_record_title),
-                    ' ',
+            OR
+
+            /* 기록 내용 - CLOB */
+            DBMS_LOB.INSTR(
+                REGEXP_REPLACE(
+                    LOWER(r.project_record_content),
+                    '[[:space:]]',
+                    ''
+                ),
+                REGEXP_REPLACE(
+                    LOWER(#{keyword}),
+                    '[[:space:]]',
                     ''
                 )
-                LIKE
-                '%' ||
-                REPLACE(
-                    LOWER(#{keyword}),
-                    ' ',
-                    ''
-                ) ||
-                '%'
+            ) > 0
+        )
 
-                OR
-
-                /* ==========================
-                   기록 내용
-                   CLOB
-                   ========================== */
-
-                DBMS_LOB.INSTR(
-                    REGEXP_REPLACE(
-                        LOWER(r.project_record_content),
-                        '[[:space:]]',
-                        ''
-                    ),
-                    REGEXP_REPLACE(
-                        LOWER(#{keyword}),
-                        '[[:space:]]',
-                        ''
-                    )
-                ) > 0
-            )
-
-        ORDER BY
-            r.project_record_ctime DESC
-
-    </select>
+    ORDER BY
+        r.project_record_ctime DESC
+</select>
 
 
     <!-- =====================================================
@@ -468,99 +471,99 @@
          ===================================================== -->
 
     <select id="searchNotes"
-            resultType="NoteSearchDto">
+        resultType="NoteSearchDto">
 
-        SELECT
-            n.note_no AS noteNo,
-            n.project_no AS projectNo,
-            p.project_name AS projectName,
+    SELECT
+        n.note_no AS noteNo,
+        n.project_no AS projectNo,
+        p.project_name AS projectName,
 
-            n.note_writer_no
-                AS noteWriterNo,
+        n.note_writer_no
+            AS noteWriterNo,
 
-            writer_pm.emp_no
-                AS writerEmpNo,
+        writer_pm.emp_no
+            AS writerEmpNo,
 
-            writer_emp.emp_name
-                AS writerName,
+        writer_emp.emp_name
+            AS writerName,
 
-            n.note_title
-                AS noteTitle,
+        n.note_title
+            AS noteTitle,
 
-            n.note_content
-                AS noteContent,
+        n.note_content
+            AS noteContent,
 
-            n.note_ctime
-                AS noteCtime,
+        n.note_ctime
+            AS noteCtime,
 
-            n.note_utime
-                AS noteUtime
+        n.note_utime
+            AS noteUtime
 
-        FROM note n
+    FROM note n
 
-        INNER JOIN project p
-            ON n.project_no = p.project_no
+    INNER JOIN project p
+        ON n.project_no = p.project_no
 
-        LEFT JOIN project_member writer_pm
-            ON n.note_writer_no
-                = writer_pm.project_member_no
+    LEFT JOIN project_member writer_pm
+        ON n.note_writer_no
+            = writer_pm.project_member_no
 
-        LEFT JOIN emp writer_emp
-            ON writer_pm.emp_no
-                = writer_emp.emp_no
+    LEFT JOIN emp writer_emp
+        ON writer_pm.emp_no
+            = writer_emp.emp_no
 
-        WHERE
+    WHERE
+        /* 종료된 프로젝트 제외 */
+        p.project_status = 'active'
 
-            /* 종료된 프로젝트 제외 */
-            p.project_status = 'active'
+        /* private 프로젝트 제외 */
+        AND p.project_visibility != 'private'
 
-            /* private 프로젝트 제외 */
-            AND p.project_visibility != 'private'
+        /* 현재 로그인 사용자가 프로젝트의 active 회원인지 확인 */
+        AND EXISTS (
+            SELECT 1
+            FROM project_member pm
+            WHERE pm.project_no = p.project_no
+              AND pm.emp_no = #{empNo}
+              AND pm.project_member_status = 'active'
+        )
 
-            AND (
-                /* ==========================
-                   노트 제목
-                   ========================== */
+        AND (
+            /* 노트 제목 */
+            REPLACE(
+                LOWER(n.note_title),
+                ' ',
+                ''
+            )
+            LIKE
+            '%' ||
+            REPLACE(
+                LOWER(#{keyword}),
+                ' ',
+                ''
+            ) ||
+            '%'
 
-                REPLACE(
-                    LOWER(n.note_title),
-                    ' ',
+            OR
+
+            /* 노트 내용 - CLOB */
+            DBMS_LOB.INSTR(
+                REGEXP_REPLACE(
+                    LOWER(n.note_content),
+                    '[[:space:]]',
+                    ''
+                ),
+                REGEXP_REPLACE(
+                    LOWER(#{keyword}),
+                    '[[:space:]]',
                     ''
                 )
-                LIKE
-                '%' ||
-                REPLACE(
-                    LOWER(#{keyword}),
-                    ' ',
-                    ''
-                ) ||
-                '%'
+            ) > 0
+        )
 
-                OR
-
-                /* ==========================
-                   노트 내용
-                   CLOB
-                   ========================== */
-
-                DBMS_LOB.INSTR(
-                    REGEXP_REPLACE(
-                        LOWER(n.note_content),
-                        '[[:space:]]',
-                        ''
-                    ),
-                    REGEXP_REPLACE(
-                        LOWER(#{keyword}),
-                        '[[:space:]]',
-                        ''
-                    )
-                ) > 0
-            )
-
-        ORDER BY
-            n.note_ctime DESC
-
-    </select>
+    ORDER BY
+        n.note_ctime DESC
+</select>
 
 
     <!-- =====================================================
@@ -591,135 +594,124 @@
          ===================================================== -->
 
     <select id="searchFiles"
-            resultType="AttachDto">
+        resultType="AttachDto">
 
-        SELECT DISTINCT
-            a.attach_no,
-            a.attach_name,
-            a.attach_type,
-            a.attach_size,
-            a.attach_uploader,
-            a.attach_source,
-            a.attach_source_no,
-            a.attach_ctime,
+    SELECT DISTINCT
+        a.attach_no,
+        a.attach_name,
+        a.attach_type,
+        a.attach_size,
+        a.attach_uploader,
+        a.attach_source,
+        a.attach_source_no,
+        a.attach_ctime,
 
-            e.emp_name AS empName,
+        e.emp_name AS empName,
 
-            p.project_name AS projectName,
-            p.project_no AS projectNo
+        p.project_name AS projectName,
+        p.project_no AS projectNo
 
-        FROM attach a
+    FROM attach a
 
-        LEFT JOIN emp e
-            ON a.attach_uploader
-                = TO_CHAR(e.emp_no)
+    LEFT JOIN emp e
+        ON a.attach_uploader
+            = TO_CHAR(e.emp_no)
 
-        INNER JOIN project_file pf
-            ON a.attach_no = pf.attach_no
+    INNER JOIN project_file pf
+        ON a.attach_no = pf.attach_no
 
-        INNER JOIN project p
-            ON pf.project_no = p.project_no
+    INNER JOIN project p
+        ON pf.project_no = p.project_no
 
-        WHERE
+    WHERE
+        /* 종료된 프로젝트 제외 */
+        p.project_status = 'active'
 
-            /* 종료된 프로젝트 제외 */
-            p.project_status = 'active'
+        /* private 프로젝트 제외 */
+        AND p.project_visibility != 'private'
 
-            /* private 프로젝트 제외 */
-            AND p.project_visibility != 'private'
+        /* 현재 로그인 사용자가 프로젝트의 active 회원인지 확인 */
+        AND EXISTS (
+            SELECT 1
+            FROM project_member pm
+            WHERE pm.project_no = p.project_no
+              AND pm.emp_no = #{empNo}
+              AND pm.project_member_status = 'active'
+        )
 
-            AND (
-                /* =====================================
-                   파일명
-                   ===================================== */
-
-                REPLACE(
-                    LOWER(a.attach_name),
-                    ' ',
-                    ''
-                )
-                LIKE
-                '%' ||
-                REPLACE(
-                    LOWER(#{keyword}),
-                    ' ',
-                    ''
-                ) ||
-                '%'
-
-                OR
-
-                /* =====================================
-                   파일 출처
-
-                   예:
-                   파일함
-                   노트
-                   노트 댓글
-                   업무
-                   업무 댓글
-
-                   띄어쓰기 무시
-                   ===================================== */
-
-                REPLACE(
-                    LOWER(
-                        CASE
-                            WHEN a.attach_source = 'FILE'
-                                THEN '파일함'
-
-                            WHEN a.attach_source = 'NOTE'
-                                THEN '노트'
-
-                            WHEN a.attach_source = 'NOTE_COMMENT'
-                                THEN '노트 댓글'
-
-                            WHEN a.attach_source = 'TASK'
-                                THEN '업무'
-
-                            WHEN a.attach_source = 'TASK_COMMENT'
-                                THEN '업무 댓글'
-
-                            ELSE a.attach_source
-                        END
-                    ),
-                    ' ',
-                    ''
-                )
-                LIKE
-                '%' ||
-                REPLACE(
-                    LOWER(#{keyword}),
-                    ' ',
-                    ''
-                ) ||
-                '%'
-
-                OR
-
-                /* =====================================
-                   업로더 이름
-                   ===================================== */
-
-                REPLACE(
-                    LOWER(e.emp_name),
-                    ' ',
-                    ''
-                )
-                LIKE
-                '%' ||
-                REPLACE(
-                    LOWER(#{keyword}),
-                    ' ',
-                    ''
-                ) ||
-                '%'
+        AND (
+            /* 파일명 */
+            REPLACE(
+                LOWER(a.attach_name),
+                ' ',
+                ''
             )
+            LIKE
+            '%' ||
+            REPLACE(
+                LOWER(#{keyword}),
+                ' ',
+                ''
+            ) ||
+            '%'
 
-        ORDER BY
-            a.attach_no DESC
+            OR
 
-    </select>
+            /* 파일 출처 */
+            REPLACE(
+                LOWER(
+                    CASE
+                        WHEN a.attach_source = 'FILE'
+                            THEN '파일함'
+
+                        WHEN a.attach_source = 'NOTE'
+                            THEN '노트'
+
+                        WHEN a.attach_source = 'NOTE_COMMENT'
+                            THEN '노트 댓글'
+
+                        WHEN a.attach_source = 'TASK'
+                            THEN '업무'
+
+                        WHEN a.attach_source = 'TASK_COMMENT'
+                            THEN '업무 댓글'
+
+                        ELSE a.attach_source
+                    END
+                ),
+                ' ',
+                ''
+            )
+            LIKE
+            '%' ||
+            REPLACE(
+                LOWER(#{keyword}),
+                ' ',
+                ''
+            ) ||
+            '%'
+
+            OR
+
+            /* 업로더 이름 */
+            REPLACE(
+                LOWER(e.emp_name),
+                ' ',
+                ''
+            )
+            LIKE
+            '%' ||
+            REPLACE(
+                LOWER(#{keyword}),
+                ' ',
+                ''
+            ) ||
+            '%'
+        )
+
+    ORDER BY
+        a.attach_no DESC
+</select>
 
 
     <!-- =====================================================
