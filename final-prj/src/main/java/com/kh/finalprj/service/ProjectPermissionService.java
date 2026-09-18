@@ -16,4 +16,7 @@ public interface ProjectPermissionService {
 	
 	void checkActive(int projectNo);
 	
+	void checkReadPermission(int projectNo,int empNo);
+	
+	
 }

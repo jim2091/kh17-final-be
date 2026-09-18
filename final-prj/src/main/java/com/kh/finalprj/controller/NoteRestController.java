@@ -74,7 +74,7 @@ public class NoteRestController {
 
         int loginEmpNo = (parseVO != null) ? parseVO.getEmpNo() : 0;
 
-        projectPermissionService.checkMember(
+        projectPermissionService.checkReadPermission(
                 projectNo,
                 loginEmpNo
         );

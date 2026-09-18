@@ -102,13 +102,19 @@ public class ScheduleRestController {
 	@ApiResponse(responseCode = "200", description = "일정 조회 성공")
 	@GetMapping("/project/{projectNo}")
 	public ScheduleListResponseVO list(
-			@PathVariable int projectNo,
-			@CurrentUser TokenParseResponseVO parseVO
-		) {
-		//프로젝트 참여자인지 확인
-		projectPermissionService.checkMember(projectNo, parseVO.getEmpNo());
-		return ScheduleListResponseVO.builder()
-	            .scheduleList(scheduleDao.selectList(projectNo))
+	        @PathVariable int projectNo,
+	        @CurrentUser TokenParseResponseVO parseVO
+	) {
+
+	    projectPermissionService.checkReadPermission(
+	        projectNo,
+	        parseVO.getEmpNo()
+	    );
+
+	    return ScheduleListResponseVO.builder()
+	            .scheduleList(
+	                scheduleDao.selectList(projectNo)
+	            )
 	            .build();
 	}
 	
