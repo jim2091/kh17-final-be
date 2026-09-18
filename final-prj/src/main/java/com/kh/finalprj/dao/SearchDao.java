@@ -2,6 +2,8 @@ package com.kh.finalprj.dao;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.kh.finalprj.dto.AttachDto;
 import com.kh.finalprj.dto.EmpDto;
 import com.kh.finalprj.dto.NoteSearchDto;
@@ -13,52 +15,78 @@ import com.kh.finalprj.dto.TaskDto;
 
 public interface SearchDao {
 
-	// ========================================
-	// 사용자 검색
-	// ========================================
+    // ========================================
+    // 사용자 검색
+    // ========================================
 
-	List<EmpDto> searchMembers(String keyword);
+    List<EmpDto> searchMembers(String keyword);
 
-	// ========================================
-	// 프로젝트 검색
-	// ========================================
 
-	List<ProjectDto> searchProjects(String keyword, int empNo);
+    // ========================================
+    // 프로젝트 검색
+    // ========================================
 
-	// ========================================
-	// 업무 검색
-	// ========================================
+    List<ProjectDto> searchProjects(
+            String keyword,
+            int empNo
+    );
 
-	List<TaskDto> searchTasks(String keyword);
 
-	// ========================================
-	// 기록 검색
-	// ========================================
+    // ========================================
+    // 업무 검색
+    // ========================================
 
-	List<ProjectRecordSearchDto> searchRecords(String keyword);
+    List<TaskDto> searchTasks(
+            @Param("keyword") String keyword,
+            @Param("empNo") int empNo
+    );
 
-	// ========================================
-	// 노트 검색
-	// ========================================
 
-	List<NoteSearchDto> searchNotes(String keyword);
+    // ========================================
+    // 기록 검색
+    // ========================================
 
-	// ========================================
-	// 파일 검색
-	// ========================================
+    List<ProjectRecordSearchDto> searchRecords(
+            @Param("keyword") String keyword,
+            @Param("empNo") int empNo
+    );
 
-	List<AttachDto> searchFiles(String keyword);
 
-	// ========================================
-	// 사용자의 프로젝트 참여 이력
-	// ========================================
+    // ========================================
+    // 노트 검색
+    // ========================================
 
-	List<ProjectHistoryDto> searchProjectHistory(int empNo);
+    List<NoteSearchDto> searchNotes(
+            @Param("keyword") String keyword,
+            @Param("empNo") int empNo
+    );
 
-	// ========================================
-	// 프로젝트 이력 조회용 사용자 정보
-	// ========================================
 
-	ProjectHistoryResponseDto searchUserInfo(int empNo);
+    // ========================================
+    // 파일 검색
+    // ========================================
+
+    List<AttachDto> searchFiles(
+            @Param("keyword") String keyword,
+            @Param("empNo") int empNo
+    );
+
+
+    // ========================================
+    // 사용자의 프로젝트 참여 이력
+    // ========================================
+
+    List<ProjectHistoryDto> searchProjectHistory(
+            int empNo
+    );
+
+
+    // ========================================
+    // 프로젝트 이력 조회용 사용자 정보
+    // ========================================
+
+    ProjectHistoryResponseDto searchUserInfo(
+            int empNo
+    );
 
 }
