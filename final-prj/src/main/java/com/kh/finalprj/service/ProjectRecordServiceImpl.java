@@ -154,7 +154,7 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 	@Override
 	public List<ProjectRecordListResponseVO> list(int projectNo, int empNo) {
 		
-		projectPermissionService.findProjectMemberNo(projectNo, empNo);
+		projectPermissionService.checkReadPermission(projectNo, empNo);
 		
 		return projectRecordDao.list(projectNo);
 	}
@@ -167,7 +167,7 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 		if(response == null)
 			throw new TargetNotfoundException();
 		
-		projectPermissionService.findProjectMemberNo(response.getProjectNo(), empNo);
+		projectPermissionService.checkReadPermission(response.getProjectNo(), empNo);
 		
 		response.setRelatedList(projectRecordDao.selectRelatedList(projectRecordNo));
 		
@@ -489,7 +489,7 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 	public ProjectRecordSearchResponseVO searchList(int projectNo, int empNo, ProjectRecordListRequestVO request) {
 		
 		//프로젝트 참여자인지 확인
-		projectPermissionService.checkMember(projectNo, empNo);
+		projectPermissionService.checkReadPermission(projectNo, empNo);
 		
 		//검색/필터/정렬 적용 목록 조회
 		List<ProjectRecordListResponseVO> recordList = 
@@ -545,7 +545,7 @@ public class ProjectRecordServiceImpl implements ProjectRecordService{
 	public ProjectRecordSummaryResponseVO summary(int projectNo, int empNo) {
 		
 		//프로젝트 참여자 확인
-		projectPermissionService.checkMember(projectNo, empNo);
+		projectPermissionService.checkReadPermission(projectNo, empNo);
 		
 		return projectRecordDao.summary(projectNo);
 	}
