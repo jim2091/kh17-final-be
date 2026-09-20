@@ -301,6 +301,7 @@
         )
 
     where C.project_no = #{projectNo}
+    	and C.chat_channel_deleted = 'N'
 
     group by C.chat_channel_no
 

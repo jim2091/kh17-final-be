@@ -16,7 +16,8 @@ public interface ChannelDao {
 	ChannelDto selectOne(int projectNo, int channelNo);
 	
 	//채널 삭제
-	void delete(int projectNo, int channelNo);
+	//void delete(int projectNo, int channelNo);
+	boolean softDelete(int projectNo, int channelNo);
 	
 	//채널 수정
 	void update(ChannelDto channelDto);

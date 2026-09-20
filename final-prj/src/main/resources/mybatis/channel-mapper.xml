@@ -41,6 +41,7 @@
 		left join emp E
 			on PM.emp_no = E.emp_no
 		where C.project_no = #{projectNo}
+			and C.chat_channel_deleted = 'N'
 		order by C.chat_channel_no asc
 	</select>
 	
@@ -61,14 +62,19 @@
 			on PM.emp_no = E.emp_no
 		where C.project_no = #{projectNo}
 			and C.chat_channel_no = #{chatChannelNo}
+			and C.chat_channel_deleted = 'N'
 	</select>
 
 	<!-- 채널 삭제 -->
-	<delete id="delete">
-		delete chat_channel 
-		where project_no = #{projectNo}
-			and chat_channel_no = #{chatChannelNo}
-	</delete>
+	<update id="softDelete">
+	    update chat_channel
+	    set chat_channel_deleted = 'Y',
+	        chat_channel_dtime = systimestamp,
+	        chat_channel_utime = systimestamp
+	    where project_no = #{projectNo}
+	      and chat_channel_no = #{chatChannelNo}
+	      and chat_channel_deleted = 'N'
+	</update>
 	
 	<!-- 채널 수정 -->
 	<update id="update">
@@ -76,6 +82,7 @@
 		set chat_channel_name = #{chatChannelName},
 			chat_channel_utime = systimestamp
 		where chat_channel_no = #{chatChannelNo}
+			and chat_channel_deleted = 'N'
 	</update>
 	
 	<!-- 프로젝트 번호 찾기 -->

@@ -1,6 +1,5 @@
 package com.kh.finalprj.websocket.interceptor;
 
-import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +67,7 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor{
 		// /public/{chanelNo}/update
 		// /public/{chanelNo}/delete
 		if(destination.matches(
-			"^/public/\\d+(chat|read|update|delete)$"
+			"^/public/\\d+/(chat|read|update|delete)$"
 		)) {
 			String[] parts = destination.split("/");
 			
@@ -81,6 +80,17 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor{
 			}
 			
 			checkProjectMember(projectNo, empNo);
+		}
+		
+		// 프로젝트 채널 생성·수정·삭제 이벤트
+		if(destination.matches(
+		    "^/public/project/\\d+/channel$"
+		)) {
+		    String[] parts = destination.split("/");
+
+		    int projectNo = Integer.parseInt(parts[3]);
+
+		    checkProjectMember(projectNo, empNo);
 		}
 		
 		return message;

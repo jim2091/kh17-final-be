@@ -66,6 +66,9 @@ public class ChannelServiceImpl implements ChannelService{
 		if(!channelName.startsWith("#")) {
 			channelDto.setChatChannelName("#"+channelName);
 		}
+		//지금 # 붙이고 어쩌고 하는 생성 로직이랑 # general이라는 이름인 채널을
+		//삭제 불가한 기본 로직으로 삼은 이전 담당자 로직을 그대로 가져가려 하다보니 이래저래 불편한 게 있음
+		//지금 단계에서 임시방편으로 수정하기 보다는 문제가 있음을 기억하고 다음에는 아예 다른 형태로 구현할 예정
 		
 		//(5) 채널 생성
 		channelDao.create(channelDto);
@@ -108,7 +111,10 @@ public class ChannelServiceImpl implements ChannelService{
 		}
 		
 		//(4) 채널 삭제
-		channelDao.delete(projectNo, channelNo);
+		boolean result = channelDao.softDelete(projectNo, channelNo);
+		
+		if(!result) 
+			throw new TargetNotfoundException();
 	}
 
 	//채널 수정
