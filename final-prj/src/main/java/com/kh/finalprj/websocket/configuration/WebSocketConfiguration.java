@@ -14,6 +14,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import com.kh.finalprj.websocket.interceptor.ChatSubscriptionInterceptor;
+import com.kh.finalprj.websocket.interceptor.DmSubscriptionInterceptor;
 
 @EnableWebSocketMessageBroker
 @Configuration
@@ -21,6 +22,9 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer{
 	
 	@Autowired
 	private ChatSubscriptionInterceptor chatSubscriptionInterceptor;
+	
+	@Autowired
+	private DmSubscriptionInterceptor dmSubscriptionInterceptor;
 	
 	//WebSocket 연결 주소 설정
 	@Override
@@ -44,7 +48,8 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer{
 	public void configureClientInboundChannel(ChannelRegistration registration) {
 		registration.interceptors(
 				new SecurityContextChannelInterceptor(),
-				chatSubscriptionInterceptor
+				chatSubscriptionInterceptor,
+				dmSubscriptionInterceptor
 		);
 	}
 	
