@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="mapper.dm">
+
+	<!-- DM방 번호 발급 -->
+	<select id="roomSequence"
+			resultType="int">
+
+		select dm_room_seq.nextval
+		from dual
+
+	</select>
+
+
+	<!-- 두 사람 사이 기존 DM방 조회 -->
+	<select id="findRoom" resultType="DmRoomDto">
+
+		select
+			dm_room_no,
+			dm_room_emp1_no,
+			dm_room_emp2_no,
+			dm_room_ctime
+		from dm_room
+		where dm_room_emp1_no = #{dmRoomEmp1No}
+			and dm_room_emp2_no = #{dmRoomEmp2No}
+
+	</select>
+
+
+	<!-- DM방 생성 -->
+	<insert id="createRoom">
+	
+		insert into dm_room(
+			dm_room_no,
+			dm_room_emp1_no,
+			dm_room_emp2_no
+		)
+		values(
+			#{dmRoomNo},
+			#{dmRoomEmp1No},
+			#{dmRoomEmp2No}
+		)
+
+	</insert>
+	
+	<!-- 방 번호로 DM방 조회 -->
+	<select id="findRoomByNo" resultType="DmRoomDto">
+	
+		select
+			dm_room_no,
+			dm_room_emp1_no,
+			dm_room_emp2_no,
+			dm_room_ctime
+		from dm_room
+		where dm_room_no = #{roomNo}
+	
+	</select>
+	
+	<!-- 내 DM 대화방 목록 -->
+	<select id="roomList"
+			resultType="DmRoomListResponseVO">
+	
+		select
+			R.dm_room_no as room_no,
+	
+			E.emp_no as target_emp_no,
+			E.emp_name as target_emp_name,
+			P.position_name as target_position_name,
+			E.emp_presence as target_presence,
+			EP.attach_no as target_attach_no,
+	
+			LM.dm_message_content as last_message,
+			LM.dm_message_ctime as last_message_time
+	
+		from dm_room R
+	
+			<!-- 각 방의 가장 최근 메세지 1개 -->
+			join (
+				select
+					dm_room_no,
+					dm_message_content,
+					dm_message_ctime,
+					dm_message_no,
+	
+					row_number() over(
+						partition by dm_room_no
+						order by dm_message_no desc
+					) as rn
+	
+				from dm_message
+			) LM
+				on R.dm_room_no = LM.dm_room_no
+				and LM.rn = 1
+	
+	
+			<!-- 로그인 사용자의 반대편 사용자가 상대방 -->
+			join emp E
+				on E.emp_no =
+					case
+						when R.dm_room_emp1_no = #{empNo}
+							then R.dm_room_emp2_no
+						else R.dm_room_emp1_no
+					end
+	
+	
+			join position P
+				on E.emp_position_no = P.position_no
+	
+	
+			left outer join emp_profile EP
+				on E.emp_no = EP.emp_no
+	
+	
+		where
+			R.dm_room_emp1_no = #{empNo}
+			or R.dm_room_emp2_no = #{empNo}
+	
+	
+		order by
+			LM.dm_message_ctime desc,
+			LM.dm_message_no desc
+	
+	</select>
+	
+	<!-- DM 메세지 목록 조회 -->
+	<select id="selectMessages" resultType="DmMessageVO">
+	
+		select *
+		from (
+	
+			select
+				DM.dm_message_no as no,
+				DM.dm_room_no as room_no,
+				DM.dm_message_sender_no as sender_no,
+				E.emp_name as sender_name,
+				DM.dm_message_content as content,
+				DM.dm_message_ctime as ctime
+	
+			from dm_message DM
+	
+				left outer join emp E
+					on DM.dm_message_sender_no = E.emp_no
+	
+			where DM.dm_room_no = #{roomNo}
+	
+			<if test="lastMessageNo != null">
+				<![CDATA[
+					and DM.dm_message_no < #{lastMessageNo}
+				]]>
+			</if>
+	
+			order by DM.dm_message_no desc
+	
+		)
+	
+		<![CDATA[
+			where rownum <= #{size}
+		]]>
+	
+		order by no asc
+	
+	</select>
+	
+	<!-- 조회 가능한 DM 메세지 개수 -->
+	<select id="countMessages" resultType="int">
+	
+		select count(*)
+	
+		from dm_message
+	
+		where dm_room_no = #{roomNo}
+	
+		<if test="lastMessageNo != null">
+			<![CDATA[
+				and dm_message_no < #{lastMessageNo}
+			]]>
+		</if>
+	
+	</select>
+	
+	<!-- DM 메세지 번호 발급 -->
+	<select id="messageSequence" resultType="int">
+	
+		select dm_message_seq.nextval
+		from dual
+	
+	</select>
+	
+	<!-- DM 메세지 등록 -->
+	<insert id="addMessage">
+	
+		insert into dm_message(
+			dm_message_no,
+			dm_room_no,
+			dm_message_sender_no,
+			dm_message_content
+		)
+		values(
+			#{no},
+			#{roomNo},
+			#{senderNo},
+			#{content}
+		)
+	
+	</insert>
+
+	<!-- DM 메세지 단건 조회 -->
+	<select id="selectMessage"
+			resultType="DmMessageVO">
+	
+		select
+			DM.dm_message_no as no,
+			DM.dm_room_no as room_no,
+			DM.dm_message_sender_no as sender_no,
+			E.emp_name as sender_name,
+			DM.dm_message_content as content,
+			DM.dm_message_ctime as ctime
+	
+		from dm_message DM
+	
+			left outer join emp E
+				on DM.dm_message_sender_no = E.emp_no
+	
+		where DM.dm_message_no = #{messageNo}
+	
+	</select>
+</mapper>
