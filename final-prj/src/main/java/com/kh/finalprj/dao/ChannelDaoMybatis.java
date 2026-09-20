@@ -38,12 +38,16 @@ public class ChannelDaoMybatis implements ChannelDao{
 	}
 
 	@Override
-	public void delete(int projectNo, int channelNo) {
-		ChannelDto channelDto = ChannelDto.builder()
+	public boolean softDelete(int projectNo, int channelNo) {
+	    ChannelDto channelDto = ChannelDto.builder()
 	            .projectNo(projectNo)
 	            .chatChannelNo(channelNo)
-            .build();
-		sqlSession.delete("mapper.channel.delete", channelDto);
+	            .build();
+
+	    return sqlSession.update(
+	            "mapper.channel.softDelete",
+	            channelDto
+	    ) > 0;
 	}
 
 	@Override

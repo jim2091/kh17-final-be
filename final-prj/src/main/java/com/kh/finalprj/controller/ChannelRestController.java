@@ -1,9 +1,11 @@
 package com.kh.finalprj.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +44,8 @@ public class ChannelRestController {
 	private ChannelService channelService;
 	@Autowired
 	private ProjectPermissionService projectPermissionService;
+	@Autowired
+	private SimpMessagingTemplate simpMessagingTemplate;
 	
 	
 	//채널 생성
@@ -58,6 +62,18 @@ public class ChannelRestController {
 			.build();
 			
 		channelService.create(channelDto, parseVO.getEmpNo());
+		
+		simpMessagingTemplate.convertAndSend(
+			    "/public/project/"
+			        + request.getProjectNo()
+			        + "/channel",
+			    Map.of(
+			        "eventType", "CHANNEL_CREATED",
+			        "projectNo", request.getProjectNo(),
+			        "channelNo", channelDto.getChatChannelNo(),
+			        "senderEmpNo", parseVO.getEmpNo()
+			    )
+			);
 	}
 
 	
@@ -103,6 +119,16 @@ public class ChannelRestController {
 	) {
 		channelService.delete(
 				request.getProjectNo(), channelNo, parseVO.getEmpNo());
+		
+		simpMessagingTemplate.convertAndSend(
+			"/public/project/" + request.getProjectNo() + "/channel",
+			Map.of(
+				"eventType", "CHANNEL_DELETED",
+				"projectNo", request.getProjectNo(),
+				"channelNo", channelNo,
+				"senderEmpNo", parseVO.getEmpNo()
+			)
+		);
 	}
 	
 	
@@ -121,5 +147,17 @@ public class ChannelRestController {
 			.build();
 		
 		channelService.update(channelDto, parseVO.getEmpNo());
+		
+		simpMessagingTemplate.convertAndSend(
+			    "/public/project/"
+			        + request.getProjectNo()
+			        + "/channel",
+			    Map.of(
+			        "eventType", "CHANNEL_UPDATED",
+			        "projectNo", request.getProjectNo(),
+			        "channelNo", channelNo,
+			        "senderEmpNo", parseVO.getEmpNo()
+			    )
+			);
 	}
 }

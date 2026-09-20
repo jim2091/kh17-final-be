@@ -18,4 +18,7 @@ public class ChannelDto {
 	
 	//채널 생성자 이름 (조회용)
 	private String chatChannelCreatorName;
+	
+	private String chatChannelDeleted;
+	private Timestamp chatChannelDtime;
 }
